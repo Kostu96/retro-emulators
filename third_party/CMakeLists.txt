@@ -4,8 +4,11 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(glfw)
 
+add_subdirectory(glw)
+
 set_target_properties(
     glfw
+    glw
     update_mappings
     PROPERTIES
     FOLDER third_party

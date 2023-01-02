@@ -7,7 +7,7 @@ class CHIP8Core :
 public:
     CHIP8Core() = default;
 
-    void fn() override {};
+    void getWindowSettings(WindowSettings& settings) override;
 private:
 
 };

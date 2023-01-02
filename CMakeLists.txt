@@ -11,8 +11,11 @@ set(APP_TARGET_NAME application)
 
 set(APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/dll_loader.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/emulator_core.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/shader_sources.inl
+    ${CMAKE_CURRENT_SOURCE_DIR}/types.hpp
 )
 
 add_executable(${APP_TARGET_NAME} ${APP_SOURCES})
@@ -29,7 +32,7 @@ set_target_properties(${APP_TARGET_NAME} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-#target_link_libraries(${CHIP8_TARGET_NAME} PRIVATE
-#    glfw
-#    glw
-#)
+target_link_libraries(${APP_TARGET_NAME} PRIVATE
+    glfw
+    glw
+)

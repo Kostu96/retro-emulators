@@ -1,3 +1,6 @@
 [submodule "GLFW"]
 	path = third_party/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "glw"]
+	path = third_party/glw
+	url = https://github.com/Kostu96/opengl-wrapper.git
