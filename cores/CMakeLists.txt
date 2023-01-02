@@ -1,0 +1,5 @@
+add_subdirectory(CHIP-8)
+add_subdirectory(GB)
+add_subdirectory(NES)
+add_subdirectory(PET)
+add_subdirectory(VIC-20)
