@@ -2,6 +2,10 @@
 #include "emulator_core.hpp"
 #include "shader_sources.inl"
 
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+
 #include <glad/gl.h>
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
@@ -10,10 +14,7 @@
 
 #pragma region OGLStuff
 glw::Shader* pointShader = nullptr;
-struct CharVertex {
-    u16 x, y;
-    u32 color;
-} charVertices[42];
+CharVertex charVertices[64*32];
 glw::VertexBuffer* charVBO = nullptr;
 glw::VertexArray* charVAO = nullptr;
 
@@ -62,13 +63,13 @@ void init(u16 fbWidth, u16 fbHeight)
     textureVAO = new glw::VertexArray{ *textureVBO, texturelayout };
     textureVAO->setIndexBuffer(*textureIBO);
 
-   /* for (u16 row = 0; row < CHIP8_HEIGHT; row++)
-        for (u16 col = 0; col < CHIP8_WIDTH; col++)
+    for (u16 row = 0; row < 32; row++)
+        for (u16 col = 0; col < 64; col++)
         {
-            charVertices[row * CHIP8_WIDTH + col].x = col;
-            charVertices[row * CHIP8_WIDTH + col].y = row;
-            charVertices[row * CHIP8_WIDTH + col].color = 0;
-        }*/
+            charVertices[row * 64 + col].x = col;
+            charVertices[row * 64 + col].y = row;
+            charVertices[row * 64 + col].color = 0;
+        }
 
     FBO = new glw::Framebuffer{
         glw::Framebuffer::Properties{ fbWidth, fbHeight, 1, {
@@ -98,6 +99,11 @@ void shutdown()
 }
 #pragma endregion
 
+static void glfwErrorCallback(int error, const char* description)
+{
+    std::cerr << "GLFW error " << error << ": " << description << '\n';
+}
+
 int main(int argc, char* argv[])
 {
     if (argc == 2)
@@ -110,7 +116,10 @@ int main(int argc, char* argv[])
         }
 
         auto core = loader.getInstance();
+        core->loadROM("roms/chip8/IBM Logo.ch8");
+        core->reset();
 
+        glfwSetErrorCallback(glfwErrorCallback);
         if (!glfwInit()) {
             std::cerr << "GLFW init failed!\n";
             std::terminate();
@@ -127,11 +136,86 @@ int main(int argc, char* argv[])
         }
         glfwMakeContextCurrent(window);
 
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        ImGui::StyleColorsDark();
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 450");
+
+        glw::init(glfwGetProcAddress);
+        init(64, 32);
+
         while (!glfwWindowShouldClose(window))
         {
             glfwPollEvents();
+
+            core->clock();
+
+            FBO->bind();
+            charVAO->bind();
+            pointShader->bind();
+            glViewport(0, 0, 64, 32);
+            core->render(charVertices);
+            charVBO->bind();
+            charVBO->setData(charVertices, sizeof(charVertices));
+            glDrawArrays(GL_POINTS, 0, 64*32);
+
+            textureVAO->bind();
+            textureShader->bind();
+            glViewport(0, 0, settings.width, settings.height);
+            FBO->getAttachments()[0].bind(0);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+            glFinish();
+
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            {
+                ImGui::Begin("Memory");
+                auto mem = core->getMemory();
+                if (ImGui::BeginTable("memory_table", 9))
+                {
+                    u16 addr = 0;
+                    for (u8 byte : mem)
+                    {
+                        if (addr % 8 == 0)
+                        {
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%03X:", addr);
+                        }
+
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%02X", byte);
+                        addr++;
+                    }
+                    
+                    ImGui::EndTable();
+                }
+                
+                ImGui::End();
+            }
+
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                GLFWwindow* backup_current_context = glfwGetCurrentContext();
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+                glfwMakeContextCurrent(backup_current_context);
+            }
+
+            glfwSwapBuffers(window);
         }
 
+        shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
         glfwTerminate();
         loader.closeLib();
     }

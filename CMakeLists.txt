@@ -35,4 +35,5 @@ set_target_properties(${APP_TARGET_NAME} PROPERTIES
 target_link_libraries(${APP_TARGET_NAME} PRIVATE
     glfw
     glw
+    imgui
 )

@@ -4,3 +4,6 @@
 [submodule "glw"]
 	path = third_party/glw
 	url = https://github.com/Kostu96/opengl-wrapper.git
+[submodule "ImGui"]
+	path = third_party/imgui
+	url = https://github.com/ocornut/imgui.git
