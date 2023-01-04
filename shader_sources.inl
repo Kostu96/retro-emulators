@@ -10,7 +10,7 @@ layout(location = 0) out vec4 v_Color;
 void main()
 {
     float xpos = float(a_Position.x) / (64.0 * 0.5) - 1.0;
-	float ypos = -(float(a_Position.y + 1) / (32.0 * 0.5) - 1.0);
+	float ypos = -(float(a_Position.y) / (32.0 * 0.5) - 1.0);
 
     v_Color = a_Color;
     gl_Position = vec4(xpos, ypos, 0.0, 1.0);

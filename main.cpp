@@ -104,119 +104,131 @@ static void glfwErrorCallback(int error, const char* description)
     std::cerr << "GLFW error " << error << ": " << description << '\n';
 }
 
+static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+{
+    auto core = reinterpret_cast<EmulatorCore*>(glfwGetWindowUserPointer(window));
+    core->handleKey(key, action);
+}
+
 int main(int argc, char* argv[])
 {
     if (argc == 2)
     {
         DllLoader<EmulatorCore> loader{ argv[1] };
-        
         if (!loader.openLib()) {
            std::cerr << "Cannot open library: " << argv[1] << '\n';
            std::terminate();
         }
 
-        auto core = loader.getInstance();
-        core->loadROM("roms/chip8/IBM Logo.ch8");
-        core->reset();
-
-        glfwSetErrorCallback(glfwErrorCallback);
-        if (!glfwInit()) {
-            std::cerr << "GLFW init failed!\n";
-            std::terminate();
-        }
-
-        EmulatorCore::WindowSettings settings;
-        core->getWindowSettings(settings);
-
-        glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
-        GLFWwindow* window = glfwCreateWindow(settings.width, settings.height, settings.title, nullptr, nullptr);
-        if (!window) {
-            std::cerr << "GLFW window creation failed!\n";
-            std::terminate();
-        }
-        glfwMakeContextCurrent(window);
-
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-        ImGui::StyleColorsDark();
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 450");
-
-        glw::init(glfwGetProcAddress);
-        init(64, 32);
-
-        while (!glfwWindowShouldClose(window))
         {
-            glfwPollEvents();
+            auto core = loader.getInstance();
+            core->loadROM("roms/chip8/chip8-test-suite.ch8");
+            core->reset();
 
-            core->clock();
+            glfwSetErrorCallback(glfwErrorCallback);
+            if (!glfwInit()) {
+                std::cerr << "GLFW init failed!\n";
+                std::terminate();
+            }
 
-            FBO->bind();
-            charVAO->bind();
-            pointShader->bind();
-            glViewport(0, 0, 64, 32);
-            core->render(charVertices);
-            charVBO->bind();
-            charVBO->setData(charVertices, sizeof(charVertices));
-            glDrawArrays(GL_POINTS, 0, 64*32);
+            EmulatorCore::WindowSettings settings;
+            core->getWindowSettings(settings);
 
-            textureVAO->bind();
-            textureShader->bind();
-            glViewport(0, 0, settings.width, settings.height);
-            FBO->getAttachments()[0].bind(0);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
-            glFinish();
+            glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
+            GLFWwindow* window = glfwCreateWindow(settings.width, settings.height, settings.title, nullptr, nullptr);
+            if (!window) {
+                std::cerr << "GLFW window creation failed!\n";
+                std::terminate();
+            }
+            glfwSetKeyCallback(window, glfwKeyCallback);
+            glfwSetWindowUserPointer(window, core.get());
+            glfwMakeContextCurrent(window);
 
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            ImGuiIO& io = ImGui::GetIO();
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+            ImGui::StyleColorsDark();
+            ImGui_ImplGlfw_InitForOpenGL(window, true);
+            ImGui_ImplOpenGL3_Init("#version 450");
 
+            glw::init(glfwGetProcAddress);
+            init(64, 32);
+
+            while (!glfwWindowShouldClose(window))
             {
-                ImGui::Begin("Memory");
-                auto mem = core->getMemory();
-                if (ImGui::BeginTable("memory_table", 9))
+                glfwPollEvents();
+
+                core->clock();
+                core->clock();
+
+                FBO->bind();
+                charVAO->bind();
+                pointShader->bind();
+                glViewport(0, 0, 64, 32);
+                core->render(charVertices);
+                charVBO->bind();
+                charVBO->setData(charVertices, sizeof(charVertices));
+                glDrawArrays(GL_POINTS, 0, 64 * 32);
+
+                FBO->unbind();
+                textureVAO->bind();
+                textureShader->bind();
+                glViewport(0, 0, settings.width, settings.height);
+                FBO->getAttachments()[0].bind(0);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+                glFinish();
+
+                ImGui_ImplOpenGL3_NewFrame();
+                ImGui_ImplGlfw_NewFrame();
+                ImGui::NewFrame();
+
                 {
-                    u16 addr = 0;
-                    for (u8 byte : mem)
+                    ImGui::Begin("Memory");
+                    auto mem = core->getMemory();
+                    if (ImGui::BeginTable("memory_table", 9))
                     {
-                        if (addr % 8 == 0)
+                        u16 addr = 0;
+                        for (u8 byte : mem)
                         {
+                            if (addr % 8 == 0)
+                            {
+                                ImGui::TableNextColumn();
+                                ImGui::Text("%03X:", addr);
+                            }
+
                             ImGui::TableNextColumn();
-                            ImGui::Text("%03X:", addr);
+                            ImGui::Text("%02X", byte);
+                            addr++;
                         }
 
-                        ImGui::TableNextColumn();
-                        ImGui::Text("%02X", byte);
-                        addr++;
+                        ImGui::EndTable();
                     }
-                    
-                    ImGui::EndTable();
+
+                    ImGui::End();
                 }
-                
-                ImGui::End();
+
+                ImGui::Render();
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+                if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+                {
+                    GLFWwindow* backup_current_context = glfwGetCurrentContext();
+                    ImGui::UpdatePlatformWindows();
+                    ImGui::RenderPlatformWindowsDefault();
+                    glfwMakeContextCurrent(backup_current_context);
+                }
+
+                glfwSwapBuffers(window);
             }
 
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            shutdown();
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
+            glfwTerminate();
 
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-            {
-                GLFWwindow* backup_current_context = glfwGetCurrentContext();
-                ImGui::UpdatePlatformWindows();
-                ImGui::RenderPlatformWindowsDefault();
-                glfwMakeContextCurrent(backup_current_context);
-            }
-
-            glfwSwapBuffers(window);
         }
-
-        shutdown();
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-        glfwTerminate();
         loader.closeLib();
     }
     else

@@ -1,11 +1,11 @@
 #pragma once
 #include "../../emulator_core.hpp"
 
-class CHIP8Core :
+class PETCore :
     public EmulatorCore
 {
 public:
-    CHIP8Core() = default;
+    PETCore() = default;
 
     void getWindowSettings(WindowSettings& settings) override;
     std::span<u8> getMemory() override;

@@ -23,6 +23,7 @@ public:
     virtual void getWindowSettings(WindowSettings& settings) = 0;
     virtual std::span<u8> getMemory() = 0;
     virtual void render(CharVertex* verts) = 0;
+    virtual void handleKey(int key, int action) = 0;
 
     virtual void loadROM(const char* filename) = 0;
     virtual void reset() = 0;

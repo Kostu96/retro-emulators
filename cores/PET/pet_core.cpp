@@ -1,4 +1,4 @@
-#include "chip8_core.hpp"
+#include "pet_core.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -6,18 +6,18 @@
 
 extern "C"
 {
-    __declspec(dllexport) CHIP8Core* allocator()
+    __declspec(dllexport) PETCore* allocator()
     {
-        return new CHIP8Core{};
+        return new PETCore{};
     }
 
-    __declspec(dllexport) void deleter(CHIP8Core* ptr)
+    __declspec(dllexport) void deleter(PETCore* ptr)
     {
         delete ptr;
     }
 }
 
-void CHIP8Core::getWindowSettings(WindowSettings& settings)
+void PETCore::getWindowSettings(WindowSettings& settings)
 {
     constexpr u16 CHIP8_WIDTH = 64;
     constexpr u16 CHIP8_HEIGHT = 32;
@@ -31,12 +31,12 @@ void CHIP8Core::getWindowSettings(WindowSettings& settings)
     strcpy_s(settings.title, "chip8");
 }
 
-std::span<u8> CHIP8Core::getMemory()
+std::span<u8> PETCore::getMemory()
 {
     return std::span<u8>{Memory};
 }
 
-void CHIP8Core::render(CharVertex* verts)
+void PETCore::render(CharVertex* verts)
 {
     for (u16 row = 0; row < 32; row++)
         for (u16 col = 0; col < 8; col++)
@@ -51,7 +51,7 @@ void CHIP8Core::render(CharVertex* verts)
         }
 }
 
-void CHIP8Core::handleKey(int key, int action)
+void PETCore::handleKey(int key, int action)
 {
     constexpr int KEY1 = 49;
     constexpr int KEY2 = 50;
@@ -91,7 +91,7 @@ void CHIP8Core::handleKey(int key, int action)
     }
 }
 
-void CHIP8Core::loadROM(const char* filename)
+void PETCore::loadROM(const char* filename)
 {
     constexpr u8 CHARSET_SIZE = 80;
     const u8 charset[CHARSET_SIZE] = {
@@ -120,7 +120,7 @@ void CHIP8Core::loadROM(const char* filename)
     fin.close();
 }
 
-void CHIP8Core::reset()
+void PETCore::reset()
 {
     std::srand(1234567890);
 
@@ -145,7 +145,7 @@ union Instruction
     u16 word;
 };
 
-void CHIP8Core::clock()
+void PETCore::clock()
 {
     if (DT) DT--;
     if (ST) ST--;
