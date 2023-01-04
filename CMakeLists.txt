@@ -5,6 +5,7 @@ include(scripts/cmake/base_configuration.cmake)
 include(scripts/cmake/compiler_warnings.cmake)
 
 add_subdirectory(third_party)
+add_subdirectory(shared)
 add_subdirectory(cores)
 
 set(APP_TARGET_NAME application)
@@ -15,7 +16,6 @@ set(APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/emulator_core.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/shader_sources.inl
-    ${CMAKE_CURRENT_SOURCE_DIR}/types.hpp
 )
 
 add_executable(${APP_TARGET_NAME} ${APP_SOURCES})
