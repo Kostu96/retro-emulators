@@ -10,7 +10,7 @@ target_include_directories(${CPU6502_TARGET_NAME} PUBLIC
 )
 
 set_target_properties(${CPU6502_TARGET_NAME} PROPERTIES
-    FOLDER tests
+    FOLDER shared
 )
 
 ### --- ### --- ### --- ### --- ###
