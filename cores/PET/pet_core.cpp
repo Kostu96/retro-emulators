@@ -36,7 +36,6 @@ static struct {
 } VRAM;
 
 static struct {
-    inline
 #if defined(ROM_SERIES1)
 #include "roms/basic1_C000.inl"
 #endif
@@ -51,7 +50,6 @@ static struct {
 } BASIC;
 
 static struct {
-    inline
 #if defined(ROM_SERIES1)
 #include "roms/editor1_E000.inl"
 #endif
@@ -66,7 +64,6 @@ static struct {
 } EDITOR;
 
 static struct {
-    inline
 #if defined(ROM_SERIES1)
 #include "roms/kernal1_F000.inl"
 #endif

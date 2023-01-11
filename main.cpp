@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include "imgui_memory_view.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -152,6 +153,8 @@ int main(int argc, char* argv[])
             ImGui_ImplGlfw_InitForOpenGL(window, true);
             ImGui_ImplOpenGL3_Init("#version 450");
 
+            MemoryView memoryView;
+
             glw::init(glfwGetProcAddress);
             init(64, 32);
 
@@ -159,7 +162,6 @@ int main(int argc, char* argv[])
             {
                 glfwPollEvents();
 
-                core->clock();
                 core->clock();
 
                 FBO->bind();
@@ -183,30 +185,7 @@ int main(int argc, char* argv[])
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
 
-                {
-                    ImGui::Begin("Memory");
-                    auto mem = core->getMemory();
-                    if (ImGui::BeginTable("memory_table", 9))
-                    {
-                        u16 addr = 0;
-                        for (u8 byte : mem)
-                        {
-                            if (addr % 8 == 0)
-                            {
-                                ImGui::TableNextColumn();
-                                ImGui::Text("%03X:", addr);
-                            }
-
-                            ImGui::TableNextColumn();
-                            ImGui::Text("%02X", byte);
-                            addr++;
-                        }
-
-                        ImGui::EndTable();
-                    }
-
-                    ImGui::End();
-                }
+                memoryView.DrawWindow("Memory", core, 0x4000);
 
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

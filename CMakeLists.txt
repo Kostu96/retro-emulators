@@ -14,6 +14,7 @@ set(APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/dll_loader.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/emulator_core.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui_memory_view.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/shader_sources.inl
 )

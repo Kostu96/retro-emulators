@@ -29,15 +29,6 @@ struct AddressRange
 class CPU6502
 {
 public:
-    static constexpr u8 BITMASK_C = 1 << 0;
-    static constexpr u8 BITMASK_Z = 1 << 1;
-    static constexpr u8 BITMASK_I = 1 << 2;
-    static constexpr u8 BITMASK_D = 1 << 3;
-    static constexpr u8 BITMASK_B = 1 << 4;
-    static constexpr u8 BITMASK_U = 1 << 5;
-    static constexpr u8 BITMASK_V = 1 << 6;
-    static constexpr u8 BITMASK_N = 1 << 7;
-
     union Flags
     {
         struct {

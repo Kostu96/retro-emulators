@@ -11,6 +11,22 @@ static struct
     u8 read(u16 address) const { return rom[address]; }
 } ROM;
 
+static struct
+{
+    u8 ram[0x400];
+
+    u8 read(u16 address) const { return ram[address]; }
+    void write(u16 address, u8 data) { ram[address] = data; }
+} RAM;
+
+static struct
+{
+    u8 screen[0x1C00];
+
+    u8 read(u16 address) const { return screen[address]; }
+    void write(u16 address, u8 data) { screen[address] = data; }
+} Screen;
+
 extern "C"
 {
     __declspec(dllexport) InvadersCore* allocator()
@@ -24,9 +40,12 @@ extern "C"
     }
 }
 
-InvadersCore::InvadersCore()
+InvadersCore::InvadersCore() :
+    m_cpu{ CPU8080::Mode::Intel8080 }
 {
-    m_cpu.map(ROM, { 0x0000, 0x3FFF });
+    m_cpu.map(ROM,    { 0x0000, 0x1FFF });
+    m_cpu.map(RAM,    { 0x2000, 0x23FF });
+    m_cpu.map(Screen, { 0x2400, 0x3FFF });
 }
 
 void InvadersCore::getWindowSettings(WindowSettings& settings)
@@ -43,9 +62,9 @@ void InvadersCore::getWindowSettings(WindowSettings& settings)
     strcpy_s(settings.title, "Space Invaders");
 }
 
-std::span<u8> InvadersCore::getMemory()
+u8 InvadersCore::readByte(u16 address)
 {
-    return std::span<u8>{};
+    return m_cpu.load8(address);
 }
 
 void InvadersCore::render(CharVertex* verts)

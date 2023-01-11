@@ -9,7 +9,7 @@ public:
     InvadersCore();
 
     void getWindowSettings(WindowSettings& settings) override;
-    std::span<u8> getMemory() override;
+    u8 readByte(u16 address) override;
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
 

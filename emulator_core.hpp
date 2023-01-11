@@ -21,7 +21,8 @@ public:
     virtual ~EmulatorCore() = default;
 
     virtual void getWindowSettings(WindowSettings& settings) = 0;
-    virtual std::span<u8> getMemory() = 0;
+    virtual u8 readByte(u16 /*address*/) { return 0xCD; };
+    virtual std::span<u8> getMemory() { return std::span<u8>{}; }
     virtual void render(CharVertex* verts) = 0;
     virtual void handleKey(int key, int action) = 0;
 
