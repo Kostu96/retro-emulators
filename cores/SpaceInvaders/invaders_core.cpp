@@ -48,6 +48,13 @@ InvadersCore::InvadersCore() :
     m_cpu.map(Screen, { 0x2400, 0x3FFF });
 
     disassemble(ROM.rom, 0x2000, m_disassembly);
+
+    m_state.push_back({ 0, "AF" });
+    m_state.push_back({ 0, "BC" });
+    m_state.push_back({ 0, "DE" });
+    m_state.push_back({ 0, "HL" });
+    m_state.push_back({ 0, "SP" });
+    m_state.push_back({ 0, "PC" });
 }
 
 void InvadersCore::getWindowSettings(WindowSettings& settings) const
@@ -102,4 +109,11 @@ void InvadersCore::reset()
 void InvadersCore::clock()
 {
     m_cpu.clock();
+
+    m_state[0].value = m_cpu.getAF();
+    m_state[1].value = m_cpu.getBC();
+    m_state[2].value = m_cpu.getDE();
+    m_state[3].value = m_cpu.getHL();
+    m_state[4].value = m_cpu.getSP();
+    m_state[5].value = m_cpu.getPC();
 }

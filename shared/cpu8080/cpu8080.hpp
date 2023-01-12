@@ -37,6 +37,11 @@ public:
     void clock();
 
     u8 load8(u16 address) const;
+    u16 getAF() const { return AF; }
+    u16 getBC() const { return BC; }
+    u16 getDE() const { return DE; }
+    u16 getHL() const { return HL; }
+    u16 getSP() const { return SP; }
     u16 getPC() const { return PC; }
 
     explicit CPU8080(Mode mode) : m_mode{ mode } {}
@@ -69,6 +74,7 @@ private:
 
     // Logical group
     void AND(u8 value);
+    void XOR(u8 value);
 
     // Branch group
     void JMP(bool flag);

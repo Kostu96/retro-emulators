@@ -9,6 +9,12 @@ struct CharVertex {
     u32 color;
 };
 
+struct StateEntry
+{
+    u16 value;
+    char label[14];
+};
+
 class EmulatorCore
 {
 public:
@@ -26,6 +32,7 @@ public:
     virtual u16 getPC() const { return 0; }
     virtual std::span<const u8> getMemory() const { return std::span<const u8>{}; }
     virtual const std::vector<DisassemblyLine>& getDisassembly() const { return std::vector<DisassemblyLine>{}; } // TODO: temp - make abstract
+    virtual const std::vector<StateEntry>& getState() const { return std::vector<StateEntry>{}; } // TODO: temp - make abstract
     
     virtual void render(CharVertex* verts) = 0;
     virtual void handleKey(int key, int action) = 0;

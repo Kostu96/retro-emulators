@@ -166,11 +166,13 @@ int main(int argc, char* argv[])
             glw::init(glfwGetProcAddress);
             init(64, 32);
 
+            bool paused = true;
             while (!glfwWindowShouldClose(window))
             {
                 glfwPollEvents();
 
-                core->clock();
+                if (!paused)
+                    core->clock();
 
                 FBO->bind();
                 charVAO->bind();
@@ -195,8 +197,8 @@ int main(int argc, char* argv[])
 
                 memoryView.DrawWindow("Memory", core, 0x4000);
 
-                static bool Open = true;
-                if (ImGui::Begin("Disassembly", &Open, ImGuiWindowFlags_NoScrollbar))
+                static bool Open1 = true;
+                if (ImGui::Begin("Disassembly", &Open1, ImGuiWindowFlags_NoScrollbar))
                 {
                     ImGui::BeginChild("##scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav);
                     auto& disassembly = core->getDisassembly();
@@ -218,6 +220,36 @@ int main(int argc, char* argv[])
                         ImGui::GetCursorStartPos().y + findLine(core->getPC(), disassembly) * ImGui::GetTextLineHeight()
                     );
                     ImGui::EndChild();
+                }
+                ImGui::End();
+
+                static bool Open2 = true;
+                if (ImGui::Begin("State", &Open1, ImGuiWindowFlags_NoScrollbar))
+                {
+                    auto& state = core->getState();
+                    for (auto& entry : state)
+                    {
+                        ImGui::Text(entry.label);
+                        ImGui::SameLine();
+                        ImGui::Text("%04X", entry.value);
+                    }
+
+                    ImGui::Separator();
+
+                    ImGui::BeginDisabled(!paused);
+                    if (ImGui::Button("Run")) paused = false;
+                    ImGui::EndDisabled();
+                    ImGui::SameLine();
+
+                    ImGui::BeginDisabled(paused);
+                    if (ImGui::Button("Pause")) paused = true;
+                    ImGui::EndDisabled();
+                    ImGui::SameLine();
+
+                    ImGui::BeginDisabled(!paused);
+                    if (ImGui::Button("Step")) core->clock();
+                    ImGui::EndDisabled();
+                    
                 }
                 ImGui::End();
 

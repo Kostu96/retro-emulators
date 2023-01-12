@@ -5,6 +5,11 @@
 
 void CPU8080::reset()
 {
+    AF = 0;
+    BC = 0;
+    DE = 0;
+    HL = 0;
+    SP = 0;
     PC = 0;
 }
 
@@ -53,6 +58,8 @@ void CPU8080::clock()
 
     case 0x39: ADDHL(SP); break;
     case 0x3A: LDR(A, load8(load16(PC))); PC += 2; break;
+
+    case 0x3E: LDR(A, load8(PC++)); break;
 
     case 0x40: LDR(B, B); break;
     case 0x41: LDR(B, C); break;
@@ -135,6 +142,14 @@ void CPU8080::clock()
     case 0xA5: AND(L); break;
     case 0xA6: AND(load8(HL)); break;
     case 0xA7: AND(A); break;
+    case 0xA8: XOR(B); break;
+    case 0xA9: XOR(C); break;
+    case 0xAA: XOR(D); break;
+    case 0xAB: XOR(E); break;
+    case 0xAC: XOR(H); break;
+    case 0xAD: XOR(L); break;
+    case 0xAE: XOR(load8(HL)); break;
+    case 0xAF: XOR(A); break;
 
     case 0xB8: CMP(B); break;
     case 0xB9: CMP(C); break;
@@ -271,7 +286,7 @@ u8 CPU8080::pop8()
 u16 CPU8080::pop16()
 {
     SP += 2;
-    return load16(SP);
+    return load16(SP - 2);
 }
 #pragma endregion
 
@@ -373,6 +388,13 @@ void CPU8080::AND(u8 value)
     F.byte = 0;
     F.bits.Z = A == 0;
     F.bits.AC = 1;
+}
+
+void CPU8080::XOR(u8 value)
+{
+    A ^= value;
+    F.byte = 0x0F;
+    F.bits.Z = A == 0;
 }
 
 void CPU8080::JMP(bool flag)

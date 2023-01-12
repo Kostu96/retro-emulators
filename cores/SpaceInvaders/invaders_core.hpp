@@ -13,6 +13,7 @@ public:
     u8 getByteAt(u16 address) const override;
     u16 getPC() const override { return m_cpu.getPC(); }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
+    const std::vector<StateEntry>& getState() const override { return m_state; }
 
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
@@ -24,4 +25,5 @@ private:
     CPU8080 m_cpu;
 
     std::vector<DisassemblyLine> m_disassembly;
+    std::vector<StateEntry> m_state;
 };
