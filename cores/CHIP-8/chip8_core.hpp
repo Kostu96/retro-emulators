@@ -7,8 +7,9 @@ class CHIP8Core :
 public:
     CHIP8Core() = default;
 
-    void getWindowSettings(WindowSettings& settings) override;
-    std::span<u8> getMemory() override;
+    void getWindowSettings(WindowSettings& settings) const override;
+    std::span<const u8> getMemory() const override;
+
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
 

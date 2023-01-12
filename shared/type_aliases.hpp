@@ -13,3 +13,9 @@ using s64 = int64_t;
 
 using f32 = float;
 using f64 = double;
+
+struct DisassemblyLine
+{
+    u16 address;
+    char buffer[30];
+};

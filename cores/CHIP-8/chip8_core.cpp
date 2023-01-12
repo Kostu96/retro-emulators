@@ -17,7 +17,7 @@ extern "C"
     }
 }
 
-void CHIP8Core::getWindowSettings(WindowSettings& settings)
+void CHIP8Core::getWindowSettings(WindowSettings& settings) const
 {
     constexpr u16 CHIP8_WIDTH = 64;
     constexpr u16 CHIP8_HEIGHT = 32;
@@ -31,9 +31,9 @@ void CHIP8Core::getWindowSettings(WindowSettings& settings)
     strcpy_s(settings.title, "chip8");
 }
 
-std::span<u8> CHIP8Core::getMemory()
+std::span<const u8> CHIP8Core::getMemory() const
 {
-    return std::span<u8>{Memory};
+    return std::span<const u8>{Memory};
 }
 
 void CHIP8Core::render(CharVertex* verts)

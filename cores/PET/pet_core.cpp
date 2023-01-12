@@ -92,7 +92,7 @@ PETCore::PETCore() :
     m_cpu.map(KERNAL, { 0xF000, 0xFFFF });
 }
 
-void PETCore::getWindowSettings(WindowSettings& settings)
+void PETCore::getWindowSettings(WindowSettings& settings) const
 {
     constexpr u16 CHIP8_WIDTH = 64;
     constexpr u16 CHIP8_HEIGHT = 32;
@@ -106,9 +106,9 @@ void PETCore::getWindowSettings(WindowSettings& settings)
     strcpy_s(settings.title, "pet");
 }
 
-std::span<u8> PETCore::getMemory()
+std::span<const u8> PETCore::getMemory() const
 {
-    return std::span<u8>{};
+    return std::span<const u8>{};
 }
 
 void PETCore::render(CharVertex* verts)

@@ -1,6 +1,7 @@
 #pragma once
 #include "../../emulator_core.hpp"
 #include "cpu8080.hpp"
+#include "disasm8080.hpp"
 
 class InvadersCore :
     public EmulatorCore
@@ -8,8 +9,11 @@ class InvadersCore :
 public:
     InvadersCore();
 
-    void getWindowSettings(WindowSettings& settings) override;
-    u8 readByte(u16 address) override;
+    void getWindowSettings(WindowSettings& settings) const override;
+    u8 getByteAt(u16 address) const override;
+    u16 getPC() const override { return m_cpu.getPC(); }
+    const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
+
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
 
@@ -18,4 +22,6 @@ public:
     void clock() override;
 private:
     CPU8080 m_cpu;
+
+    std::vector<DisassemblyLine> m_disassembly;
 };

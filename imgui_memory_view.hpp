@@ -70,8 +70,6 @@ struct MemoryView
         Open = true;
         if (ImGui::Begin(title, &Open, ImGuiWindowFlags_NoScrollbar))
         {
-            if (ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
-                ImGui::OpenPopup("context");
             DrawContents(core, mem_size, base_display_addr);
             if (ContentsWidthChanged)
             {
@@ -127,7 +125,7 @@ struct MemoryView
                         byte_pos_x += (float)(n / OptMidColsCount) * s.SpacingBetweenMidCols;
                     ImGui::SameLine(byte_pos_x);
 
-                    ImU8 b = core->readByte((u16)addr);
+                    ImU8 b = core->getByteAt((u16)addr);
                     if (b == 0)
                         ImGui::TextDisabled("00 ");
                     else
@@ -143,7 +141,7 @@ struct MemoryView
                 ImGui::PopID();
                 for (int n = 0; n < Cols && addr < mem_size; n++, addr++)
                 {
-                    unsigned char c = core->readByte((u16)addr);
+                    unsigned char c = core->getByteAt((u16)addr);
                     char display_c = (c < 32 || c >= 128) ? '.' : c;
                     draw_list->AddText(pos, (display_c == c) ? color_text : color_disabled, &display_c, &display_c + 1);
                     pos.x += s.GlyphWidth;

@@ -111,6 +111,14 @@ static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int a
     core->handleKey(key, action);
 }
 
+static size_t findLine(u16 addr, const std::vector<DisassemblyLine>& disassembly)
+{
+    float p = (float)addr / (float)0x2000;
+    size_t line = (size_t)(disassembly.size() * p);
+    while (disassembly[line].address > addr) line--;
+    return line;
+}
+
 int main(int argc, char* argv[])
 {
     if (argc == 2)
@@ -186,6 +194,32 @@ int main(int argc, char* argv[])
                 ImGui::NewFrame();
 
                 memoryView.DrawWindow("Memory", core, 0x4000);
+
+                static bool Open = true;
+                if (ImGui::Begin("Disassembly", &Open, ImGuiWindowFlags_NoScrollbar))
+                {
+                    ImGui::BeginChild("##scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav);
+                    auto& disassembly = core->getDisassembly();
+                    
+                    ImGuiListClipper clipper;
+                    clipper.Begin((int)disassembly.size(), ImGui::GetTextLineHeight());
+
+                    while (clipper.Step())
+                        for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++)
+                        {
+                            auto& line = disassembly[line_i];
+                            if (line.address == core->getPC())
+                                ImGui::TextColored(ImVec4{ 1.f, 0.1f, 0.1f, 1.f }, line.buffer);
+                            else
+                                ImGui::Text(line.buffer);
+                        }
+
+                    ImGui::SetScrollFromPosY(
+                        ImGui::GetCursorStartPos().y + findLine(core->getPC(), disassembly) * ImGui::GetTextLineHeight()
+                    );
+                    ImGui::EndChild();
+                }
+                ImGui::End();
 
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

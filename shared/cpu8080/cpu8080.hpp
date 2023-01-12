@@ -37,6 +37,7 @@ public:
     void clock();
 
     u8 load8(u16 address) const;
+    u16 getPC() const { return PC; }
 
     explicit CPU8080(Mode mode) : m_mode{ mode } {}
     CPU8080(const CPU8080&) = delete;
@@ -57,14 +58,17 @@ private:
     void XCH();
 
     // Arithmetic group
+    void ADD(u8 value);
     void ADDHL(u16 value);
     void CMP(u8 value);
     void DECR(u8& reg);
     void DECRP(u16& reg);
     void INCR(u8& reg);
     void INCRP(u16& reg);
+    void RRC();
 
     // Logical group
+    void AND(u8 value);
 
     // Branch group
     void JMP(bool flag);

@@ -46,14 +46,16 @@ InvadersCore::InvadersCore() :
     m_cpu.map(ROM,    { 0x0000, 0x1FFF });
     m_cpu.map(RAM,    { 0x2000, 0x23FF });
     m_cpu.map(Screen, { 0x2400, 0x3FFF });
+
+    disassemble(ROM.rom, 0x2000, m_disassembly);
 }
 
-void InvadersCore::getWindowSettings(WindowSettings& settings)
+void InvadersCore::getWindowSettings(WindowSettings& settings) const
 {
-    constexpr u16 CHIP8_WIDTH = 64;
-    constexpr u16 CHIP8_HEIGHT = 32;
+    constexpr u16 CHIP8_WIDTH = 256;
+    constexpr u16 CHIP8_HEIGHT = 224;
     constexpr u16 SCREEN_SIZE = CHIP8_WIDTH * CHIP8_HEIGHT;
-    constexpr u16 ZOOM = 16;
+    constexpr u16 ZOOM = 2;
     constexpr u16 WINDOW_WIDTH = CHIP8_WIDTH * ZOOM;
     constexpr u16 WINDOW_HEIGHT = CHIP8_HEIGHT * ZOOM;
 
@@ -62,7 +64,7 @@ void InvadersCore::getWindowSettings(WindowSettings& settings)
     strcpy_s(settings.title, "Space Invaders");
 }
 
-u8 InvadersCore::readByte(u16 address)
+u8 InvadersCore::getByteAt(u16 address) const
 {
     return m_cpu.load8(address);
 }

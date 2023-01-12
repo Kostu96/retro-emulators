@@ -24,6 +24,7 @@ void CPU8080::clock()
 
     case 0x0D: DECR(C); break;
     case 0x0E: LDR(C, load8(PC++)); break;
+    case 0x0F: RRC(); break;
 
     case 0x11: LDRP(DE, load16(PC)); PC += 2; break;
 
@@ -117,9 +118,39 @@ void CPU8080::clock()
     case 0x7D: LDR(A, L); break;
     case 0x7E: LDR(A, load8(HL)); break;
     case 0x7F: LDR(A, A); break;
+    case 0x80: ADD(B); break;
+    case 0x81: ADD(C); break;
+    case 0x82: ADD(D); break;
+    case 0x83: ADD(E); break;
+    case 0x84: ADD(H); break;
+    case 0x85: ADD(L); break;
+    case 0x86: ADD(load8(HL)); break;
+    case 0x87: ADD(A); break;
+
+    case 0xA0: AND(B); break;
+    case 0xA1: AND(C); break;
+    case 0xA2: AND(D); break;
+    case 0xA3: AND(E); break;
+    case 0xA4: AND(H); break;
+    case 0xA5: AND(L); break;
+    case 0xA6: AND(load8(HL)); break;
+    case 0xA7: AND(A); break;
+
+    case 0xB8: CMP(B); break;
+    case 0xB9: CMP(C); break;
+    case 0xBA: CMP(D); break;
+    case 0xBB: CMP(E); break;
+    case 0xBC: CMP(H); break;
+    case 0xBD: CMP(L); break;
+    case 0xBE: CMP(load8(HL)); break;
+    case 0xBF: CMP(A); break;
+
+    case 0xC0: RET(!F.bits.Z); break;
 
     case 0xC2: JMP(!F.bits.Z); break;
     case 0xC3: JMP(true); break;
+
+    case 0xC6: ADD(load8(PC++)); break;
 
     case 0xC9: RET(true); break;
 
@@ -135,8 +166,11 @@ void CPU8080::clock()
     case 0xE1: HL = pop16(); break;
 
     case 0xE5: push16(HL); break;
+    case 0xE6: AND(load8(PC++)); break;
 
     case 0xEB: XCH(); break;
+
+    case 0xF1: AF = pop16(); break;
 
     case 0xF5: push16(AF); break;
 
@@ -220,24 +254,24 @@ void CPU8080::store16(u16 address, u16 data)
 
 void CPU8080::push8(u8 data)
 {
-    store8(SP--, data);
+    store8(--SP, data);
 }
 
 void CPU8080::push16(u16 data)
 {
-    store16(SP - 1, data);
+    store16(SP - 2, data);
     SP -= 2;
 }
 
 u8 CPU8080::pop8()
 {
-    return load8(++SP);
+    return load8(SP++);
 }
 
 u16 CPU8080::pop16()
 {
     SP += 2;
-    return load16(SP - 1);
+    return load16(SP);
 }
 #pragma endregion
 
@@ -261,6 +295,17 @@ void CPU8080::XCH()
     u16 temp = HL;
     HL = DE;
     DE = temp;
+}
+
+void CPU8080::ADD(u8 value)
+{
+    u16 result = A + value;
+    u8 result4bit = (A & 0xF) + (value & 0xF);
+    A = result;
+    F.bits.Z = (A == 0);
+    F.bits.S = 0;
+    F.bits.AC = result4bit >> 4;
+    F.bits.C = result >> 8;
 }
 
 void CPU8080::ADDHL(u16 value)
@@ -312,6 +357,22 @@ void CPU8080::INCR(u8& reg)
 void CPU8080::INCRP(u16& reg)
 {
     reg++;
+}
+
+void CPU8080::RRC()
+{
+    F.byte = 0;
+    F.bits.C = A & 1;
+    A >>= 1;
+    A |= F.bits.C;
+}
+
+void CPU8080::AND(u8 value)
+{
+    A &= value;
+    F.byte = 0;
+    F.bits.Z = A == 0;
+    F.bits.AC = 1;
 }
 
 void CPU8080::JMP(bool flag)
