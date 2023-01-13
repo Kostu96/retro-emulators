@@ -11,7 +11,8 @@ struct CharVertex {
 struct StateEntry
 {
     u16 value;
-    char label[14];
+    u8 width;
+    char label[13];
 };
 
 struct WindowSettings
@@ -28,8 +29,8 @@ public:
 
     virtual const WindowSettings& getWindowSettings() const = 0;
 
-    virtual const std::vector<DisassemblyLine>& getDisassembly() const { return std::vector<DisassemblyLine>{}; } // TODO: temp - make abstract
-    virtual const std::vector<StateEntry>& getState() const { return std::vector<StateEntry>{}; } // TODO: temp - make abstract
+    virtual const std::vector<DisassemblyLine>& getDisassembly() const = 0;
+    virtual const std::vector<StateEntry>& getState() const = 0;
     
     virtual u8 getByteAt(u16 /*address*/) const { return 0xCD; };
     virtual u16 getPC() const { return 0; }

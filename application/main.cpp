@@ -199,30 +199,33 @@ int main(int argc, char* argv[])
                 memoryView.DrawWindow("Memory", core, 0x4000);
 
                 static bool Open1 = true;
-                if (ImGui::Begin("Disassembly", &Open1, ImGuiWindowFlags_NoScrollbar))
+                auto& disassembly = core->getDisassembly();
+                if (!disassembly.empty())
                 {
-                    ImGui::BeginChild("##scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav);
-                    auto& disassembly = core->getDisassembly();
-                    
-                    ImGuiListClipper clipper;
-                    clipper.Begin((int)disassembly.size(), ImGui::GetTextLineHeight());
+                    if (ImGui::Begin("Disassembly", &Open1, ImGuiWindowFlags_NoScrollbar))
+                    {
+                        ImGui::BeginChild("##scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav);
 
-                    while (clipper.Step())
-                        for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++)
-                        {
-                            auto& line = disassembly[line_i];
-                            if (line.address == core->getPC())
-                                ImGui::TextColored(ImVec4{ 1.f, 0.1f, 0.1f, 1.f }, line.buffer);
-                            else
-                                ImGui::Text(line.buffer);
-                        }
+                        ImGuiListClipper clipper;
+                        clipper.Begin((int)disassembly.size(), ImGui::GetTextLineHeight());
 
-                    ImGui::SetScrollFromPosY(
-                        ImGui::GetCursorStartPos().y + findLine(core->getPC(), disassembly) * ImGui::GetTextLineHeight()
-                    );
-                    ImGui::EndChild();
+                        while (clipper.Step())
+                            for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++)
+                            {
+                                auto& line = disassembly[line_i];
+                                if (line.address == core->getPC())
+                                    ImGui::TextColored(ImVec4{ 1.f, 0.1f, 0.1f, 1.f }, line.buffer);
+                                else
+                                    ImGui::Text(line.buffer);
+                            }
+
+                        ImGui::SetScrollFromPosY(
+                            ImGui::GetCursorStartPos().y + findLine(core->getPC(), disassembly) * ImGui::GetTextLineHeight()
+                        );
+                        ImGui::EndChild();
+                    }
+                    ImGui::End();
                 }
-                ImGui::End();
 
                 static bool Open2 = true;
                 if (ImGui::Begin("State", &Open1, ImGuiWindowFlags_NoScrollbar))
@@ -232,7 +235,7 @@ int main(int argc, char* argv[])
                     {
                         ImGui::Text(entry.label);
                         ImGui::SameLine();
-                        ImGui::Text("%04X", entry.value);
+                        ImGui::Text("%0*X", entry.width, entry.value);
                     }
 
                     ImGui::Separator();

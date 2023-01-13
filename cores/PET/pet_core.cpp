@@ -46,7 +46,7 @@ static struct {
 #include "roms/basic4_B000.inl"
 #endif
 
-        u8 read(u16 address) const { return BASIC[address]; }
+    u8 read(u16 address) const { return BASIC[address]; }
 } BASIC;
 
 static struct {

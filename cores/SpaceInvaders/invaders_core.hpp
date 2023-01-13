@@ -24,6 +24,8 @@ public:
     
     InvadersCore();
 private:
+    void updateState();
+
     CPU8080 m_cpu;
 
     const WindowSettings& m_windowSettings;

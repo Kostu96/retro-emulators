@@ -8,6 +8,9 @@ class MCS4Core :
 public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
+    const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
+    const std::vector<StateEntry>& getState() const override { return m_state; }
+
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
 
@@ -17,7 +20,11 @@ public:
     
     MCS4Core();
 private:
+    void updateState();
+
     CPU4040 m_cpu;
 
     const WindowSettings m_windowSettings;
+    std::vector<DisassemblyLine> m_disassembly;
+    std::vector<StateEntry> m_state;
 };

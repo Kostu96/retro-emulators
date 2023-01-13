@@ -9,6 +9,9 @@ class PETCore :
 public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
+    const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
+    const std::vector<StateEntry>& getState() const override { return m_state; }
+
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
 
@@ -22,4 +25,6 @@ private:
     IO m_io;
 
     const WindowSettings m_windowSettings;
+    std::vector<DisassemblyLine> m_disassembly;
+    std::vector<StateEntry> m_state;
 };

@@ -73,18 +73,15 @@ void InvadersCore::handleKey(int key, int action)
 void InvadersCore::reset()
 {
     m_cpu.reset();
+
+    updateState();
 }
 
 void InvadersCore::clock()
 {
     m_cpu.clock();
 
-    m_state[0].value = m_cpu.getAF();
-    m_state[1].value = m_cpu.getBC();
-    m_state[2].value = m_cpu.getDE();
-    m_state[3].value = m_cpu.getHL();
-    m_state[4].value = m_cpu.getSP();
-    m_state[5].value = m_cpu.getPC();
+    updateState();
 }
 
 InvadersCore::InvadersCore() :
@@ -97,10 +94,20 @@ InvadersCore::InvadersCore() :
 
     disassemble(ROM.rom, 0x2000, m_disassembly);
 
-    m_state.push_back({ 0, "AF" });
-    m_state.push_back({ 0, "BC" });
-    m_state.push_back({ 0, "DE" });
-    m_state.push_back({ 0, "HL" });
-    m_state.push_back({ 0, "SP" });
-    m_state.push_back({ 0, "PC" });
+    m_state.push_back({ 0, 4, "AF" });
+    m_state.push_back({ 0, 4, "BC" });
+    m_state.push_back({ 0, 4, "DE" });
+    m_state.push_back({ 0, 4, "HL" });
+    m_state.push_back({ 0, 4, "SP" });
+    m_state.push_back({ 0, 4, "PC" });
+}
+
+void InvadersCore::updateState()
+{
+    m_state[0].value = m_cpu.getAF();
+    m_state[1].value = m_cpu.getBC();
+    m_state[2].value = m_cpu.getDE();
+    m_state[3].value = m_cpu.getHL();
+    m_state[4].value = m_cpu.getSP();
+    m_state[5].value = m_cpu.getPC();
 }
