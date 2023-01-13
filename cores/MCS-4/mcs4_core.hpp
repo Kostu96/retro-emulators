@@ -1,9 +1,8 @@
 #pragma once
 #include "../../shared/emulator_core.hpp"
-#include "cpu6502.hpp"
-#include "io.hpp"
+#include "cpu4040.hpp"
 
-class PETCore :
+class MCS4Core :
     public EmulatorCore
 {
 public:
@@ -15,11 +14,10 @@ public:
     void loadROM(const char* filename) override;
     void reset() override;
     void clock() override;
-
-    PETCore();
+    
+    MCS4Core();
 private:
-    CPU6502 m_cpu;
-    IO m_io;
+    CPU4040 m_cpu;
 
     const WindowSettings m_windowSettings;
 };

@@ -1,5 +1,5 @@
 #include "dll_loader.hpp"
-#include "emulator_core.hpp"
+#include "../shared/emulator_core.hpp"
 #include "shader_sources.inl"
 
 #include <imgui.h>
@@ -121,7 +121,7 @@ static size_t findLine(u16 addr, const std::vector<DisassemblyLine>& disassembly
 
 int main(int argc, char* argv[])
 {
-    if (argc == 2)
+    if (argc > 1)
     {
         DllLoader<EmulatorCore> loader{ argv[1] };
         if (!loader.openLib()) {
@@ -131,7 +131,10 @@ int main(int argc, char* argv[])
 
         {
             auto core = loader.getInstance();
-            core->loadROM("roms/chip8/chip8-test-suite.ch8");
+            
+            if (argc > 2)
+                core->loadROM(argv[2]);
+            
             core->reset();
 
             glfwSetErrorCallback(glfwErrorCallback);
@@ -140,9 +143,7 @@ int main(int argc, char* argv[])
                 std::terminate();
             }
 
-            EmulatorCore::WindowSettings settings;
-            core->getWindowSettings(settings);
-
+            auto& settings = core->getWindowSettings();
             glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
             GLFWwindow* window = glfwCreateWindow(settings.width, settings.height, settings.title, nullptr, nullptr);
             if (!window) {

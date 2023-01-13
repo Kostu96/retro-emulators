@@ -40,37 +40,6 @@ extern "C"
     }
 }
 
-InvadersCore::InvadersCore() :
-    m_cpu{ CPU8080::Mode::Intel8080 }
-{
-    m_cpu.map(ROM,    { 0x0000, 0x1FFF });
-    m_cpu.map(RAM,    { 0x2000, 0x23FF });
-    m_cpu.map(Screen, { 0x2400, 0x3FFF });
-
-    disassemble(ROM.rom, 0x2000, m_disassembly);
-
-    m_state.push_back({ 0, "AF" });
-    m_state.push_back({ 0, "BC" });
-    m_state.push_back({ 0, "DE" });
-    m_state.push_back({ 0, "HL" });
-    m_state.push_back({ 0, "SP" });
-    m_state.push_back({ 0, "PC" });
-}
-
-void InvadersCore::getWindowSettings(WindowSettings& settings) const
-{
-    constexpr u16 CHIP8_WIDTH = 256;
-    constexpr u16 CHIP8_HEIGHT = 224;
-    constexpr u16 SCREEN_SIZE = CHIP8_WIDTH * CHIP8_HEIGHT;
-    constexpr u16 ZOOM = 2;
-    constexpr u16 WINDOW_WIDTH = CHIP8_WIDTH * ZOOM;
-    constexpr u16 WINDOW_HEIGHT = CHIP8_HEIGHT * ZOOM;
-
-    settings.width = WINDOW_WIDTH;
-    settings.height = WINDOW_HEIGHT;
-    strcpy_s(settings.title, "Space Invaders");
-}
-
 u8 InvadersCore::getByteAt(u16 address) const
 {
     return m_cpu.load8(address);
@@ -116,4 +85,22 @@ void InvadersCore::clock()
     m_state[3].value = m_cpu.getHL();
     m_state[4].value = m_cpu.getSP();
     m_state[5].value = m_cpu.getPC();
+}
+
+InvadersCore::InvadersCore() :
+    m_cpu{ CPU8080::Mode::Intel8080 },
+    m_windowSettings{ 256, 224, "Space Invaders" }
+{
+    m_cpu.map(ROM, { 0x0000, 0x1FFF });
+    m_cpu.map(RAM, { 0x2000, 0x23FF });
+    m_cpu.map(Screen, { 0x2400, 0x3FFF });
+
+    disassemble(ROM.rom, 0x2000, m_disassembly);
+
+    m_state.push_back({ 0, "AF" });
+    m_state.push_back({ 0, "BC" });
+    m_state.push_back({ 0, "DE" });
+    m_state.push_back({ 0, "HL" });
+    m_state.push_back({ 0, "SP" });
+    m_state.push_back({ 0, "PC" });
 }

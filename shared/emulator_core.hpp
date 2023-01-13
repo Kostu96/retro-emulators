@@ -1,7 +1,6 @@
 #pragma once
-#include "shared/type_aliases.hpp"
+#include "type_aliases.hpp"
 
-#include <span>
 #include <vector>
 
 struct CharVertex {
@@ -15,25 +14,26 @@ struct StateEntry
     char label[14];
 };
 
+struct WindowSettings
+{
+    u16 width;
+    u16 height;
+    char title[252];
+};
+
 class EmulatorCore
 {
 public:
-    struct WindowSettings
-    {
-        u16 width;
-        u16 height;
-        char title[252];
-    };
-
     virtual ~EmulatorCore() = default;
 
-    virtual void getWindowSettings(WindowSettings& settings) const = 0;
-    virtual u8 getByteAt(u16 /*address*/) const { return 0xCD; };
-    virtual u16 getPC() const { return 0; }
-    virtual std::span<const u8> getMemory() const { return std::span<const u8>{}; }
+    virtual const WindowSettings& getWindowSettings() const = 0;
+
     virtual const std::vector<DisassemblyLine>& getDisassembly() const { return std::vector<DisassemblyLine>{}; } // TODO: temp - make abstract
     virtual const std::vector<StateEntry>& getState() const { return std::vector<StateEntry>{}; } // TODO: temp - make abstract
     
+    virtual u8 getByteAt(u16 /*address*/) const { return 0xCD; };
+    virtual u16 getPC() const { return 0; }
+
     virtual void render(CharVertex* verts) = 0;
     virtual void handleKey(int key, int action) = 0;
 

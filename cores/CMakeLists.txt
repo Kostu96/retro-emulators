@@ -1,5 +1,6 @@
 add_subdirectory(CHIP-8)
 add_subdirectory(GB)
+add_subdirectory(MCS-4)
 add_subdirectory(NES)
 add_subdirectory(PET)
 add_subdirectory(SpaceInvaders)

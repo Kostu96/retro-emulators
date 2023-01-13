@@ -1,14 +1,11 @@
 #pragma once
-#include "../../emulator_core.hpp"
+#include "../../shared/emulator_core.hpp"
 
 class CHIP8Core :
     public EmulatorCore
 {
 public:
-    CHIP8Core() = default;
-
-    void getWindowSettings(WindowSettings& settings) const override;
-    std::span<const u8> getMemory() const override;
+    const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
@@ -16,6 +13,8 @@ public:
     void loadROM(const char* filename) override;
     void reset() override;
     void clock() override;
+
+    CHIP8Core();
 private:
     u8 Memory[0x800];
     u8* Stack = Memory + 0x6A0;
@@ -27,4 +26,6 @@ private:
     u8 DT;
     u8 ST;
     bool keys[16];
+
+    const WindowSettings m_windowSettings;
 };

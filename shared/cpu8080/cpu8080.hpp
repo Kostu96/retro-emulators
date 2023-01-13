@@ -6,7 +6,7 @@
 class CPU8080
 {
 public:
-    enum class Mode
+    enum class Mode : u8
     {
         Intel8080,
         Z80,
@@ -111,7 +111,7 @@ private:
     };
 
     // Helpers:
-    Mode m_mode;
+    const Mode m_mode;
     std::vector<ReadMapEntry> m_readMap;
     std::vector<WriteMapEntry> m_writeMap;
 };

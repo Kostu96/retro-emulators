@@ -17,25 +17,6 @@ extern "C"
     }
 }
 
-void CHIP8Core::getWindowSettings(WindowSettings& settings) const
-{
-    constexpr u16 CHIP8_WIDTH = 64;
-    constexpr u16 CHIP8_HEIGHT = 32;
-    constexpr u16 SCREEN_SIZE = CHIP8_WIDTH * CHIP8_HEIGHT;
-    constexpr u16 ZOOM = 16;
-    constexpr u16 WINDOW_WIDTH = CHIP8_WIDTH * ZOOM;
-    constexpr u16 WINDOW_HEIGHT = CHIP8_HEIGHT * ZOOM;
-
-    settings.width = WINDOW_WIDTH;
-    settings.height = WINDOW_HEIGHT;
-    strcpy_s(settings.title, "chip8");
-}
-
-std::span<const u8> CHIP8Core::getMemory() const
-{
-    return std::span<const u8>{Memory};
-}
-
 void CHIP8Core::render(CharVertex* verts)
 {
     for (u16 row = 0; row < 32; row++)
@@ -322,4 +303,15 @@ void CHIP8Core::clock()
     default:
         assert(false && "Unhandled n4!");
     }
+}
+
+constexpr u16 CHIP8_WIDTH = 64;
+constexpr u16 CHIP8_HEIGHT = 32;
+constexpr u16 ZOOM = 8;
+constexpr u16 WINDOW_WIDTH = CHIP8_WIDTH * ZOOM;
+constexpr u16 WINDOW_HEIGHT = CHIP8_HEIGHT * ZOOM;
+
+CHIP8Core::CHIP8Core() :
+    m_windowSettings{ 20, 20, "CHIP-8" }
+{
 }
