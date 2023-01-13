@@ -60,6 +60,22 @@ void CPU4040::clock()
     case 0xAD: LD(m_regs, 0xD); break;
     case 0xAE: LD(m_regs, 0xE); break;
     case 0xAF: LD(m_regs, 0xF); break;
+    case 0xB0: XCH(m_regs, 0x0); break;
+    case 0xB1: XCH(m_regs, 0x1); break;
+    case 0xB2: XCH(m_regs, 0x2); break;
+    case 0xB3: XCH(m_regs, 0x3); break;
+    case 0xB4: XCH(m_regs, 0x4); break;
+    case 0xB5: XCH(m_regs, 0x5); break;
+    case 0xB6: XCH(m_regs, 0x6); break;
+    case 0xB7: XCH(m_regs, 0x7); break;
+    case 0xB8: XCH(m_regs, 0x8); break;
+    case 0xB9: XCH(m_regs, 0x9); break;
+    case 0xBA: XCH(m_regs, 0xA); break;
+    case 0xBB: XCH(m_regs, 0xB); break;
+    case 0xBC: XCH(m_regs, 0xC); break;
+    case 0xBD: XCH(m_regs, 0xD); break;
+    case 0xBE: XCH(m_regs, 0xE); break;
+    case 0xBF: XCH(m_regs, 0xF); break;
     default:
         assert(false && "Unhandled instruction");
     }
@@ -115,4 +131,13 @@ void CPU4040::LD(u8* regs, u8 idx)
 {
     u8 value = regs[idx / 2];
     ACC = idx % 2 ? value & 0xF : value >> 4;
+}
+
+void CPU4040::XCH(u8* regs, u8 idx)
+{
+    u8 temp = ACC;
+    u8 value = regs[idx / 2];
+    ACC = idx % 2 ? value & 0xF : value >> 4;
+    regs[idx / 2] &= idx % 2 ? 0x0F : 0xF0;
+    regs[idx / 2] |= idx % 2 ? temp : temp << 4;
 }

@@ -34,6 +34,7 @@ private:
     void ADD(u8* regs, u8 idx);
     void FIM(u8* reg);
     void LD(u8* regs, u8 idx);
+    void XCH(u8* regs, u8 idx);
 
     const Mode m_mode;
     const u8 REGS_SIZE;
