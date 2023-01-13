@@ -9,7 +9,7 @@ void CPU8080::reset()
     BC = 0;
     DE = 0;
     HL = 0;
-    SP = 0;
+    SP = 0xF000;
     PC = 0;
 }
 
