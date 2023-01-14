@@ -9,6 +9,7 @@ void CPU4040::reset()
     SP = 0;
     ACC = 0;
     CY = 0;
+    RAMAddr = 0;
 }
 
 void CPU4040::clock()
@@ -19,13 +20,23 @@ void CPU4040::clock()
     switch (opcode)
     {
     case 0x20: FIM(m_regs + 0); break;
+    case 0x21: SRC(m_regs + 0); break;
     case 0x22: FIM(m_regs + 1); break;
+    case 0x23: SRC(m_regs + 1); break;
     case 0x24: FIM(m_regs + 2); break;
+    case 0x25: SRC(m_regs + 2); break;
     case 0x26: FIM(m_regs + 3); break;
+    case 0x27: SRC(m_regs + 3); break;
     case 0x28: FIM(m_regs + 4); break;
+    case 0x29: SRC(m_regs + 4); break;
     case 0x2A: FIM(m_regs + 5); break;
+    case 0x2B: SRC(m_regs + 5); break;
     case 0x2C: FIM(m_regs + 6); break;
+    case 0x2D: SRC(m_regs + 6); break;
     case 0x2E: FIM(m_regs + 7); break;
+    case 0x2F: SRC(m_regs + 7); break;
+
+    case 0x40: JUN(opcode & 0xF); break;
 
     case 0x80: ADD(m_regs, 0x0); break;
     case 0x81: ADD(m_regs, 0x1); break;
@@ -76,6 +87,8 @@ void CPU4040::clock()
     case 0xBD: XCH(m_regs, 0xD); break;
     case 0xBE: XCH(m_regs, 0xE); break;
     case 0xBF: XCH(m_regs, 0xF); break;
+
+    case 0xEA: /* to be implemented */ break;
     default:
         assert(false && "Unhandled instruction");
     }
@@ -113,7 +126,7 @@ u8 CPU4040::load8(u16 address) const
     return data;
 }
 
-void CPU4040::ADD(u8* regs, u8 idx)
+void CPU4040::ADD(const u8* regs, u8 idx)
 {
     u8 value = regs[idx / 2];
     ACC += (idx % 2 ? value & 0xF : value >> 4) + CY;
@@ -127,10 +140,20 @@ void CPU4040::FIM(u8* reg)
     incPC();
 }
 
-void CPU4040::LD(u8* regs, u8 idx)
+void CPU4040::JUN(u16 highNibble)
+{
+    m_stack[SP] = (highNibble << 8) | load8(getPC());
+}
+
+void CPU4040::LD(const u8* regs, u8 idx)
 {
     u8 value = regs[idx / 2];
     ACC = idx % 2 ? value & 0xF : value >> 4;
+}
+
+void CPU4040::SRC(const u8* reg)
+{
+    RAMAddr = *reg;
 }
 
 void CPU4040::XCH(u8* regs, u8 idx)
@@ -138,6 +161,6 @@ void CPU4040::XCH(u8* regs, u8 idx)
     u8 temp = ACC;
     u8 value = regs[idx / 2];
     ACC = idx % 2 ? value & 0xF : value >> 4;
-    regs[idx / 2] &= idx % 2 ? 0x0F : 0xF0;
+    regs[idx / 2] &= idx % 2 ? 0xF0 : 0x0F;
     regs[idx / 2] |= idx % 2 ? temp : temp << 4;
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "type_aliases.hpp"
+#include "common.hpp"
 
 #include <vector>
 
@@ -13,6 +13,8 @@ struct StateEntry
     u16 value;
     u8 width;
     char label[13];
+    bool sameLine = false;
+    bool separator = false;
 };
 
 struct WindowSettings
@@ -33,7 +35,7 @@ public:
     virtual const std::vector<StateEntry>& getState() const = 0;
     
     virtual u8 getByteAt(u16 /*address*/) const { return 0xCD; };
-    virtual u16 getPC() const { return 0; }
+    virtual u16 getPC() const = 0;
 
     virtual void render(CharVertex* verts) = 0;
     virtual void handleKey(int key, int action) = 0;

@@ -236,6 +236,8 @@ int main(int argc, char* argv[])
                         ImGui::Text(entry.label);
                         ImGui::SameLine();
                         ImGui::Text("%0*X", entry.width, entry.value);
+                        if (entry.sameLine) ImGui::SameLine();
+                        if (entry.separator) ImGui::Separator();
                     }
 
                     ImGui::Separator();

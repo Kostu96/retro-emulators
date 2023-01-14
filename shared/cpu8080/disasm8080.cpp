@@ -1,9 +1,6 @@
 #include "disasm8080.hpp"
 
 #include <cassert>
-#include <cstdarg>
-#include <iomanip>
-#include <sstream>
 
 static void printBytes(std::stringstream& ss, const u8* code, size_t& addr, u8 count, ...)
 {
@@ -301,9 +298,3 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
         output.push_back(line);
     }
 }
-
-#undef PRINT1
-#undef PRINT2
-#undef INST1
-#undef INST2
-#undef INST3

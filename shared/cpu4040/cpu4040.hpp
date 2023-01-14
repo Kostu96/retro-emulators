@@ -18,9 +18,11 @@ public:
 
     const u8* getRegs() const { return m_regs; }
     const u16* getStack() const { return m_stack; }
+    u16 getPC() const { return m_stack[SP] % 0xFFF; }
     u8 getSP() const { return SP; }
     u8 getACC() const { return ACC; }
     u8 getCY() const { return CY; }
+    u8 getRAMAddr() const { return RAMAddr; }
 
     explicit CPU4040(Mode mode);
     ~CPU4040();
@@ -28,12 +30,13 @@ public:
     CPU4040& operator=(const CPU4040&) = delete;
 private:
     void incPC() { m_stack[SP]++; }
-    u16 getPC() const { return m_stack[SP] % 0xFFF; }
     u8 load8(u16 address) const;
 
-    void ADD(u8* regs, u8 idx);
+    void ADD(const u8* regs, u8 idx);
     void FIM(u8* reg);
-    void LD(u8* regs, u8 idx);
+    void JUN(u16 highNibble);
+    void LD(const u8* regs, u8 idx);
+    void SRC(const u8* reg);
     void XCH(u8* regs, u8 idx);
 
     const Mode m_mode;
@@ -45,6 +48,7 @@ private:
     u8 SP;
     u8 ACC;
     u8 CY;
+    u8 RAMAddr;
 
     std::vector<ReadMapEntry> m_readMap;
 };

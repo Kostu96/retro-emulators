@@ -11,6 +11,8 @@ public:
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
     const std::vector<StateEntry>& getState() const override { return m_state; }
 
+    u16 getPC() const override { return m_cpu.getPC(); }
+
     void render(CharVertex* verts) override;
     void handleKey(int key, int action) override;
 
