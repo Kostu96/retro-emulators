@@ -20,7 +20,7 @@ void CPU4040::clock()
 
     switch (opcode >> 4)
     {
-    case 0x1: JCM(opcode & 0xF); break;
+    case 0x1: JCN(opcode & 0xF); break;
     case 0x2:
         if (opcode & 1)
             SRC(m_regs + (opcode & 0xE) / 2);
@@ -31,7 +31,7 @@ void CPU4040::clock()
     case 0x4: JUN(opcode & 0xF); break;
     case 0x5: JMS(opcode & 0xF); break;
     case 0x6: INC(m_regs, opcode & 0xF); break;
-
+    case 0x7: ISZ(m_regs, opcode & 0xF); break;
     case 0x8: ADD(m_regs, opcode & 0xF); break;
 
     case 0xA: LD(m_regs, opcode & 0xF); break;
@@ -161,15 +161,33 @@ void CPU4040::IAC()
 
 void CPU4040::INC(u8* regs, u8 idx)
 {
-    regs[idx / 2] += idx % 2 ? 0x1 : 0x10;
+    regs += idx / 2;
+    u8 temp = (idx % 2 ? *regs & 0xF : *regs >> 4) + 1;
+    temp &= 0xF;
+    *regs &= idx % 2 ? 0xF0 : 0x0F;
+    *regs |= idx % 2 ? temp : temp << 4;
 }
 
 void CPU4040::ISZ(u8* regs, u8 idx)
 {
+    u8 address = loadROM8(getPC());
+    incPC();
 
+    regs += idx / 2;
+    u8 temp = (idx % 2 ? *regs & 0xF : *regs >> 4) + 1;
+    temp &= 0xF;
+    *regs &= idx % 2 ? 0xF0 : 0x0F;
+    *regs |= idx % 2 ? temp : temp << 4;
+
+    if (temp)
+    {
+        if ((getPC() & 0xFFu) == 0xFE) m_stack[getSP()] += 2;
+        m_stack[getSP()] &= 0x0300u;
+        m_stack[getSP()] |= address;
+    }
 }
 
-void CPU4040::JCM(u8 condition)
+void CPU4040::JCN(u8 condition)
 {
     u8 address = loadROM8(getPC());
     incPC();

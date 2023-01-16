@@ -32,7 +32,8 @@ static struct {
     }
 
     void write(u16 address, u8 data) {
-
+        ram[address / 2] &= address % 2 ? 0xF0 : 0x0F;
+        ram[address / 2] |= address % 2 ? data : data << 4;
     }
 } RAM;
 
@@ -97,7 +98,7 @@ MCS4Core::MCS4Core() :
     m_windowSettings{ 256, 128, "MCS-4" }
 {
     m_cpu.map(ROM, { 0x0000, 0x00FF });
-    m_cpu.map(RAM, { 0, 31 });
+    m_cpu.map(RAM, { 0, 32 * 2 - 1 });
     m_cpu.mapReadROMIO([this](u8 chip) { return readROMIO(chip); });
     m_cpu.mapWriteRAMOut([this](u8 chip, u8 data) { return writeRAMOut(chip, data); });
 

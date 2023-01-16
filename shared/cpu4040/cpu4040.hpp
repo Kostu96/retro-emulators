@@ -49,7 +49,7 @@ private:
     void IAC();
     void INC(u8* regs, u8 idx);
     void ISZ(u8* regs, u8 idx);
-    void JCM(u8 condition);
+    void JCN(u8 condition);
     void JMS(u16 highNibble);
     void JUN(u16 highNibble);
     void LD(const u8* regs, u8 idx);
