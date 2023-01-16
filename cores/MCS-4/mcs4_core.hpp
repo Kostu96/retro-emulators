@@ -24,6 +24,8 @@ public:
 private:
     void updateState();
 
+    u8 readROMIO(u8 chip);
+
     CPU4040 m_cpu;
 
     const WindowSettings m_windowSettings;

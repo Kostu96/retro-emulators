@@ -77,6 +77,7 @@ MCS4Core::MCS4Core() :
     m_windowSettings{ 256, 128, "MCS-4" }
 {
     m_cpu.map(ROM, { 0x0000, 0x00FF });
+    m_cpu.mapReadROMIO([this](u8 chip) { return readROMIO(chip); });
 
     m_state.push_back({ 0, 3, "Stack0", true });
     m_state.push_back({ 0, 1, "SP" });
@@ -114,4 +115,9 @@ void MCS4Core::updateState()
     m_state[13].value = m_cpu.getRegs()[3];
     m_state[14].value = m_cpu.getRegs()[7];
     m_state[15].value = m_cpu.getRAMAddr();
+}
+
+u8 MCS4Core::readROMIO(u8 chip)
+{
+    return 0xA;
 }
