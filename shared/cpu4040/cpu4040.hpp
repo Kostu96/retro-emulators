@@ -16,6 +16,7 @@ public:
     template <ConstMapable ConstDevice>
     void map(const ConstDevice& device, AddressRange range);
     void mapReadROMIO(ReadROMIOFunc func) { m_readROMIO = func; }
+    void mapWriteRAMOut(WriteRAMOutFunc func) { m_writeRAMOut = func; }
 
     void reset();
     void clock();
@@ -64,6 +65,7 @@ private:
     u8 SP;
     u8 ACC;
     u8 CY;
+    u8 m_test;
     u8 RAMAddr;
 
     std::vector<ReadMapEntry> m_readMap;

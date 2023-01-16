@@ -78,6 +78,7 @@ MCS4Core::MCS4Core() :
 {
     m_cpu.map(ROM, { 0x0000, 0x00FF });
     m_cpu.mapReadROMIO([this](u8 chip) { return readROMIO(chip); });
+    m_cpu.mapWriteRAMOut([this](u8 chip, u8 data) { return writeRAMOut(chip, data); });
 
     m_state.push_back({ 0, 3, "Stack0", true });
     m_state.push_back({ 0, 1, "SP" });
@@ -120,4 +121,9 @@ void MCS4Core::updateState()
 u8 MCS4Core::readROMIO(u8 chip)
 {
     return 0xA;
+}
+
+void MCS4Core::writeRAMOut(u8 /*chip*/, u8 /*data*/)
+{
+
 }

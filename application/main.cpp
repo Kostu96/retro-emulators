@@ -255,7 +255,9 @@ int main(int argc, char* argv[])
                     ImGui::BeginDisabled(!paused);
                     if (ImGui::Button("Step")) core->clock();
                     ImGui::EndDisabled();
+                    ImGui::SameLine();
                     
+                    if (ImGui::Button("Reset")) core->reset();
                 }
                 ImGui::End();
 

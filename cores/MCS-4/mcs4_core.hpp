@@ -25,6 +25,7 @@ private:
     void updateState();
 
     u8 readROMIO(u8 chip);
+    void writeRAMOut(u8 chip, u8 data);
 
     CPU4040 m_cpu;
 

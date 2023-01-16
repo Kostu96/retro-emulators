@@ -9,6 +9,7 @@ void CPU4040::reset()
     SP = 0;
     ACC = 0;
     CY = 0;
+    m_test = 0;
     RAMAddr = 0;
 }
 
@@ -143,15 +144,14 @@ void CPU4040::JCM(u8 condition)
     u8 address = load8(getPC());
     incPC();
 
-    bool shouldJump = false;
-    switch (condition) {
-    case 0b0100: shouldJump = ACC == 0u; break;
-    case 0b1100: shouldJump = ACC != 0u; break;
-    case 0b0010: shouldJump = CY; break;
-    case 0b1010: shouldJump = !CY; break;
-    //case 0b0001: shouldJump = test == 0u; break;
-    //case 0b1001: shouldJump = test != 0u; break;
-    }
+    u8 c1 = (condition >> 3) & 1;
+    u8 c2 = (condition >> 2) & 1;
+    u8 c3 = (condition >> 1) & 1;
+    u8 c4 = (condition >> 0) & 1;
+
+    u8 isACCZero = ACC == 0;
+    u8 allTests = isACCZero & c2 | CY & c3 | !m_test & c4;
+    bool shouldJump = !c1 & allTests | c1 & !allTests;
 
     if (shouldJump) {
         if ((getPC() & 0xFFu) == 0xFE) m_stack[getSP()] += 2;
