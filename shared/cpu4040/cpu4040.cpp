@@ -43,6 +43,10 @@ void CPU4040::clock()
         {
         case 0x0: WRM(); break;
         case 0x1: WMP(); break;
+        case 0x4: WRX(0); break;
+        case 0x5: WRX(1); break;
+        case 0x6: WRX(2); break;
+        case 0x7: WRX(3); break;
         case 0xA: RDR(); break;
         default:
             assert(false && "Unhandled instruction");
@@ -264,6 +268,11 @@ void CPU4040::WMP()
 void CPU4040::WRM()
 {
     storeRAM4(SRCReg, ACC);
+}
+
+void CPU4040::WRX(u8 charIdx)
+{
+    m_writeRAMStatus((RAMChip << 4) | (RAMRegIdx << 2) | charIdx, ACC);
 }
 
 void CPU4040::XCH(u8* regs, u8 idx)

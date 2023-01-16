@@ -6,6 +6,8 @@ class CPU4040
 public:
     using ReadROMIOFunc = std::function<u8(u8)>;
     using WriteRAMOutFunc = std::function<void(u8, u8)>;
+    using ReadRAMStatusFunc = std::function<u8(u8)>;
+    using WriteRAMStatusFunc = std::function<void(u8, u8)>;
 
     enum class Mode : u8
     {
@@ -19,6 +21,8 @@ public:
     void map(const ConstDevice& device, AddressRange range);
     void mapReadROMIO(ReadROMIOFunc func) { m_readROMIO = func; }
     void mapWriteRAMOut(WriteRAMOutFunc func) { m_writeRAMOut = func; }
+    void mapReadRAMStatus(ReadRAMStatusFunc func) { m_readRAMStatus = func; }
+    void mapWriteRAMStatus(WriteRAMStatusFunc func) { m_writeRAMStatus = func; }
 
     void reset();
     void clock();
@@ -60,6 +64,7 @@ private:
     void SRC(const u8* reg);
     void WMP();
     void WRM();
+    void WRX(u8 charIdx);
     void XCH(u8* regs, u8 idx);
 
     const Mode m_mode;
@@ -89,6 +94,8 @@ private:
     std::vector<WriteMapEntry> m_writeMap;
     ReadROMIOFunc m_readROMIO;
     WriteRAMOutFunc m_writeRAMOut;
+    ReadRAMStatusFunc m_readRAMStatus;
+    WriteRAMStatusFunc m_writeRAMStatus;
 };
 
 template<Mapable Device>
