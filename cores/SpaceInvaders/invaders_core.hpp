@@ -9,10 +9,11 @@ class InvadersCore :
 public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
+    const size_t* getMemorySizes() const override { return m_memorySizes; }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
     const std::vector<StateEntry>& getState() const override { return m_state; }
     
-    u8 getByteAt(u16 address) const override;
+    u8 getByteAt(u16 address, size_t memoryIndex) const override;
     u16 getPC() const override { return m_cpu.getPC(); }
 
     void render(CharVertex* verts) override;
@@ -25,6 +26,8 @@ public:
     InvadersCore();
 private:
     void updateState();
+
+    const size_t m_memorySizes[1] = { 0x4000 };
 
     CPU8080 m_cpu;
 

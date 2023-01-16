@@ -40,7 +40,7 @@ extern "C"
     }
 }
 
-u8 InvadersCore::getByteAt(u16 address) const
+u8 InvadersCore::getByteAt(u16 address, size_t memoryIndex) const
 {
     return m_cpu.load8(address);
 }

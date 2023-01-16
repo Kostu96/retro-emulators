@@ -5,7 +5,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include "imgui_memory_view.hpp"
+#include "gui.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -111,14 +111,6 @@ static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int a
     core->handleKey(key, action);
 }
 
-static size_t findLine(u16 addr, const std::vector<DisassemblyLine>& disassembly)
-{
-    float p = (float)addr / (float)0x2000;
-    size_t line = (size_t)(disassembly.size() * p);
-    while (disassembly[line].address > addr) line--;
-    return line;
-}
-
 int main(int argc, char* argv[])
 {
     if (argc > 1)
@@ -163,6 +155,7 @@ int main(int argc, char* argv[])
             ImGui_ImplOpenGL3_Init("#version 450");
 
             MemoryView memoryView;
+            DisassemblyView disassemblyView;
 
             glw::init(glfwGetProcAddress);
             init(64, 32);
@@ -196,39 +189,12 @@ int main(int argc, char* argv[])
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
 
-                memoryView.DrawWindow("Memory", core, 0x4000);
-
-                static bool Open1 = true;
-                auto& disassembly = core->getDisassembly();
-                if (!disassembly.empty())
-                {
-                    if (ImGui::Begin("Disassembly", &Open1, ImGuiWindowFlags_NoScrollbar))
-                    {
-                        ImGui::BeginChild("##scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav);
-
-                        ImGuiListClipper clipper;
-                        clipper.Begin((int)disassembly.size(), ImGui::GetTextLineHeight());
-
-                        while (clipper.Step())
-                            for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++)
-                            {
-                                auto& line = disassembly[line_i];
-                                if (line.address == core->getPC())
-                                    ImGui::TextColored(ImVec4{ 1.f, 0.1f, 0.1f, 1.f }, line.buffer);
-                                else
-                                    ImGui::Text(line.buffer);
-                            }
-
-                        ImGui::SetScrollFromPosY(
-                            ImGui::GetCursorStartPos().y + findLine(core->getPC(), disassembly) * ImGui::GetTextLineHeight()
-                        );
-                        ImGui::EndChild();
-                    }
-                    ImGui::End();
-                }
+                for (size_t i = 0; i < core->getNumMemories(); i++)
+                    memoryView.drawWindow((std::string{ "Memory " } + std::to_string(i)).c_str(), core, i);
+                disassemblyView.drawWindow(core);
 
                 static bool Open2 = true;
-                if (ImGui::Begin("State", &Open1, ImGuiWindowFlags_NoScrollbar))
+                if (ImGui::Begin("State", &Open2, ImGuiWindowFlags_NoScrollbar))
                 {
                     auto& state = core->getState();
                     for (auto& entry : state)

@@ -31,10 +31,12 @@ public:
 
     virtual const WindowSettings& getWindowSettings() const = 0;
 
+    virtual size_t getNumMemories() const { return 1; }
+    virtual const size_t* getMemorySizes() const = 0;
     virtual const std::vector<DisassemblyLine>& getDisassembly() const = 0;
     virtual const std::vector<StateEntry>& getState() const = 0;
     
-    virtual u8 getByteAt(u16 /*address*/) const { return 0xCD; };
+    virtual u8 getByteAt(u16 address, size_t memoryIndex) const = 0;
     virtual u16 getPC() const = 0;
 
     virtual void render(CharVertex* verts) = 0;

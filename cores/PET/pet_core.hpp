@@ -9,9 +9,11 @@ class PETCore :
 public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
+    const size_t* getMemorySizes() const override { return m_memorySizes; }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
     const std::vector<StateEntry>& getState() const override { return m_state; }
 
+    u8 getByteAt(u16 address, size_t memoryIndex) const override { return 0xCD; } // TODO: temp
     u16 getPC() const override { return m_cpu.getPC(); }
 
     void render(CharVertex* verts) override;
@@ -23,6 +25,8 @@ public:
 
     PETCore();
 private:
+    const size_t m_memorySizes[1] = { 0 };
+
     CPU6502 m_cpu;
     IO m_io;
 

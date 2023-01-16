@@ -7,9 +7,11 @@ class CHIP8Core :
 public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
+    const size_t* getMemorySizes() const override { return 0; }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
     const std::vector<StateEntry>& getState() const override { return m_state; }
 
+    u8 getByteAt(u16 address, size_t memoryIndex) const { return 0xCD; } // TODO: temp
     u16 getPC() const override { return PC; }
 
     void render(CharVertex* verts) override;
@@ -21,7 +23,11 @@ public:
 
     CHIP8Core();
 private:
-    u8 Memory[0x800];
+    static const size_t m_numMemories = 1;
+    static const size_t m_memorySize = 0x800;
+    const size_t m_memorySizes[m_numMemories] = { m_memorySize };
+
+    u8 Memory[m_memorySize];
     u8* Stack = Memory + 0x6A0;
     u8* GPR = Memory + 0x6F0;
     u8* Screen = Memory + 0x700;

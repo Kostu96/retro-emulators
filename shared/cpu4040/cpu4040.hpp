@@ -13,6 +13,8 @@ public:
         Intel4040
     };
 
+    template <Mapable Device>
+    void map(Device& device, AddressRange range);
     template <ConstMapable ConstDevice>
     void map(const ConstDevice& device, AddressRange range);
     void mapReadROMIO(ReadROMIOFunc func) { m_readROMIO = func; }
@@ -21,13 +23,14 @@ public:
     void reset();
     void clock();
 
+    u8 loadROM8(u16 address) const;
     const u8* getRegs() const { return m_regs; }
     const u16* getStack() const { return m_stack; }
     u16 getPC() const { return m_stack[getSP()] % 0xFFF; }
     u8 getSP() const { return SP % STACK_SIZE; }
     u8 getACC() const { return ACC; }
     u8 getCY() const { return CY; }
-    u8 getRAMAddr() const { return RAMAddr; }
+    u8 getSRCReg() const { return SRCReg; }
 
     explicit CPU4040(Mode mode);
     ~CPU4040();
@@ -35,7 +38,7 @@ public:
     CPU4040& operator=(const CPU4040&) = delete;
 private:
     void incPC() { m_stack[getSP()]++; }
-    u8 load8(u16 address) const;
+    void storeRAM4(u16 address, u8 data);
 
     void ADD(const u8* regs, u8 idx);
     void BBL(u8 data);
@@ -43,7 +46,9 @@ private:
     void CLC();
     void DAC();
     void FIM(u8* reg);
+    void IAC();
     void INC(u8* regs, u8 idx);
+    void ISZ(u8* regs, u8 idx);
     void JCM(u8 condition);
     void JMS(u16 highNibble);
     void JUN(u16 highNibble);
@@ -54,6 +59,7 @@ private:
     void RDR();
     void SRC(const u8* reg);
     void WMP();
+    void WRM();
     void XCH(u8* regs, u8 idx);
 
     const Mode m_mode;
@@ -63,15 +69,44 @@ private:
     u8* m_regs;
     u16* m_stack;
     u8 SP;
-    u8 ACC;
-    u8 CY;
-    u8 m_test;
-    u8 RAMAddr;
+    u8 ACC : 4;
+    u8 CY : 1;
+    u8 m_test : 1;
+    union {
+        struct {
+            u8 RAMCharIdx : 4;
+            u8 RAMRegIdx  : 2;
+            u8 RAMChip    : 2;
+        };
+        struct {
+            u8 unused  : 4;
+            u8 ROMChip : 4;
+        };
+        u8 SRCReg;
+    };
 
     std::vector<ReadMapEntry> m_readMap;
+    std::vector<WriteMapEntry> m_writeMap;
     ReadROMIOFunc m_readROMIO;
     WriteRAMOutFunc m_writeRAMOut;
 };
+
+template<Mapable Device>
+inline void CPU4040::map(Device& device, AddressRange range)
+{
+    m_readMap.emplace_back(
+        ReadMapEntry{
+            range,
+            [&device](u16 address) { return device.read(address); }
+        }
+    );
+    m_writeMap.emplace_back(
+        WriteMapEntry{
+            range,
+            [&device](u16 address, u8 data) { return device.write(address, data); }
+        }
+    );
+}
 
 template<ConstMapable ConstDevice>
 inline void CPU4040::map(const ConstDevice& device, AddressRange range)

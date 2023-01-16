@@ -3,7 +3,7 @@ set(APP_TARGET_NAME application)
 set(APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/dll_loader.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/imgui_memory_view.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/shader_sources.inl
 )

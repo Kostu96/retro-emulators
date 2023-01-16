@@ -19,10 +19,30 @@ extern "C"
 }
 
 static struct {
-    u8 rom[256];
+    u8 rom[0x100];
 
     u8 read(u16 address) const { return rom[address]; }
 } ROM;
+
+static struct {
+    u8 ram[32];
+
+    u8 read(u16 address) const {
+        return ram[address];
+    }
+
+    void write(u16 address, u8 data) {
+
+    }
+} RAM;
+
+u8 MCS4Core::getByteAt(u16 address, size_t memoryIndex) const
+{
+    if (memoryIndex == 0)
+        return m_cpu.loadROM8(address);
+    else
+        return RAM.ram[address];
+}
 
 void MCS4Core::render(CharVertex* /*verts*/)
 {
@@ -77,6 +97,7 @@ MCS4Core::MCS4Core() :
     m_windowSettings{ 256, 128, "MCS-4" }
 {
     m_cpu.map(ROM, { 0x0000, 0x00FF });
+    m_cpu.map(RAM, { 0, 31 });
     m_cpu.mapReadROMIO([this](u8 chip) { return readROMIO(chip); });
     m_cpu.mapWriteRAMOut([this](u8 chip, u8 data) { return writeRAMOut(chip, data); });
 
@@ -95,7 +116,7 @@ MCS4Core::MCS4Core() :
     m_state.push_back({ 0, 2, "RCRD" });
     m_state.push_back({ 0, 2, "R6R7", true });
     m_state.push_back({ 0, 2, "RERF", false, true });
-    m_state.push_back({ 0, 2, "RAMAddr" });
+    m_state.push_back({ 0, 2, "SRCReg" });
 }
 
 void MCS4Core::updateState()
@@ -115,7 +136,7 @@ void MCS4Core::updateState()
     m_state[12].value = m_cpu.getRegs()[6];
     m_state[13].value = m_cpu.getRegs()[3];
     m_state[14].value = m_cpu.getRegs()[7];
-    m_state[15].value = m_cpu.getRAMAddr();
+    m_state[15].value = m_cpu.getSRCReg();
 }
 
 u8 MCS4Core::readROMIO(u8 chip)
