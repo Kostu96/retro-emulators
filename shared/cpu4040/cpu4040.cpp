@@ -11,6 +11,7 @@ void CPU4040::reset()
     CY = 0;
     m_test = 0;
     SRCReg = 0;
+    CMRAM = 0;
 }
 
 void CPU4040::clock()

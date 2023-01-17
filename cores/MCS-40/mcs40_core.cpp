@@ -1,4 +1,4 @@
-#include "mcs4_core.hpp"
+#include "mcs40_core.hpp"
 #include "disasm4040.hpp"
 
 #include <cassert>
@@ -7,12 +7,12 @@
 
 extern "C"
 {
-    __declspec(dllexport) MCS4Core* allocator()
+    __declspec(dllexport) MCS40Core* allocator()
     {
-        return new MCS4Core{};
+        return new MCS40Core{};
     }
 
-    __declspec(dllexport) void deleter(MCS4Core* ptr)
+    __declspec(dllexport) void deleter(MCS40Core* ptr)
     {
         delete ptr;
     }
@@ -48,7 +48,7 @@ static struct {
     }
 } RAM;
 
-u8 MCS4Core::getByteAt(u16 address, size_t memoryIndex) const
+u8 MCS40Core::getByteAt(u16 address, size_t memoryIndex) const
 {
     switch (memoryIndex)
     {
@@ -59,12 +59,12 @@ u8 MCS4Core::getByteAt(u16 address, size_t memoryIndex) const
     }
 }
 
-void MCS4Core::render(CharVertex* /*verts*/)
+void MCS40Core::render(CharVertex* /*verts*/)
 {
     
 }
 
-void MCS4Core::handleKey(int /*key*/, int /*action*/)
+void MCS40Core::handleKey(int /*key*/, int /*action*/)
 {
     constexpr int KEY1 = 49;
     constexpr int KEY2 = 50;
@@ -84,7 +84,7 @@ void MCS4Core::handleKey(int /*key*/, int /*action*/)
     constexpr int KEYV = 86;
 }
 
-void MCS4Core::loadROM(const char* filename)
+void MCS40Core::loadROM(const char* filename)
 {
     std::ifstream fin{ filename, std::ios::binary };
     fin.read((char*)(ROM.rom), sizeof(ROM.rom));
@@ -93,23 +93,23 @@ void MCS4Core::loadROM(const char* filename)
     disassemble(ROM.rom, sizeof(ROM.rom), m_disassembly);
 }
 
-void MCS4Core::reset()
+void MCS40Core::reset()
 {
     m_cpu.reset();
 
     updateState();
 }
 
-void MCS4Core::clock()
+void MCS40Core::clock()
 {
     m_cpu.clock();
 
     updateState();
 }
 
-MCS4Core::MCS4Core() :
-    m_cpu{ CPU4040::Mode::Intel4004 },
-    m_windowSettings{ 256, 128, "MCS-4" }
+MCS40Core::MCS40Core() :
+    m_cpu{ CPU4040::Mode::Intel4040 },
+    m_windowSettings{ 256, 128, "MCS-40" }
 {
     m_cpu.map(ROM, { 0x0000, 0x00FF });
     m_cpu.map(RAM, { 0, 32 * 2 - 1 });
@@ -123,53 +123,69 @@ MCS4Core::MCS4Core() :
     m_state.push_back({ 0, 1, "SP" });
     m_state.push_back({ 0, 3, "Stack1" });
     m_state.push_back({ 0, 3, "Stack2" });
-    m_state.push_back({ 0, 3, "Stack3", false, true });
+    m_state.push_back({ 0, 3, "Stack3", });
+    m_state.push_back({ 0, 3, "Stack4", });
+    m_state.push_back({ 0, 3, "Stack5", });
+    m_state.push_back({ 0, 3, "Stack6", });
+    m_state.push_back({ 0, 3, "Stack7", false, true });
     m_state.push_back({ 0, 1, "ACC", true });
     m_state.push_back({ 0, 1, "CY", false, true });
     m_state.push_back({ 0, 2, "R0R1", true });
+    m_state.push_back({ 0, 2, "R0R1*", true });
     m_state.push_back({ 0, 2, "R8R9" });
     m_state.push_back({ 0, 2, "R2R3", true });
+    m_state.push_back({ 0, 2, "R2R3*", true });
     m_state.push_back({ 0, 2, "RARB" });
     m_state.push_back({ 0, 2, "R4R5", true });
+    m_state.push_back({ 0, 2, "R4R5*", true });
     m_state.push_back({ 0, 2, "RCRD" });
     m_state.push_back({ 0, 2, "R6R7", true });
+    m_state.push_back({ 0, 2, "R6R7*", true });
     m_state.push_back({ 0, 2, "RERF", false, true });
     m_state.push_back({ 0, 2, "SRCReg" });
     m_state.push_back({ 0, 1, "CMRAM" });
 }
 
-void MCS4Core::updateState()
+void MCS40Core::updateState()
 {
     m_state[0].value = m_cpu.getStack()[0];
     m_state[1].value = m_cpu.getSP();
     m_state[2].value = m_cpu.getStack()[1];
     m_state[3].value = m_cpu.getStack()[2];
     m_state[4].value = m_cpu.getStack()[3];
-    m_state[5].value = m_cpu.getACC();
-    m_state[6].value = m_cpu.getCY();
-    m_state[7].value = m_cpu.getRegs()[0];
-    m_state[8].value = m_cpu.getRegs()[4];
-    m_state[9].value = m_cpu.getRegs()[1];
-    m_state[10].value = m_cpu.getRegs()[5];
-    m_state[11].value = m_cpu.getRegs()[2];
-    m_state[12].value = m_cpu.getRegs()[6];
-    m_state[13].value = m_cpu.getRegs()[3];
-    m_state[14].value = m_cpu.getRegs()[7];
-    m_state[15].value = m_cpu.getSRCReg();
-    m_state[16].value = m_cpu.getCMRAM();
+    m_state[5].value = m_cpu.getStack()[4];
+    m_state[6].value = m_cpu.getStack()[5];
+    m_state[7].value = m_cpu.getStack()[6];
+    m_state[8].value = m_cpu.getStack()[7];
+    m_state[9].value = m_cpu.getACC();
+    m_state[10].value = m_cpu.getCY();
+    m_state[11].value = m_cpu.getRegs()[0];
+    m_state[12].value = m_cpu.getRegs()[0 + 8];
+    m_state[13].value = m_cpu.getRegs()[4];
+    m_state[14].value = m_cpu.getRegs()[1];
+    m_state[15].value = m_cpu.getRegs()[1 + 8];
+    m_state[16].value = m_cpu.getRegs()[5];
+    m_state[17].value = m_cpu.getRegs()[2];
+    m_state[18].value = m_cpu.getRegs()[2 + 8];
+    m_state[19].value = m_cpu.getRegs()[6];
+    m_state[20].value = m_cpu.getRegs()[3];
+    m_state[21].value = m_cpu.getRegs()[3 + 8];
+    m_state[22].value = m_cpu.getRegs()[7];
+    m_state[23].value = m_cpu.getSRCReg();
+    m_state[24].value = m_cpu.getCMRAM();
 }
 
-u8 MCS4Core::readROMIO(u8 chip)
+u8 MCS40Core::readROMIO(u8 chip)
 {
     return 0xA;
 }
 
-void MCS4Core::writeROMIO(u8 /*chip*/, u8 /*data*/)
+void MCS40Core::writeROMIO(u8 /*chip*/, u8 /*data*/)
 {
 
 }
 
-void MCS4Core::writeRAMOut(u8 /*chip*/, u8 /*data*/)
+void MCS40Core::writeRAMOut(u8 /*chip*/, u8 /*data*/)
 {
 
 }

@@ -36,6 +36,7 @@ public:
     u8 getACC() const { return ACC; }
     u8 getCY() const { return CY; }
     u8 getSRCReg() const { return SRCReg; }
+    u8 getCMRAM() const { return CMRAM; }
 
     explicit CPU4040(Mode mode);
     ~CPU4040();
