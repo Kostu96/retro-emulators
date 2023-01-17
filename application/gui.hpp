@@ -198,9 +198,9 @@ struct DisassemblyView
         open{ true }
     {}
 
-    size_t findLine(u16 addr, const std::vector<DisassemblyLine>& disassembly)
+    size_t findLine(u16 addr, size_t max_addr, const std::vector<DisassemblyLine>& disassembly)
     {
-        float p = (float)addr / (float)0x2000;
+        float p = (float)addr / (float)max_addr;
         size_t line = (size_t)(disassembly.size() * p);
         while (disassembly[line].address > addr) line--;
         return line;
@@ -229,7 +229,7 @@ struct DisassemblyView
                     }
 
                 ImGui::SetScrollFromPosY(
-                    ImGui::GetCursorStartPos().y + findLine(core->getPC(), disassembly) * ImGui::GetTextLineHeight()
+                    ImGui::GetCursorStartPos().y + findLine(core->getPC(), core->getMemorySizes()[0], disassembly) * ImGui::GetTextLineHeight()
                 );
                 ImGui::EndChild();
             }

@@ -28,9 +28,10 @@ private:
     void updateState();
 
     u8 readROMIO(u8 chip);
+    void writeROMIO(u8 chip, u8 data);
     void writeRAMOut(u8 chip, u8 data);
 
-    const size_t m_memorySizes[2] = { 0x100, 32 };
+    const size_t m_memorySizes[2] = { 0x100, 32 * 4 };
 
     CPU4040 m_cpu;
 

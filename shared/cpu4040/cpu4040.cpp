@@ -27,13 +27,18 @@ void CPU4040::clock()
         else
             FIM(m_regs + (opcode & 0xE) / 2);
         break;
-
+    case 0x3:
+        if (opcode & 1)
+            JIN(m_regs + (opcode & 0xE) / 2);
+        else
+            FIN(m_regs + (opcode & 0xE) / 2);
+        break;
     case 0x4: JUN(opcode & 0xF); break;
     case 0x5: JMS(opcode & 0xF); break;
     case 0x6: INC(m_regs, opcode & 0xF); break;
     case 0x7: ISZ(m_regs, opcode & 0xF); break;
     case 0x8: ADD(m_regs, opcode & 0xF); break;
-
+    case 0x9: SUB(m_regs, opcode & 0xF); break;
     case 0xA: LD(m_regs, opcode & 0xF); break;
     case 0xB: XCH(m_regs, opcode & 0xF); break;
     case 0xC: BBL(opcode & 0xF); break;
@@ -43,11 +48,19 @@ void CPU4040::clock()
         {
         case 0x0: WRM(); break;
         case 0x1: WMP(); break;
+        case 0x2: WRR(); break;
         case 0x4: WRX(0); break;
         case 0x5: WRX(1); break;
         case 0x6: WRX(2); break;
         case 0x7: WRX(3); break;
+        case 0x8: SBM(); break;
+        case 0x9: RDM(); break;
         case 0xA: RDR(); break;
+        case 0xB: ADM(); break;
+        case 0xC: RDX(0); break;
+        case 0xD: RDX(1); break;
+        case 0xE: RDX(2); break;
+        case 0xF: RDX(3); break;
         default:
             assert(false && "Unhandled instruction");
         }
@@ -58,9 +71,17 @@ void CPU4040::clock()
         case 0x0: CLB(); break;
         case 0x1: CLC(); break;
         case 0x2: IAC(); break;
+        case 0x3: CMC(); break;
+        case 0x4: CMA(); break;
         case 0x5: RAL(); break;
         case 0x6: RAR(); break;
+        case 0x7: TCC(); break;
         case 0x8: DAC(); break;
+        case 0x9: TCS(); break;
+        case 0xA: STC(); break;
+        case 0xB: DAA(); break;
+        case 0xC: KBP(); break;
+        case 0xD: DCL(); break;
         default:
             assert(false && "Unhandled instruction");
         }
@@ -102,8 +123,34 @@ u8 CPU4040::loadROM8(u16 address) const
     return data;
 }
 
-void CPU4040::storeRAM4(u16 address, u8 data)
+u8 CPU4040::loadRAM4()
 {
+    u16 address = 0;
+    address |= CMRAM >> 1;
+    address |= SRCReg;
+
+    u8 data = 0;
+    bool read = false;
+    for (auto& entry : m_readMap)
+    {
+        u16 offset;
+        if (entry.range.contains(address, offset))
+        {
+            data = entry.read(offset);
+            read = true;
+            break;
+        }
+    }
+    assert(read && "Unhandled memory read");
+    return data;
+}
+
+void CPU4040::storeRAM4(u8 data)
+{
+    u16 address = 0;
+    address |= CMRAM >> 1;
+    address |= SRCReg;
+
     bool stored = false;
     for (auto& entry : m_writeMap)
     {
@@ -126,6 +173,13 @@ void CPU4040::ADD(const u8* regs, u8 idx)
     CY = temp >> 4;
 }
 
+void CPU4040::ADM()
+{
+    u8 temp = ACC + loadRAM4() + CY;
+    ACC = temp;
+    CY = temp >> 4;
+}
+
 void CPU4040::BBL(u8 data)
 {
     SP--;
@@ -143,6 +197,25 @@ void CPU4040::CLC()
     CY = 0;
 }
 
+void CPU4040::CMA()
+{
+    ACC = ~ACC;
+}
+
+void CPU4040::CMC()
+{
+    CY = ~CY;
+}
+
+void CPU4040::DAA()
+{
+    if (ACC > 9 || CY) {
+        u8 temp = ACC + 6;
+        ACC = temp;
+        CY = temp >> 4;
+    }
+}
+
 void CPU4040::DAC()
 {
     u8 temp = ACC + 0xF;
@@ -150,10 +223,23 @@ void CPU4040::DAC()
     CY = temp >> 4;;
 }
 
+void CPU4040::DCL()
+{
+    if (ACC == 0) CMRAM = 1;
+    else CMRAM = ACC << 1;
+}
+
 void CPU4040::FIM(u8* reg)
 {
     *reg = loadROM8(getPC());
     incPC();
+}
+
+void CPU4040::FIN(u8* reg)
+{
+    u16 addr = m_regs[0];
+    if ((getPC() & 0xFF) == 0xFF) addr += 0x100;
+    *reg = loadROM8(addr);
 }
 
 void CPU4040::IAC()
@@ -212,6 +298,13 @@ void CPU4040::JCN(u8 condition)
     }
 }
 
+void CPU4040::JIN(const u8* reg)
+{
+    if ((getPC() & 0xFF) == 0xFF) incPC();
+    m_stack[getSP()] &= 0xF00;
+    m_stack[getSP()] |= m_regs[0];
+}
+
 void CPU4040::JMS(u16 highNibble)
 {
     u16 addr = (highNibble << 8) | loadROM8(getPC());
@@ -223,6 +316,20 @@ void CPU4040::JMS(u16 highNibble)
 void CPU4040::JUN(u16 highNibble)
 {
     m_stack[getSP()] = (highNibble << 8) | loadROM8(getPC());
+}
+
+void CPU4040::KBP()
+{
+    u8 temp = ACC & 0x0Fu;
+    switch (temp)
+    {
+    case 0b0000:
+    case 0b0001:
+    case 0b0010: return;
+    case 0b0100: ACC = 0b0011; return;
+    case 0b1000: ACC = 0b0100; return;
+    default:     ACC = 0b1111; return;
+    }
 }
 
 void CPU4040::LD(const u8* regs, u8 idx)
@@ -250,14 +357,57 @@ void CPU4040::RAR()
     ACC |= CY << 3;
 }
 
+void CPU4040::RDM()
+{
+    ACC = loadRAM4();
+}
+
 void CPU4040::RDR()
 {
     ACC = m_readROMIO(ROMChip);
 }
 
+void CPU4040::RDX(u8 charIdx)
+{
+    ACC = m_readRAMStatus((RAMChip << 4) | (RAMRegIdx << 2) | charIdx);
+}
+
+void CPU4040::SBM()
+{
+    u8 value = ~loadRAM4() & 0xF;
+    u8 temp = ACC + value + CY;
+    ACC = temp;
+    CY = temp >> 4;
+}
+
 void CPU4040::SRC(const u8* reg)
 {
     SRCReg = *reg;
+}
+
+void CPU4040::STC()
+{
+    CY = 1;
+}
+
+void CPU4040::SUB(const u8* regs, u8 idx)
+{
+    u8 value = ~regs[idx / 2];
+    u8 temp = ACC + (idx % 2 ? value & 0xF : value >> 4) + CY;
+    ACC = temp;
+    CY = temp >> 4;
+}
+
+void CPU4040::TCC()
+{
+    ACC = CY;
+    CY = 0;
+}
+
+void CPU4040::TCS()
+{
+    ACC = 9 + CY;
+    CY = 0;
 }
 
 void CPU4040::WMP()
@@ -267,7 +417,12 @@ void CPU4040::WMP()
 
 void CPU4040::WRM()
 {
-    storeRAM4(SRCReg, ACC);
+    storeRAM4(ACC);
+}
+
+void CPU4040::WRR()
+{
+    m_writeROMIO(ROMChip, ACC);
 }
 
 void CPU4040::WRX(u8 charIdx)

@@ -4,8 +4,8 @@
 class CPU4040
 {
 public:
-    using ReadROMIOFunc = std::function<u8(u8)>;
-    using WriteRAMOutFunc = std::function<void(u8, u8)>;
+    using ReadInputFunc = std::function<u8(u8)>;
+    using WriteOutputFunc = std::function<void(u8, u8)>;
     using ReadRAMStatusFunc = std::function<u8(u8)>;
     using WriteRAMStatusFunc = std::function<void(u8, u8)>;
 
@@ -19,8 +19,9 @@ public:
     void map(Device& device, AddressRange range);
     template <ConstMapable ConstDevice>
     void map(const ConstDevice& device, AddressRange range);
-    void mapReadROMIO(ReadROMIOFunc func) { m_readROMIO = func; }
-    void mapWriteRAMOut(WriteRAMOutFunc func) { m_writeRAMOut = func; }
+    void mapReadROMIO(ReadInputFunc func) { m_readROMIO = func; }
+    void mapWriteROMIO(WriteOutputFunc func) { m_writeROMIO = func; }
+    void mapWriteRAMOut(WriteOutputFunc func) { m_writeRAMOut = func; }
     void mapReadRAMStatus(ReadRAMStatusFunc func) { m_readRAMStatus = func; }
     void mapWriteRAMStatus(WriteRAMStatusFunc func) { m_writeRAMStatus = func; }
 
@@ -42,28 +43,45 @@ public:
     CPU4040& operator=(const CPU4040&) = delete;
 private:
     void incPC() { m_stack[getSP()]++; }
-    void storeRAM4(u16 address, u8 data);
+    u8 loadRAM4();
+    void storeRAM4(u8 data);
 
     void ADD(const u8* regs, u8 idx);
+    void ADM();
     void BBL(u8 data);
     void CLB();
     void CLC();
+    void CMA();
+    void CMC();
+    void DAA();
     void DAC();
+    void DCL();
     void FIM(u8* reg);
+    void FIN(u8* reg);
     void IAC();
     void INC(u8* regs, u8 idx);
     void ISZ(u8* regs, u8 idx);
     void JCN(u8 condition);
+    void JIN(const u8* reg);
     void JMS(u16 highNibble);
     void JUN(u16 highNibble);
+    void KBP();
     void LD(const u8* regs, u8 idx);
     void LDM(u8 data);
     void RAL();
     void RAR();
+    void RDM();
     void RDR();
+    void RDX(u8 charIdx);
+    void SBM();
     void SRC(const u8* reg);
+    void STC();
+    void SUB(const u8* regs, u8 idx);
+    void TCC();
+    void TCS();
     void WMP();
     void WRM();
+    void WRR();
     void WRX(u8 charIdx);
     void XCH(u8* regs, u8 idx);
 
@@ -89,11 +107,13 @@ private:
         };
         u8 SRCReg;
     };
+    u8 CMRAM : 4;
 
     std::vector<ReadMapEntry> m_readMap;
     std::vector<WriteMapEntry> m_writeMap;
-    ReadROMIOFunc m_readROMIO;
-    WriteRAMOutFunc m_writeRAMOut;
+    ReadInputFunc m_readROMIO;
+    WriteOutputFunc m_writeROMIO;
+    WriteOutputFunc m_writeRAMOut;
     ReadRAMStatusFunc m_readRAMStatus;
     WriteRAMStatusFunc m_writeRAMStatus;
 };

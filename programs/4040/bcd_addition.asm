@@ -1,20 +1,20 @@
-; 16-digit BCD addition routine
+; 16-digit BCD addition subroutine
   JUN START
   NOP
   BBS
 START
+  FIM P0, 0   ; RAM register of A
+  FIM P1, $20 ; RAM register of B
   JMS BCDADD
 DONE
   JUN DONE
   
 BCDADD
-  FIM P0, 0
-  FIM P1, 48
   LDM 0
   XCH R6
   CLC
 ADD1
-  SRC P1
+  SRC P2
   RDM
   SRC P0
   ADM
@@ -23,11 +23,4 @@ ADD1
   INC R1
   INC R5
   ISZ R6, ADD1
-OVERFL
-  JCN %0010, XXX
-  JUN NEXT
-XXX
-  LDM 0
-  XCH RA
-  
   BBL

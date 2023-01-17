@@ -25,12 +25,12 @@ static struct {
 } ROM;
 
 static struct {
-    static constexpr u8 NUM_CHIPS = 1;
+    static constexpr u8 NUM_CHIPS = 4;
     u8 ram[32 * NUM_CHIPS];
     u8 status[8 * NUM_CHIPS];
 
     u8 read(u16 address) const {
-        return ram[address];
+        return address % 2 ? ram[address / 2] & 0xF : ram[address / 2] >> 4;
     }
 
     void write(u16 address, u8 data) {
@@ -38,12 +38,13 @@ static struct {
         ram[address / 2] |= address % 2 ? data : data << 4;
     }
 
-    u8 readStatus(u8 addr) { return 0; }
+    u8 readStatus(u8 address) {
+        return address % 2 ? status[address / 2] & 0xF : status[address / 2] >> 4;
+    }
 
-    void writeStatus(u8 address, u8 data)
-    {
-        ram[address / 2] &= address % 2 ? 0xF0 : 0x0F;
-        ram[address / 2] |= address % 2 ? data : data << 4;
+    void writeStatus(u8 address, u8 data) {
+        status[address / 2] &= address % 2 ? 0xF0 : 0x0F;
+        status[address / 2] |= address % 2 ? data : data << 4;
     }
 } RAM;
 
@@ -110,7 +111,9 @@ MCS4Core::MCS4Core() :
     m_cpu.map(ROM, { 0x0000, 0x00FF });
     m_cpu.map(RAM, { 0, 32 * 2 - 1 });
     m_cpu.mapReadROMIO([this](u8 chip) { return readROMIO(chip); });
+    m_cpu.mapWriteROMIO([this](u8 chip, u8 data) { writeROMIO(chip, data); });
     m_cpu.mapWriteRAMOut([this](u8 chip, u8 data) { return writeRAMOut(chip, data); });
+    m_cpu.mapReadRAMStatus([](u8 address) { return RAM.readStatus(address); });
     m_cpu.mapWriteRAMStatus([](u8 address, u8 data) { RAM.writeStatus(address, data); });
 
     m_state.push_back({ 0, 3, "Stack0", true });
@@ -154,6 +157,11 @@ void MCS4Core::updateState()
 u8 MCS4Core::readROMIO(u8 chip)
 {
     return 0xA;
+}
+
+void MCS4Core::writeROMIO(u8 /*chip*/, u8 /*data*/)
+{
+
 }
 
 void MCS4Core::writeRAMOut(u8 /*chip*/, u8 /*data*/)
