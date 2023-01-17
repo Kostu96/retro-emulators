@@ -8,6 +8,7 @@ public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
     const size_t* getMemorySizes() const override { return 0; }
+    const int* getMemoryColsNumbers() const override { return 0; }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
     const std::vector<StateEntry>& getState() const override { return m_state; }
 

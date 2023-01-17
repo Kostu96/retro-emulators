@@ -8,8 +8,9 @@ class MCS4Core :
 public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
-    size_t getNumMemories() const override { return 2; }
+    size_t getNumMemories() const override { return 3; }
     const size_t* getMemorySizes() const override { return m_memorySizes; }
+    const int* getMemoryColsNumbers() const override { return m_memoryColsNumbers; }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
     const std::vector<StateEntry>& getState() const override { return m_state; }
 
@@ -31,7 +32,8 @@ private:
     void writeROMIO(u8 chip, u8 data);
     void writeRAMOut(u8 chip, u8 data);
 
-    const size_t m_memorySizes[2] = { 0x100, 32 * 4 };
+    const size_t m_memorySizes[3] = { 0x100, 32 * 4, 8 * 4 };
+    const int m_memoryColsNumbers[3] = { 16, 8, 2 };
 
     CPU4040 m_cpu;
 

@@ -50,10 +50,13 @@ static struct {
 
 u8 MCS4Core::getByteAt(u16 address, size_t memoryIndex) const
 {
-    if (memoryIndex == 0)
-        return m_cpu.loadROM8(address);
-    else
-        return RAM.ram[address];
+    switch (memoryIndex)
+    {
+    case 0: return m_cpu.loadROM8(address);
+    case 1: return RAM.ram[address];
+    case 2: return RAM.status[address];
+    default: return 0xCD;
+    }
 }
 
 void MCS4Core::render(CharVertex* /*verts*/)

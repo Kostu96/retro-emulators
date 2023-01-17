@@ -33,6 +33,7 @@ public:
 
     virtual size_t getNumMemories() const { return 1; }
     virtual const size_t* getMemorySizes() const = 0;
+    virtual const int* getMemoryColsNumbers() const = 0;
     virtual const std::vector<DisassemblyLine>& getDisassembly() const = 0;
     virtual const std::vector<StateEntry>& getState() const = 0;
     
