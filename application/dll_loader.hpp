@@ -24,7 +24,7 @@ public:
         return FreeLibrary(m_handle) != 0;
     }
 
-    std::shared_ptr<T> getInstance()
+    std::shared_ptr<T> createInstance()
     {
         using allocatorClass = T* (*)();
         using deleterClass = void(*)(T*);

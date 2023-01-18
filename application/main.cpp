@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
         }
 
         {
-            auto core = loader.getInstance();
+            auto core = loader.createInstance();
             
             if (argc > 2)
                 core->loadROM(argv[2]);

@@ -10,7 +10,7 @@ public:
     const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
 
     const size_t* getMemorySizes() const override { return m_memorySizes; }
-    const int* getMemoryColsNumbers() const override { return 0; }
+    const int* getMemoryColsNumbers() const override { return m_memoryColsNumbers; }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
     const std::vector<StateEntry>& getState() const override { return m_state; }
     
@@ -29,10 +29,11 @@ private:
     void updateState();
 
     const size_t m_memorySizes[1] = { 0x4000 };
+    const int m_memoryColsNumbers[1] = { 16 };
 
     CPU8080 m_cpu;
 
-    const WindowSettings& m_windowSettings;
+    const WindowSettings m_windowSettings;
     std::vector<DisassemblyLine> m_disassembly;
     std::vector<StateEntry> m_state;
 };
