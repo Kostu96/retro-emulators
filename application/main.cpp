@@ -12,6 +12,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <chrono>
 
 #pragma region OGLStuff
 glw::Shader* pointShader = nullptr;
@@ -161,29 +162,41 @@ int main(int argc, char* argv[])
             init(64, 32);
 
             bool paused = true;
+            std::chrono::steady_clock::time_point lastFrameTime;
+            std::chrono::duration<double, std::micro> elapsedTime{ 0 };
             while (!glfwWindowShouldClose(window))
             {
+                auto time = std::chrono::steady_clock::now();
+                std::chrono::duration<double, std::micro> dt = time - lastFrameTime;
+                elapsedTime += dt;
+                lastFrameTime = time;
+
                 glfwPollEvents();
 
                 if (!paused)
                     core->clock();
 
-                FBO->bind();
-                charVAO->bind();
-                pointShader->bind();
-                glViewport(0, 0, 64, 32);
-                core->render(charVertices);
-                charVBO->bind();
-                charVBO->setData(charVertices, sizeof(charVertices));
-                glDrawArrays(GL_POINTS, 0, 64 * 32);
+                if (elapsedTime > std::chrono::duration<double, std::milli>(16.67))
+                {
+                    elapsedTime -= std::chrono::duration<double, std::milli>(16.67);
 
-                FBO->unbind();
-                textureVAO->bind();
-                textureShader->bind();
-                glViewport(0, 0, settings.width, settings.height);
-                FBO->getAttachments()[0].bind(0);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
-                glFinish();
+                    FBO->bind();
+                    charVAO->bind();
+                    pointShader->bind();
+                    glViewport(0, 0, 64, 32);
+                    core->render(charVertices);
+                    charVBO->bind();
+                    charVBO->setData(charVertices, sizeof(charVertices));
+                    glDrawArrays(GL_POINTS, 0, 64 * 32);
+
+                    FBO->unbind();
+                    textureVAO->bind();
+                    textureShader->bind();
+                    glViewport(0, 0, settings.width, settings.height);
+                    FBO->getAttachments()[0].bind(0);
+                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+                    glFinish();
+                }
 
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();

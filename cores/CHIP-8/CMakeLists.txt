@@ -4,6 +4,8 @@ set(CHIP8_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/chip8_core.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/chip8_core.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/disasm_chip8.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/disasm_chip8.hpp
 )
 
 add_library(${CHIP8_TARGET_NAME} SHARED ${CHIP8_SOURCES})

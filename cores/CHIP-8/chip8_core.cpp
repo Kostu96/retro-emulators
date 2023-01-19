@@ -1,4 +1,5 @@
 #include "chip8_core.hpp"
+#include "disasm_chip8.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -56,19 +57,19 @@ void CHIP8Core::handleKey(int key, int action)
     case KEY1: keys[0x1] = action; break;
     case KEY2: keys[0x2] = action; break;
     case KEY3: keys[0x3] = action; break;
-    case KEY4: keys[0xF] = action; break;
+    case KEY4: keys[0xC] = action; break;
     case KEYQ: keys[0x4] = action; break;
     case KEYW: keys[0x5] = action; break;
     case KEYE: keys[0x6] = action; break;
-    case KEYR: keys[0xE] = action; break;
+    case KEYR: keys[0xD] = action; break;
     case KEYA: keys[0x7] = action; break;
     case KEYS: keys[0x8] = action; break;
     case KEYD: keys[0x9] = action; break;
-    case KEYF: keys[0xD] = action; break;
+    case KEYF: keys[0xE] = action; break;
     case KEYZ: keys[0xA] = action; break;
     case KEYX: keys[0x0] = action; break;
     case KEYC: keys[0xB] = action; break;
-    case KEYV: keys[0xC] = action; break;
+    case KEYV: keys[0xF] = action; break;
     }
 }
 
@@ -94,11 +95,13 @@ void CHIP8Core::loadROM(const char* filename)
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
 
-    std::memcpy(Memory, charset, CHARSET_SIZE);
+    std::memcpy(m_memory, charset, CHARSET_SIZE);
 
     std::ifstream fin{ filename, std::ios::binary };
-    fin.read((char*)(Memory + 0x200), 0x4A0);
+    fin.read((char*)(m_memory + 0x200), 0x1000 - 0x200);
     fin.close();
+
+    disassemble(m_memory + 0x200, 0x1000 - 0x200, m_disassembly);
 }
 
 void CHIP8Core::reset()
@@ -112,19 +115,11 @@ void CHIP8Core::reset()
 
     for (u8 i = 0; i < 16; i++)
         keys[i] = false;
-}
 
-union Instruction
-{
-    struct
-    {
-        u8 n1 : 4;
-        u8 n2 : 4;
-        u8 n3 : 4;
-        u8 n4 : 4;
-    } nibbles;
-    u16 word;
-};
+    std::memset(Screen, 0, 8 * 32);
+
+    updateState();
+}
 
 void CHIP8Core::clock()
 {
@@ -132,8 +127,8 @@ void CHIP8Core::clock()
     if (ST) ST--;
 
     Instruction instruction;
-    instruction.word = Memory[PC++] << 8;
-    instruction.word |= Memory[PC++];
+    instruction.word = m_memory[PC++] << 8;
+    instruction.word |= m_memory[PC++];
 
     switch (instruction.nibbles.n4)
     {
@@ -194,15 +189,17 @@ void CHIP8Core::clock()
             GPR[0xF] = temp >> 8;
             GPR[instruction.nibbles.n3] = temp & 0xFF;
         } break;
-        case 0x5:
-            GPR[0xF] = GPR[instruction.nibbles.n3] < GPR[instruction.nibbles.n2] ? 0 : 1;
-            break;
+        case 0x5: {
+            s16 temp = (s16)GPR[instruction.nibbles.n3] - (s16)GPR[instruction.nibbles.n2];
+            GPR[0xF] = temp < 0 ? 1 : 0;
+            GPR[instruction.nibbles.n3] = temp & 0xFF;
+        } break;
         case 0x6:
             GPR[0xF] = GPR[instruction.nibbles.n3] & 1;
             GPR[instruction.nibbles.n3] >>= 1;
             break;
         case 0x7: {
-            s16 temp = (s16)GPR[instruction.nibbles.n3] - (s16)GPR[instruction.nibbles.n2];
+            s16 temp = (s16)GPR[instruction.nibbles.n2] - (s16)GPR[instruction.nibbles.n3];
             GPR[0xF] = temp < 0 ? 1 : 0;
             GPR[instruction.nibbles.n3] = temp & 0xFF;
         } break;
@@ -234,9 +231,9 @@ void CHIP8Core::clock()
         for (u8 i = 0; i < bytes; i++)
         {
             u16 index = (y + i) * 8 + x_byte;
-            GPR[0xF] = (Screen[index] & Memory[I + i] >> x_bit) | (Screen[index + 1] & Memory[I + i] << (8 - x_bit));
-            Screen[index] ^= Memory[I + i] >> x_bit;
-            Screen[index + 1] ^= Memory[I + i] << (8 - x_bit);
+            GPR[0xF] = (Screen[index] & m_memory[I + i] >> x_bit) | (Screen[index + 1] & m_memory[I + i] << (8 - x_bit));
+            Screen[index] ^= m_memory[I + i] >> x_bit;
+            Screen[index + 1] ^= m_memory[I + i] << (8 - x_bit);
         }
     } break;
     case 0xE:
@@ -284,17 +281,17 @@ void CHIP8Core::clock()
             u8 n1 = GPR[instruction.nibbles.n3] % 10;
             u8 n2 = (GPR[instruction.nibbles.n3] / 10) % 10;
             u8 n3 = GPR[instruction.nibbles.n3] / 100;
-            Memory[I] = n3;
-            Memory[I + 1] = n2;
-            Memory[I + 2] = n1;
+            m_memory[I] = n3;
+            m_memory[I + 1] = n2;
+            m_memory[I + 2] = n1;
         } break;
         case 0x55:
             for (u8 i = 0; i <= instruction.nibbles.n3; i++)
-                Memory[I + i] = GPR[i];
+                m_memory[I + i] = GPR[i];
             break;
         case 0x65:
             for (u8 i = 0; i <= instruction.nibbles.n3; i++)
-                GPR[i] = Memory[I + i];
+                GPR[i] = m_memory[I + i];
             break;
         default:
             assert(false);
@@ -303,15 +300,47 @@ void CHIP8Core::clock()
     default:
         assert(false && "Unhandled n4!");
     }
+
+    updateState();
 }
 
-constexpr u16 CHIP8_WIDTH = 64;
-constexpr u16 CHIP8_HEIGHT = 32;
-constexpr u16 ZOOM = 8;
-constexpr u16 WINDOW_WIDTH = CHIP8_WIDTH * ZOOM;
-constexpr u16 WINDOW_HEIGHT = CHIP8_HEIGHT * ZOOM;
-
 CHIP8Core::CHIP8Core() :
-    m_windowSettings{ 20, 20, "CHIP-8" }
+    m_windowSettings{ WINDOW_WIDTH, WINDOW_HEIGHT, "CHIP-8" }
 {
+    m_state.push_back({ 0, 2, "V0:", true });
+    m_state.push_back({ 0, 2, "V1:" });
+    m_state.push_back({ 0, 2, "V2:", true });
+    m_state.push_back({ 0, 2, "V3:" });
+    m_state.push_back({ 0, 2, "V4:", true });
+    m_state.push_back({ 0, 2, "V5:" });
+    m_state.push_back({ 0, 2, "V6:", true });
+    m_state.push_back({ 0, 2, "V7:" });
+    m_state.push_back({ 0, 2, "V8:", true });
+    m_state.push_back({ 0, 2, "V9:" });
+    m_state.push_back({ 0, 2, "VA:", true });
+    m_state.push_back({ 0, 2, "VB:" });
+    m_state.push_back({ 0, 2, "VC:", true });
+    m_state.push_back({ 0, 2, "VD:" });
+    m_state.push_back({ 0, 2, "VE:", true });
+    m_state.push_back({ 0, 2, "VF:" });
+}
+
+void CHIP8Core::updateState()
+{
+    m_state[0].value = GPR[0x0];
+    m_state[1].value = GPR[0x1];
+    m_state[2].value = GPR[0x2];
+    m_state[3].value = GPR[0x3];
+    m_state[4].value = GPR[0x4];
+    m_state[5].value = GPR[0x5];
+    m_state[6].value = GPR[0x6];
+    m_state[7].value = GPR[0x7];
+    m_state[8].value = GPR[0x8];
+    m_state[9].value = GPR[0x9];
+    m_state[10].value = GPR[0xA];
+    m_state[11].value = GPR[0xB];
+    m_state[12].value = GPR[0xC];
+    m_state[13].value = GPR[0xD];
+    m_state[14].value = GPR[0xE];
+    m_state[15].value = GPR[0xF];
 }
