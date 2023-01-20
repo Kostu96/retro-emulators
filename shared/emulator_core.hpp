@@ -17,11 +17,13 @@ struct StateEntry
     bool separator = false;
 };
 
-struct WindowSettings
+struct EmulatorSettings
 {
-    u16 width;
-    u16 height;
-    char title[252];
+    u16 frameWidth;
+    u16 frameHeight;
+    u16 windowWidth;
+    u16 windowHeight;
+    char windowTitle[248];
 };
 
 class EmulatorCore
@@ -29,7 +31,7 @@ class EmulatorCore
 public:
     virtual ~EmulatorCore() = default;
 
-    virtual const WindowSettings& getWindowSettings() const = 0;
+    virtual const EmulatorSettings& getEmulatorSettings() const = 0;
 
     virtual size_t getNumMemories() const { return 1; }
     virtual const size_t* getMemorySizes() const = 0;
@@ -45,5 +47,5 @@ public:
 
     virtual void loadROM(const char* filename) = 0;
     virtual void reset() = 0;
-    virtual void clock() = 0;
+    virtual void update(double dt) = 0;
 };

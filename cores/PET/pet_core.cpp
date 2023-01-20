@@ -77,9 +77,21 @@ static struct {
         u8 read(u16 address) const { return KERNAL[address]; }
 } KERNAL;
 
+#include "roms/charset.inl"
+
 void PETCore::render(CharVertex* verts)
 {
-
+    /*for (u16 offset = 0; offset < 1000; offset++)
+    {
+        u8 character = VRAM[offset];
+        const u8* char_data = charset[character];
+        for (u8 row = 0; row < 8; row++)
+            for (u8 col = 0; col < 8; col++)
+            {
+                u8 bit = (0x80 >> col);
+                verts[offset][row][col].color = (char_data[row] & bit) ? 0xFF558371 : 0xFFDBF5E9;
+            }
+    }*/
 }
 
 void PETCore::handleKey(int key, int action)
@@ -112,14 +124,14 @@ void PETCore::reset()
     m_cpu.reset();
 }
 
-void PETCore::clock()
+void PETCore::update(double /*dt*/)
 {
     m_cpu.clock();
 }
 
 PETCore::PETCore() :
     m_io{ m_cpu },
-    m_windowSettings{ 100, 100, "PET" }
+    m_emulatorSettings{ 100, 100, 100, 100, "PET" }
 {
     m_cpu.map(RAM, { 0x0000, 0x1FFF });
     m_cpu.map(VRAM, { 0x8000, 0x83FF });

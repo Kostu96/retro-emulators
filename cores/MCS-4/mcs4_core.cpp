@@ -100,7 +100,7 @@ void MCS4Core::reset()
     updateState();
 }
 
-void MCS4Core::clock()
+void MCS4Core::update(double /*dt*/)
 {
     m_cpu.clock();
 
@@ -109,7 +109,7 @@ void MCS4Core::clock()
 
 MCS4Core::MCS4Core() :
     m_cpu{ CPU4040::Mode::Intel4004 },
-    m_windowSettings{ 256, 128, "MCS-4" }
+    m_emulatorSettings{ 1, 1, 256, 128, "MCS-4" }
 {
     m_cpu.map(ROM, { 0x0000, 0x00FF });
     m_cpu.map(RAM, { 0, 32 * 2 - 1 });

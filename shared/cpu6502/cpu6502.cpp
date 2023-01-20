@@ -213,7 +213,7 @@ void CPU6502::NMI()
 }
 
 #pragma region MemoryAccess
-u8 CPU6502::load8(u16 address)
+u8 CPU6502::load8(u16 address) const
 {
     u8 data = 0;
 
@@ -231,7 +231,7 @@ u8 CPU6502::load8(u16 address)
     return data;
 }
 
-u16 CPU6502::load16(u16 address)
+u16 CPU6502::load16(u16 address) const
 {
     u16 data = 0;
 

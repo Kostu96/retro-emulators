@@ -7,7 +7,7 @@ class InvadersCore :
     public EmulatorCore
 {
 public:
-    const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
+    const EmulatorSettings& getEmulatorSettings() const override { return m_emulatorSettings; }
 
     const size_t* getMemorySizes() const override { return m_memorySizes; }
     const int* getMemoryColsNumbers() const override { return m_memoryColsNumbers; }
@@ -22,7 +22,7 @@ public:
 
     void loadROM(const char* filename) override {}
     void reset() override;
-    void clock() override;
+    void update(double dt) override;
     
     InvadersCore();
 private:
@@ -33,7 +33,7 @@ private:
 
     CPU8080 m_cpu;
 
-    const WindowSettings m_windowSettings;
+    const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;
     std::vector<StateEntry> m_state;
 };

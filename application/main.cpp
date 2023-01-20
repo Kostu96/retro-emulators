@@ -136,9 +136,10 @@ int main(int argc, char* argv[])
                 std::terminate();
             }
 
-            auto& settings = core->getWindowSettings();
+            auto& settings = core->getEmulatorSettings();
             glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
-            GLFWwindow* window = glfwCreateWindow(settings.width, settings.height, settings.title, nullptr, nullptr);
+            GLFWwindow* window = glfwCreateWindow(settings.windowWidth, settings.windowHeight,
+                                                  settings.windowTitle, nullptr, nullptr);
             if (!window) {
                 std::cerr << "GLFW window creation failed!\n";
                 std::terminate();
@@ -159,7 +160,7 @@ int main(int argc, char* argv[])
             DisassemblyView disassemblyView;
 
             glw::init(glfwGetProcAddress);
-            init(64, 32);
+            init(settings.frameWidth, settings.frameHeight);
 
             bool paused = true;
             std::chrono::steady_clock::time_point lastFrameTime;
@@ -174,7 +175,7 @@ int main(int argc, char* argv[])
                 glfwPollEvents();
 
                 if (!paused)
-                    core->clock();
+                    core->update(dt.count() * 0.001);
 
                 if (elapsedTime > std::chrono::duration<double, std::milli>(16.67))
                 {
@@ -183,16 +184,16 @@ int main(int argc, char* argv[])
                     FBO->bind();
                     charVAO->bind();
                     pointShader->bind();
-                    glViewport(0, 0, 64, 32);
+                    glViewport(0, 0, settings.frameWidth, settings.frameHeight);
                     core->render(charVertices);
                     charVBO->bind();
                     charVBO->setData(charVertices, sizeof(charVertices));
-                    glDrawArrays(GL_POINTS, 0, 64 * 32);
+                    glDrawArrays(GL_POINTS, 0, settings.frameWidth * settings.frameHeight);
 
                     FBO->unbind();
                     textureVAO->bind();
                     textureShader->bind();
-                    glViewport(0, 0, settings.width, settings.height);
+                    glViewport(0, 0, settings.windowWidth, settings.windowHeight);
                     FBO->getAttachments()[0].bind(0);
                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
                     glFinish();
@@ -232,7 +233,7 @@ int main(int argc, char* argv[])
                     ImGui::SameLine();
 
                     ImGui::BeginDisabled(!paused);
-                    if (ImGui::Button("Step")) core->clock();
+                    if (ImGui::Button("Step")) core->update(dt.count() * 0.001);
                     ImGui::EndDisabled();
                     ImGui::SameLine();
                     

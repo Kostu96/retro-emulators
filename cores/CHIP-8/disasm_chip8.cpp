@@ -1,26 +1,10 @@
 #include "disasm_chip8.hpp"
+#include "chip8_instruction.hpp"
 
 #include <cassert>
 #include <cstdarg>
 #include <iomanip>
 #include <sstream>
-
-union Instruction
-{
-    struct
-    {
-        u8 n1 : 4;
-        u8 n2 : 4;
-        u8 n3 : 4;
-        u8 n4 : 4;
-    };
-    struct
-    {
-        u8 h1;
-        u8 h2;
-    };
-    u16 word;
-};
 
 void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)
 {
@@ -29,10 +13,10 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
         DisassemblyLine line;
         line.address = addr + 0x200;
         std::stringstream ss;
-        ss << std::uppercase << std::hex << std::setw(4) << std::setfill('0') << addr + 0x200 << ":  ";
+        ss << std::uppercase << std::hex << std::setw(3) << std::setfill('0') << addr + 0x200 << ":  ";
         Instruction opcode;
-        opcode.word = code[addr++] << 8;
-        opcode.word |= code[addr++];
+        opcode.h2 = code[addr++];
+        opcode.h1 = code[addr++];
         ss << std::hex << std::setw(4) << opcode.word << "  ";
 
         switch (opcode.n4)

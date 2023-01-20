@@ -1,30 +1,9 @@
 #pragma once
-#include "../type_aliases.hpp"
+#include "../memory_map.hpp"
 
 #include <concepts>
 #include <functional>
 #include <vector>
-
-template <typename T>
-concept ConstMapable = requires(T object, u16 address) {
-    { object.read(address) } -> std::same_as<u8>;
-};
-template <typename T>
-concept Mapable = ConstMapable<T> && requires(T object, u16 address, u8 data) {
-    { object.write(address, data) } -> std::same_as<void>;
-};
-
-struct AddressRange
-{
-    u16 start;
-    u16 end;
-
-    bool contains(u16 address, u16& offset) const
-    {
-        offset = address - start;
-        return (address >= start) && (address <= end);
-    }
-};
 
 class CPU6502
 {
@@ -54,6 +33,7 @@ public:
     void setIRQ(bool state) { m_irq = state; }
     void setNMI(bool state) { m_nmi = state; }
 
+    u8 load8(u16 address) const;
     u16 getPC() const { return PC; }
     Flags getFlags() const { return F; }
 
@@ -65,8 +45,7 @@ private:
     void NMI();
 
     // Memory Access:
-    u8 load8(u16 address);
-    u16 load16(u16 address);
+    u16 load16(u16 address) const;
     void store8(u16 address, u8 data);
     void store16(u16 address, u16 data);
     void push8(u8 data);
@@ -129,33 +108,14 @@ private:
     u8 SP;
 
     // Helpers:
-    u16 m_cyclesLeft;
+    mutable u16 m_cyclesLeft;
     u16 m_absoluteAddress;
     bool m_isACCAddressing = false;
     bool m_irq = false;
     bool m_nmi = false;
     bool m_isDuringNMI = false;
 
-    struct ReadMapEntry {
-        using ReadFunc = std::function<u8(u16)>;
-        
-        AddressRange range;
-        ReadFunc read;
-
-        ReadMapEntry(AddressRange inRange, ReadFunc inRead) :
-            range{ inRange }, read{ inRead } {}
-    };
     std::vector<ReadMapEntry> m_readMap;
-
-    struct WriteMapEntry {
-        using WriteFunc = std::function<void(u16, u8)>;
-
-        AddressRange range;
-        WriteFunc write;
-
-        WriteMapEntry(AddressRange inRange, WriteFunc inWrite) :
-            range{ inRange }, write{ inWrite } {}
-    };
     std::vector<WriteMapEntry> m_writeMap;
 };
 

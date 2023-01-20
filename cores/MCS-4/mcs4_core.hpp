@@ -6,7 +6,7 @@ class MCS4Core :
     public EmulatorCore
 {
 public:
-    const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
+    const EmulatorSettings& getEmulatorSettings() const override { return m_emulatorSettings; }
 
     size_t getNumMemories() const override { return 3; }
     const size_t* getMemorySizes() const override { return m_memorySizes; }
@@ -22,7 +22,7 @@ public:
 
     void loadROM(const char* filename) override;
     void reset() override;
-    void clock() override;
+    void update(double dt) override;
     
     MCS4Core();
 private:
@@ -37,7 +37,7 @@ private:
 
     CPU4040 m_cpu;
 
-    const WindowSettings m_windowSettings;
+    const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;
     std::vector<StateEntry> m_state;
 };

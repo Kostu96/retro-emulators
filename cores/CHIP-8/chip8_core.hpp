@@ -5,7 +5,7 @@ class CHIP8Core :
     public EmulatorCore
 {
 public:
-    const WindowSettings& getWindowSettings() const override { return m_windowSettings; }
+    const EmulatorSettings& getEmulatorSettings() const override { return m_emulatorSettings; }
 
     const size_t* getMemorySizes() const override { return m_memorySizes; }
     const int* getMemoryColsNumbers() const override { return m_memoryColsNumbers; }
@@ -20,23 +20,11 @@ public:
 
     void loadROM(const char* filename) override;
     void reset() override;
-    void clock() override;
+    void update(double dt) override;
 
     CHIP8Core();
 private:
     void updateState();
-
-    union Instruction
-    {
-        struct
-        {
-            u8 n1 : 4;
-            u8 n2 : 4;
-            u8 n3 : 4;
-            u8 n4 : 4;
-        } nibbles;
-        u16 word;
-    };
 
     static constexpr u16 CHIP8_WIDTH = 64;
     static constexpr u16 CHIP8_HEIGHT = 32;
@@ -50,17 +38,18 @@ private:
     const int m_memoryColsNumbers[m_numMemories] = { 8 };
 
     u8 m_memory[m_memorySize];
-    u8* Stack = m_memory + 0x6A0;
-    u8* GPR = m_memory + 0x6F0;
-    u8* Screen = m_memory + 0x700;
-    u16 I;
+    u8* Stack = m_memory + 0xEA0;
+    u8* GPR = m_memory + 0xEF0;
+    u8* Screen = m_memory + 0xF00;
+    u16 I : 12;
     u16 PC : 12;
     u8 SP : 4;
     u8 DT;
     u8 ST;
     bool keys[16];
+    double m_elspsedTime;
 
-    const WindowSettings m_windowSettings;
+    const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;
     std::vector<StateEntry> m_state;
 };

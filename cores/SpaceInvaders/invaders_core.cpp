@@ -77,7 +77,7 @@ void InvadersCore::reset()
     updateState();
 }
 
-void InvadersCore::clock()
+void InvadersCore::update(double /*dt*/)
 {
     m_cpu.clock();
 
@@ -86,7 +86,7 @@ void InvadersCore::clock()
 
 InvadersCore::InvadersCore() :
     m_cpu{ CPU8080::Mode::Intel8080 },
-    m_windowSettings{ 256, 224, "Space Invaders" }
+    m_emulatorSettings{ 256, 224, 256, 224, "Space Invaders" }
 {
     m_cpu.map(ROM, { 0x0000, 0x1FFF });
     m_cpu.map(RAM, { 0x2000, 0x23FF });
