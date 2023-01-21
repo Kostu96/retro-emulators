@@ -1,5 +1,5 @@
 #include "mcs4_core.hpp"
-#include "disasm4040.hpp"
+#include "asm4040.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -65,7 +65,7 @@ void MCS4Core::loadROM(const char* filename)
     fin.read((char*)(ROM.rom), sizeof(ROM.rom));
     fin.close();
 
-    disassemble(ROM.rom, sizeof(ROM.rom), m_disassembly);
+    ASM4040::disassemble(ROM.rom, sizeof(ROM.rom), m_disassembly);
 }
 
 void MCS4Core::reset()

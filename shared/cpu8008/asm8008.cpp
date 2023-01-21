@@ -24,7 +24,7 @@ static void printBytes(std::stringstream& ss, const u8* code, size_t& addr, u8 c
 namespace ASM8008
 {
 
-    void assemble(const char* filename, std::vector<u8>& output)
+    void assemble(const char* source, std::vector<u8>& output)
     {
 
     }
