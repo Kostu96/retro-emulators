@@ -1,5 +1,5 @@
 #include "mcs8_core.hpp"
-#include "disasm8008.hpp"
+#include "asm8008.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -43,7 +43,7 @@ void MCS8Core::loadROM(const char* filename)
     fin.read((char*)(ROM.rom), sizeof(ROM.rom));
     fin.close();
 
-    disassemble(ROM.rom, sizeof(ROM.rom), m_disassembly);
+    ASM8008::disassemble(ROM.rom, sizeof(ROM.rom), m_disassembly);
 }
 
 void MCS8Core::reset()
@@ -61,7 +61,7 @@ void MCS8Core::update(double /*dt*/)
 }
 
 MCS8Core::MCS8Core() :
-    m_emulatorSettings{ 1, 1, 256, 128, "MCS-4" }
+    m_emulatorSettings{ 1, 1, 256, 128, "MCS-8" }
 {
     m_cpu.map(ROM, { 0x000, 0x7FF });
     m_cpu.map(RAM, { 0x800, 0xBFF });

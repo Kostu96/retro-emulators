@@ -15,7 +15,8 @@ target_compile_options(${MCS8_TARGET_NAME} PRIVATE
 )
 
 target_link_libraries(${MCS8_TARGET_NAME} PRIVATE
-    cpu8008
+    cpu8008_lib
+    asm8008_lib
 )
 
 set_target_properties(${MCS8_TARGET_NAME}
