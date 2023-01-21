@@ -92,7 +92,7 @@ private:
     
     u8* m_regs;
     u16* m_stack;
-    u8 SP;
+    u8 SP : 3;
     u8 ACC : 4;
     u8 CY : 1;
     u8 m_test : 1;

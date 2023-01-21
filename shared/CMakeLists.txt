@@ -5,4 +5,5 @@ set(SHARED_SOURCES
 
 add_subdirectory(cpu4040)
 add_subdirectory(cpu6502)
+add_subdirectory(cpu8008)
 add_subdirectory(cpu8080)
