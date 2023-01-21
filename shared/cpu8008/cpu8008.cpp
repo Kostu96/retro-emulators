@@ -10,14 +10,14 @@ void CPU8008::reset()
 
 void CPU8008::clock()
 {
-    u8 instruction = load8(PC++);
+   /* u8 instruction = load8(PC++);
 
     switch (instruction)
     {
     
     default:
         assert(false && "Unhandled instruction");
-    }
+    }*/
 }
 
 u8 CPU8008::load8(u16 address) const

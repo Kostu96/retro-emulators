@@ -42,8 +42,8 @@ public:
     virtual u8 getByteAt(u16 address, size_t memoryIndex) const = 0;
     virtual u16 getPC() const = 0;
 
-    virtual void render(CharVertex* verts) = 0;
-    virtual void handleKey(int key, int action) = 0;
+    virtual void render(CharVertex* /*verts*/) const {};
+    virtual void handleKey(int /*key*/, int /*action*/) {};
 
     virtual void loadROM(const char* filename) = 0;
     virtual void reset() = 0;

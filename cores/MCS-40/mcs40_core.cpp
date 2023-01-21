@@ -59,31 +59,6 @@ u8 MCS40Core::getByteAt(u16 address, size_t memoryIndex) const
     }
 }
 
-void MCS40Core::render(CharVertex* /*verts*/)
-{
-    
-}
-
-void MCS40Core::handleKey(int /*key*/, int /*action*/)
-{
-    constexpr int KEY1 = 49;
-    constexpr int KEY2 = 50;
-    constexpr int KEY3 = 51;
-    constexpr int KEY4 = 52;
-    constexpr int KEYQ = 81;
-    constexpr int KEYW = 87;
-    constexpr int KEYE = 69;
-    constexpr int KEYR = 82;
-    constexpr int KEYA = 65;
-    constexpr int KEYS = 83;
-    constexpr int KEYD = 68;
-    constexpr int KEYF = 70;
-    constexpr int KEYZ = 90;
-    constexpr int KEYX = 88;
-    constexpr int KEYC = 67;
-    constexpr int KEYV = 86;
-}
-
 void MCS40Core::loadROM(const char* filename)
 {
     std::ifstream fin{ filename, std::ios::binary };

@@ -19,7 +19,7 @@ extern "C"
     }
 }
 
-void CHIP8Core::render(CharVertex* verts)
+void CHIP8Core::render(CharVertex* verts) const
 {
     for (u16 row = 0; row < 32; row++)
         for (u16 col = 0; col < 8; col++)

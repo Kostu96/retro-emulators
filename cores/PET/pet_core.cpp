@@ -79,7 +79,7 @@ static struct {
 
 #include "roms/charset.inl"
 
-void PETCore::render(CharVertex* verts)
+void PETCore::render(CharVertex* verts) const
 {
     /*for (u16 offset = 0; offset < 1000; offset++)
     {

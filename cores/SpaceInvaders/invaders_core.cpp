@@ -45,7 +45,7 @@ u8 InvadersCore::getByteAt(u16 address, size_t memoryIndex) const
     return m_cpu.load8(address);
 }
 
-void InvadersCore::render(CharVertex* verts)
+void InvadersCore::render(CharVertex* verts) const
 {
     
 }
