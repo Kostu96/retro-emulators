@@ -21,8 +21,12 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${ASM4040_LIB_
 target_include_directories(${CPU4040_LIB_TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
-target_include_directories(${CPU4040_LIB_TARGET_NAME} PUBLIC
+target_include_directories(${ASM4040_LIB_TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(${ASM4040_LIB_TARGET_NAME} PUBLIC
+    asm_common_lib
 )
 
 set_target_properties(${CPU4040_LIB_TARGET_NAME} PROPERTIES

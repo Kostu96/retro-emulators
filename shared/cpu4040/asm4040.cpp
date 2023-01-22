@@ -1,22 +1,6 @@
 #include "asm4040.hpp"
 
 #include <cassert>
-#include <cstdarg>
-#include <iomanip>
-#include <sstream>
-
-static void printBytes(std::stringstream& ss, const u8* code, size_t& addr, u8 count, ...)
-{
-    std::va_list args;
-    va_start(args, count);
-    for (u8 i = 0; i < count; ++i)
-    {
-        u8* byte = va_arg(args, u8*);
-        *byte = code[addr++];
-        ss << std::hex << std::setw(2) << (u16)*byte << ' ';
-    }
-    va_end(args);
-}
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte)
 #define INST1(str) ss << "    " str
@@ -63,10 +47,16 @@ namespace ASM4040
             start = current;
             if (*current == '\0') return makeToken(Token::Type::EndOfSource);
 
+            if (isAlpha(*current))
+            {
+                while (isAlpha(*current) || isDigit(*current)) current++;
+                return makeToken(Token::Type::Identifier);
+            }
+
             if (isDigit(*current))
             {
                 while (isDigit(*current)) current++;
-                
+
                 return makeToken(Token::Type::DecimalNumber);
             }
 
@@ -112,18 +102,6 @@ namespace ASM4040
                 default:
                     return;
                 }
-        }
-
-        bool isDigit(char c)
-        {
-            return c >= '0' && c <= '9';
-        }
-
-        bool isAlpha(char c)
-        {
-            return (c >= 'a' && c <= 'z') ||
-                   (c >= 'A' && c <= 'Z') ||
-                    c == '_';
         }
     };
 

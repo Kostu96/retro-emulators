@@ -25,6 +25,10 @@ target_include_directories(${ASM8008_LIB_TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+target_link_libraries(${ASM8008_LIB_TARGET_NAME} PUBLIC
+    asm_common_lib
+)
+
 set_target_properties(${CPU8008_LIB_TARGET_NAME} PROPERTIES
     FOLDER shared/8008
 )

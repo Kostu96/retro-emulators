@@ -1,5 +1,5 @@
 #pragma once
-#include "../../shared/common.hpp"
+#include "../../shared/type_aliases.hpp"
 
 union Instruction
 {
