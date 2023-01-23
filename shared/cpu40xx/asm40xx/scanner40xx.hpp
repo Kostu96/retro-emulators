@@ -1,8 +1,7 @@
 #pragma once
 #include "type_aliases.hpp"
 
-namespace ASM40xx
-{
+namespace ASM40xx {
 
     struct Token
     {
@@ -45,8 +44,8 @@ namespace ASM40xx
     {
     public:
         explicit Scanner(const char* source) :
-            start{ source },
-            current{ source } {}
+            m_start{ source },
+            m_current{ source } {}
 
         Token getToken();
     private:
@@ -56,8 +55,8 @@ namespace ASM40xx
         Token makeToken(Token::Type type);
         Token errorToken(const char* message);
 
-        const char* start;
-        const char* current;
+        const char* m_start;
+        const char* m_current;
     };
 
 }

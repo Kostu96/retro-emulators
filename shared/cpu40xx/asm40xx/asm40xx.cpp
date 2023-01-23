@@ -13,15 +13,15 @@ namespace ASM40xx
         Scanner scanner{ source };
 
         u32 line = -1;
-        Token current = scanner.getToken();
-        Token next{};
+        Token previous{};
+        Token current{};
         while (true)
         {
+            previous = current;
+            current = scanner.getToken();
             if (current.type == Token::Type::EndOfSource) break;
 
-            next = scanner.getToken();
-
-            if (current.type == Token::Type::Label)
+            if (current.type == Token::Type::Comma)
             {
                 std::string_view str{ current.start, current.length };
                 u16 value = 0;
@@ -42,8 +42,6 @@ namespace ASM40xx
                     // error, multiple label or define
                 }
             }
-
-            current = next;
         }
     }
 
