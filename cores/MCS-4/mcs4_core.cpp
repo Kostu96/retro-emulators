@@ -1,5 +1,5 @@
 #include "mcs4_core.hpp"
-#include "asm4040.hpp"
+#include "asm40xx.hpp"
 
 #include <cassert>
 #include <cstring>

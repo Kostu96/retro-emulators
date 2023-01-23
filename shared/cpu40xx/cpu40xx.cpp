@@ -1,4 +1,4 @@
-#include "cpu4040.hpp"
+#include "cpu40xx.hpp"
 
 #include <cassert>
 

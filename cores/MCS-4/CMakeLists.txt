@@ -15,8 +15,8 @@ target_compile_options(${MCS4_TARGET_NAME} PRIVATE
 )
 
 target_link_libraries(${MCS4_TARGET_NAME} PRIVATE
-    cpu4040_lib
-    asm4040_lib
+    cpu40xx_lib
+    asm40xx_lib
 )
 
 set_target_properties(${MCS4_TARGET_NAME}

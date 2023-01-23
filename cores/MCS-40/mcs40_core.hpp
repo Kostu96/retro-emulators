@@ -1,6 +1,6 @@
 #pragma once
 #include "../../shared/emulator_core.hpp"
-#include "cpu4040.hpp"
+#include "cpu40xx.hpp"
 
 class MCS40Core :
     public EmulatorCore

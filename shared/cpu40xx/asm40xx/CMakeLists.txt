@@ -1,0 +1,26 @@
+set(ASM40XX_LIB_TARGET_NAME asm40xx_lib)
+
+set(ASM40XX_LIB_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/asm40xx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/asm40xx.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/parser40xx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/parser40xx.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/scanner40xx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/scanner40xx.hpp
+)
+
+add_library(${ASM40XX_LIB_TARGET_NAME} STATIC ${ASM40XX_LIB_SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${ASM40XX_LIB_SOURCES})
+
+target_include_directories(${ASM40XX_LIB_TARGET_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(${ASM40XX_LIB_TARGET_NAME} PUBLIC
+    asm_common_lib
+)
+
+set_target_properties(${ASM40XX_LIB_TARGET_NAME} PROPERTIES
+    FOLDER shared/40xx
+)

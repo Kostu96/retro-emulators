@@ -23,7 +23,7 @@ set_target_properties(${ASM_COMMON_LIB_TARGET_NAME} PROPERTIES
     FOLDER shared
 )
 
-add_subdirectory(cpu4040)
+add_subdirectory(cpu40xx)
 add_subdirectory(cpu6502)
 add_subdirectory(cpu8008)
 add_subdirectory(cpu8080)

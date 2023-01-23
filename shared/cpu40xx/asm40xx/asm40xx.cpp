@@ -1,4 +1,4 @@
-#include "asm4040.hpp"
+#include "asm40xx.hpp"
 #include "scanner40xx.hpp"
 
 #include <cassert>

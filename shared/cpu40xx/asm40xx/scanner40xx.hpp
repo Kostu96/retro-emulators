@@ -25,20 +25,20 @@ namespace ASM40xx
             MNEMONIC_COUNT,
 
             Label,
-            DecimalNumber,
+            Number,
             Plus,
             Minus,
             Star,
             Comma,
             Equal,
             Error,
-            EndOfSource
+            EndOfLine,
+            EndOfSource,
         };
 
         Type type = Type::Error;
         const char* start = nullptr;
         u32 length = 0;
-        u32 line = (u32)-1;
     };
 
     class Scanner
@@ -46,28 +46,18 @@ namespace ASM40xx
     public:
         explicit Scanner(const char* source) :
             start{ source },
-            current{ source },
-            line{ 1 } {}
+            current{ source } {}
 
         Token getToken();
     private:
         void skipWhitespace();
         Token::Type identifierType();
         Token::Type checkMnemonic(int start, int length, const char* rest, Token::Type type);
-
-        Token makeToken(Token::Type type)
-        {
-            Token token;
-            token.type = type;
-            token.start = start;
-            token.length = current - start;
-            token.line = line;
-            return token;
-        }
+        Token makeToken(Token::Type type);
+        Token errorToken(const char* message);
 
         const char* start;
         const char* current;
-        u32 line;
     };
 
 }

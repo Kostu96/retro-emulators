@@ -19,11 +19,12 @@ namespace ASM40xx
         {
             while (isDigit(*current)) current++;
 
-            return makeToken(Token::Type::DecimalNumber);
+            return makeToken(Token::Type::Number);
         }
 
         switch (*current++)
         {
+        case '\n': return makeToken(Token::Type::EndOfLine);
         case '+': return makeToken(Token::Type::Plus);
         case '-': return makeToken(Token::Type::Minus);
         case '*': return makeToken(Token::Type::Star);
@@ -31,7 +32,7 @@ namespace ASM40xx
         case '=': return makeToken(Token::Type::Equal);
         }
 
-        return makeToken(Token::Type::Error);
+        return errorToken("Unexpected character.");
     }
 
     void Scanner::skipWhitespace() {
@@ -41,10 +42,6 @@ namespace ASM40xx
             case ' ':
             case '\r':
             case '\t':
-                current++;
-                break;
-            case '\n':
-                line++;
                 current++;
                 break;
             case '/':
@@ -206,8 +203,27 @@ namespace ASM40xx
 
     Token::Type Scanner::checkMnemonic(int start, int length, const char* rest, Token::Type type)
     {
-        if (current - this->start == start + length && memcmp(this->start + start, rest, length) == 0) return type;
+        if (current - this->start == start + length &&
+            memcmp(this->start + start, rest, length) == 0) return type;
         return Token::Type::Label;
+    }
+
+    Token Scanner::makeToken(Token::Type type)
+    {
+        Token token;
+        token.type = type;
+        token.start = start;
+        token.length = current - start;
+        return token;
+    }
+
+    Token Scanner::errorToken(const char* message)
+    {
+        Token token;
+        token.type = Token::Type::Error;
+        token.start = message;
+        token.length = std::strlen(message);
+        return token;
     }
 
 }
