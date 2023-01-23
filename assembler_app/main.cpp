@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 		std::vector<u8> output;
 
 		if (std::strcmp(argv[1], "40xx") == 0)
-			ASM4040::assemble(buffer, output);
+			ASM40xx::assemble(buffer, output);
 
 		delete[] buffer;
 	}

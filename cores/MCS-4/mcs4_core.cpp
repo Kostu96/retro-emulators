@@ -65,7 +65,7 @@ void MCS4Core::loadROM(const char* filename)
     fin.read((char*)(ROM.rom), sizeof(ROM.rom));
     fin.close();
 
-    ASM4040::disassemble(ROM.rom, sizeof(ROM.rom), m_disassembly);
+    ASM40xx::disassemble(ROM.rom, sizeof(ROM.rom), m_disassembly);
 }
 
 void MCS4Core::reset()
