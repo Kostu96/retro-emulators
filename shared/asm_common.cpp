@@ -15,6 +15,14 @@ void printBytes(std::stringstream& ss, const u8* code, size_t& addr, u8 count, .
     va_end(args);
 }
 
+u16 digitCharToValue(char c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    else if (c >= 'A' && c <= 'F') return 10 + c - 'A';
+
+    return u16(-1);
+}
+
 bool isDigit(char c)
 {
     return c >= '0' && c <= '9';

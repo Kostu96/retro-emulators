@@ -16,6 +16,7 @@ namespace ASM40xx {
             MN_JCN, MN_JIN, MN_JMS, MN_JUN,
             MN_KBP,
             MN_LD, MN_LDM,
+            MN_NOP,
             MN_RAL, MN_RAR, MN_RDM, MN_RDR, MN_RDX,
             MN_SBM, MN_SRC, MN_STC, MN_SUB,
             MN_TCC, MN_TCS,
@@ -38,6 +39,7 @@ namespace ASM40xx {
         Type type = Type::Error;
         const char* start = nullptr;
         u32 length = 0;
+        u16 value = 0;
     };
 
     class Scanner
@@ -54,6 +56,9 @@ namespace ASM40xx {
         Token::Type checkMnemonic(int start, int length, const char* rest, Token::Type type);
         Token makeToken(Token::Type type);
         Token errorToken(const char* message);
+        Token numberToken();
+        bool isDigit(char c);
+        bool isAlpha(char c);
 
         const char* m_start;
         const char* m_current;

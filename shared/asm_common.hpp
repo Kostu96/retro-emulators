@@ -12,5 +12,7 @@ struct DisassemblyLine
 
 void printBytes(std::stringstream& ss, const u8* code, size_t& addr, u8 count, ...);
 
+u16 digitCharToValue(char c);
+
 bool isDigit(char c);
 bool isAlpha(char c);

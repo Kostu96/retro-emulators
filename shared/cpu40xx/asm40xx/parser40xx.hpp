@@ -19,7 +19,6 @@ namespace ASM40xx {
         void consume(Token::Type type, const char* message);
         void instruction();
         u16 expression();
-        u8 mnemonicTypeToByte(Token::Type type) const;
 
         Scanner m_scanner;
 

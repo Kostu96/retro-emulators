@@ -17,8 +17,7 @@ namespace ASM40xx {
         if (isDigit(*m_current))
         {
             while (isDigit(*m_current)) m_current++;
-
-            return makeToken(Token::Type::Number);
+            return numberToken();
         }
 
         switch (*m_current++)
@@ -138,6 +137,7 @@ namespace ASM40xx {
                 return checkMnemonic(2, 0, "", Token::Type::MN_LD);
             }
             break;
+        case 'N': return checkMnemonic(1, 2, "OP", Token::Type::MN_NOP);
         case 'R':
             if (m_current - m_start > 1)
                 switch (m_start[1])
@@ -223,6 +223,44 @@ namespace ASM40xx {
         token.start = message;
         token.length = std::strlen(message);
         return token;
+    }
+
+    Token Scanner::numberToken()
+    {
+        Token token;
+        token.type = Token::Type::Number;
+        token.start = m_start;
+        token.length = m_current - m_start;
+
+        u16 value = 0;
+        if (m_current[1] == 'H')
+        {
+
+        }
+        else
+        {
+            u16 pos = 1;
+            for (int i = token.length - 1; i >= 0; i--)
+            {
+                value += digitCharToValue(token.start[i]) * pos;
+                pos *= 10;
+            }
+        }
+        token.value = value;
+
+        return token;
+    }
+
+    bool Scanner::isDigit(char c)
+    {
+        return (c >= '0' && c <= '9') ||
+               (c >= 'A' && c <= 'F');
+    }
+
+    bool Scanner::isAlpha(char c)
+    {
+        return (c >= 'A' && c <= 'Z') ||
+                c == '_';
     }
 
 }
