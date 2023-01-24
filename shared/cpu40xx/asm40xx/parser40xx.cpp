@@ -85,7 +85,6 @@ namespace ASM40xx {
             }
             else if (match(Token::Type::Equal))
             {
-                advance();
                 expression();
             }
             else
@@ -95,8 +94,11 @@ namespace ASM40xx {
         }
         else if (match(Token::Type::Equal))
         {
-            advance();
-            expression();
+            u16 value = expression();
+            if (value > 0xFFF)
+                errorAt(m_current, "Expression overflowed.");
+
+            m_address = value & 0xFFF;
         }
 
         consume(Token::Type::EndOfLine, "Expect EOL.");
@@ -119,16 +121,54 @@ namespace ASM40xx {
 
         switch (m_previous.type)
         {
-        case Token::Type::MN_ADD: break;
-        case Token::Type::MN_ADM: break;
-        case Token::Type::MN_BBL: break;
-        case Token::Type::MN_CLB: break;
-        case Token::Type::MN_CLC: break;
-        case Token::Type::MN_CMA: break;
-        case Token::Type::MN_CMC: break;
-        case Token::Type::MN_DAA: break;
-        case Token::Type::MN_DAC: break;
-        case Token::Type::MN_DCL: break;
+        case Token::Type::MN_ADD: {
+            u16 reg = expression();
+            if (reg > 0xF)
+                errorAt(m_current, "Expression does not evaluate to register index.");
+
+            m_output.push_back(0x80 | reg);
+            m_address++;
+        } break;
+        case Token::Type::MN_ADM:
+            m_output.push_back(0xEB);
+            m_address++;
+            break;
+        case Token::Type::MN_BBL: {
+            u16 value = expression();
+            if (value > 0xF)
+                errorAt(m_current, "Expression overflowed.");  // TODO: change to warning
+
+            m_output.push_back(0xC0 | value);
+            m_address++;
+        } break;
+        case Token::Type::MN_CLB:
+            m_output.push_back(0xF0);
+            m_address++;
+            break;
+        case Token::Type::MN_CLC:
+            m_output.push_back(0xF1);
+            m_address++;
+            break;
+        case Token::Type::MN_CMA:
+            m_output.push_back(0xF4);
+            m_address++;
+            break;
+        case Token::Type::MN_CMC:
+            m_output.push_back(0xF3);
+            m_address++;
+            break;
+        case Token::Type::MN_DAA:
+            m_output.push_back(0xFB);
+            m_address++;
+            break;
+        case Token::Type::MN_DAC:
+            m_output.push_back(0xF8);
+            m_address++;
+            break;
+        case Token::Type::MN_DCL:
+            m_output.push_back(0xFD);
+            m_address++;
+            break;
         case Token::Type::MN_FIM: {
             u16 reg = expression();
             if (reg > 0xF && !(reg & 1))
@@ -142,13 +182,69 @@ namespace ASM40xx {
             m_output.push_back(value & 0xFF);
             m_address += 2;
         } break;
-        case Token::Type::MN_FIN: break;
-        case Token::Type::MN_IAC: break;
-        case Token::Type::MN_INC: break;
-        case Token::Type::MN_ISZ: break;
-        case Token::Type::MN_JCN: break;
-        case Token::Type::MN_JIN: break;
-        case Token::Type::MN_JMS: break;
+        case Token::Type::MN_FIN: {
+            u16 reg = expression();
+            if (reg > 0xF && !(reg & 1))
+                errorAt(m_current, "Expression does not evaluate to register pair index.");
+
+            m_output.push_back(0x30 | reg);
+            m_address++;
+        } break;
+        case Token::Type::MN_IAC:
+            m_output.push_back(0xF2);
+            m_address++;
+            break;
+        case Token::Type::MN_INC: {
+            u16 reg = expression();
+            if (reg > 0xF)
+                errorAt(m_current, "Expression does not evaluate to register index.");
+
+            m_output.push_back(0x60 | reg);
+            m_address++;
+        } break;
+        case Token::Type::MN_ISZ: {
+            u16 reg = expression();
+            if (reg > 0xF)
+                errorAt(m_current, "Expression does not evaluate to register index.");
+
+            u16 value = expression();
+            if (value > 0xFF)
+                errorAt(m_current, "Expression overflowed."); // TODO: change to warning
+
+            m_output.push_back(0x70 | reg);
+            m_output.push_back(value & 0xFF);
+            m_address += 2;
+        } break;
+        case Token::Type::MN_JCN: {
+            u16 con = expression();
+            if (con > 0xF)
+                errorAt(m_current, "Expression overflowed."); // TODO: change to warning
+
+            u16 value = expression();
+            if (value > 0xFF)
+                errorAt(m_current, "Expression overflowed."); // TODO: change to warning
+
+            m_output.push_back(0x10 | (con & 0xF));
+            m_output.push_back(value & 0xFF);
+            m_address += 2;
+        } break;
+        case Token::Type::MN_JIN: {
+            u16 reg = expression();
+            if (reg > 0xF && !(reg & 1))
+                errorAt(m_current, "Expression does not evaluate to register pair index.");
+
+            m_output.push_back(0x31 | reg);
+            m_address++;
+        } break;
+        case Token::Type::MN_JMS: {
+            u16 value = expression();
+            if (value > 0xFFF)
+                errorAt(m_current, "Expression overflowed."); // TODO: change to warning
+
+            m_output.push_back(0x50 | (value >> 8));
+            m_output.push_back(value & 0xFF);
+            m_address += 2;
+        } break;
         case Token::Type::MN_JUN: {
             u16 value = expression();
             if (value > 0xFFF)
@@ -158,24 +254,54 @@ namespace ASM40xx {
             m_output.push_back(value & 0xFF);
             m_address += 2;
         } break;
-        case Token::Type::MN_KBP: break;
-        case Token::Type::MN_LD:  break;
-        case Token::Type::MN_LDM: break;
+        case Token::Type::MN_KBP:
+            m_output.push_back(0xFC);
+            m_address++;
+            break;
+        case Token::Type::MN_LD: {
+            u16 reg = expression();
+            if (reg > 0xF)
+                errorAt(m_current, "Expression does not evaluate to register index.");
+
+            m_output.push_back(0xA0 | reg);
+            m_address++;
+        } break;
+        case Token::Type::MN_LDM: {
+            u16 value = expression();
+            if (value > 0xF)
+                errorAt(m_current, "Expression overflowed."); // TODO: change to warning
+
+            m_output.push_back(0xB0 | (value & 0xF));
+            m_address++;
+        } break;
         case Token::Type::MN_NOP:
             m_output.push_back(0x00);
             m_address++;
             break;
-        case Token::Type::MN_RAL: break;
-        case Token::Type::MN_RAR:
-            
+        case Token::Type::MN_RAL:
+            m_output.push_back(0xF5);
+            m_address++;
             break;
-        case Token::Type::MN_RDM: break;
+        case Token::Type::MN_RAR:
+            m_output.push_back(0xF6);
+            m_address++;
+            break;
+        case Token::Type::MN_RDM:
+            m_output.push_back(0xE9);
+            m_address++;
+            break;
         case Token::Type::MN_RDR:
             m_output.push_back(0xEA);
             m_address++;
             break;
-        case Token::Type::MN_RDX: break;
-        case Token::Type::MN_SBM: break;
+        case Token::Type::MN_RDX:
+            m_output.push_back(0xEC | (m_previous.start[2] - '0'));
+            m_address++;
+            break;
+        case Token::Type::MN_SBM:
+            m_output.push_back(0xE8);
+            m_address++;
+            break;
         case Token::Type::MN_SRC: {
             u16 reg = expression();
             if (reg > 0xF && !(reg & 1))
@@ -184,14 +310,42 @@ namespace ASM40xx {
             m_output.push_back(0x21 | reg);
             m_address++;
         } break;
-        case Token::Type::MN_STC: break;
-        case Token::Type::MN_SUB: break;
-        case Token::Type::MN_TCC: break;
-        case Token::Type::MN_TCS: break;
-        case Token::Type::MN_WMP: break;
-        case Token::Type::MN_WRM: break;
-        case Token::Type::MN_WRR: break;
-        case Token::Type::MN_WRX: break;
+        case Token::Type::MN_STC:
+            m_output.push_back(0xFA);
+            m_address++;
+            break;
+        case Token::Type::MN_SUB: {
+            u16 reg = expression();
+            if (reg > 0xF)
+                errorAt(m_current, "Expression does not evaluate to register index.");
+
+            m_output.push_back(0x90 | reg);
+            m_address++;
+        } break;
+        case Token::Type::MN_TCC:
+            m_output.push_back(0xF7);
+            m_address++;
+            break;
+        case Token::Type::MN_TCS:
+            m_output.push_back(0xF9);
+            m_address++;
+            break;
+        case Token::Type::MN_WMP:
+            m_output.push_back(0xE1);
+            m_address++;
+            break;
+        case Token::Type::MN_WRM:
+            m_output.push_back(0xE0);
+            m_address++;
+            break;
+        case Token::Type::MN_WRR:
+            m_output.push_back(0xE2);
+            m_address++;
+            break;
+        case Token::Type::MN_WRX:
+            m_output.push_back(0xE4 | (m_previous.start[2] - '0'));
+            m_address++;
+            break;
         case Token::Type::MN_XCH: {
             u16 reg = expression();
             if (reg > 0xF)

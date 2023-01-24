@@ -233,9 +233,16 @@ namespace ASM40xx {
         token.length = m_current - m_start;
 
         u16 value = 0;
-        if (m_current[1] == 'H')
+        if (m_current[0] == 'H')
         {
+            m_current++;
 
+            u16 pos = 1;
+            for (int i = token.length - 1; i >= 0; i--)
+            {
+                value += digitCharToValue(token.start[i]) * pos;
+                pos *= 16;
+            }
         }
         else
         {

@@ -15,6 +15,7 @@ namespace ASM40xx
         parser.advance();
         while(!parser.match(Token::Type::EndOfSource))
             parser.line();
+
     }
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte)
