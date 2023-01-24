@@ -1,5 +1,5 @@
 #include "asm40xx.hpp"
-#include "scanner40xx.hpp"
+#include "parser40xx.hpp"
 
 #include <cassert>
 #include <unordered_map>
@@ -9,40 +9,12 @@ namespace ASM40xx
 
     void assemble(const char* source, std::vector<u8>& output)
     {
-        std::unordered_map<std::string_view, u16> labels;
-        Scanner scanner{ source };
+        Parser parser{ source };
 
         u32 line = -1;
-        Token previous{};
-        Token current{};
-        while (true)
-        {
-            previous = current;
-            current = scanner.getToken();
-            if (current.type == Token::Type::EndOfSource) break;
-
-            if (current.type == Token::Type::Comma)
-            {
-                std::string_view str{ current.start, current.length };
-                u16 value = 0;
-
-                switch (next.type)
-                {
-                case Token::Type::Comma:
-                    break;
-                case Token::Type::Equal:
-                    next = scanner.getToken();
-                    break;
-                }
-
-                if (!labels.contains(str))
-                    labels.emplace(str, value);
-                else
-                {
-                    // error, multiple label or define
-                }
-            }
-        }
+        parser.advance();
+        while(!parser.match(Token::Type::EndOfSource))
+            parser.line();
     }
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte)
