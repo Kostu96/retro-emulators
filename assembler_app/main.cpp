@@ -1,4 +1,5 @@
 #include "asm40xx.hpp"
+#include "asm8008.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -23,11 +24,17 @@ int main(int argc, char* argv[])
 		file.close();
 
 		std::vector<u8> output;
+		std::vector<ErrorMessage> errors;
 
 		if (std::strcmp(argv[1], "40xx") == 0)
 			ASM40xx::assemble(buffer, output);
+		else if(std::strcmp(argv[1], "8008") == 0)
+			ASM8008::assemble(buffer, output, errors);
 
 		delete[] buffer;
+
+		for (auto& error : errors)
+			std::cerr << "Error at line " << error.line << ": " << error.message << '\n';
 	}
 	
 	return 0;

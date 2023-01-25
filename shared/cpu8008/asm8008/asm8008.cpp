@@ -1,4 +1,5 @@
 #include "asm8008.hpp"
+#include "scanner8008.hpp"
 
 #include <cassert>
 #include <iomanip>
@@ -12,12 +13,16 @@
 namespace ASM8008
 {
 
-    void assemble(const char* source, std::vector<u8>& output)
+    void assemble(const char* source, std::vector<u8>& output, std::vector<ErrorMessage>& errors)
     {
-        const char* current = source;
-        const char* start = source;
+        Scanner scanner{ source, errors };
 
-        
+        Token token = scanner.getToken();
+        while (token.type != Token::Type::EndOfSource)
+        {
+
+            token = scanner.getToken();
+        }
     }
 
     void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)

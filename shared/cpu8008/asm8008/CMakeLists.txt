@@ -1,0 +1,24 @@
+set(ASM8008_LIB_TARGET_NAME asm8008_lib)
+
+set(ASM8008_LIB_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/asm8008.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/asm8008.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/scanner8008.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/scanner8008.hpp
+)
+
+add_library(${ASM8008_LIB_TARGET_NAME} STATIC ${ASM8008_LIB_SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${ASM8008_LIB_SOURCES})
+
+target_include_directories(${ASM8008_LIB_TARGET_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(${ASM8008_LIB_TARGET_NAME} PUBLIC
+    asm_common_lib
+)
+
+set_target_properties(${ASM8008_LIB_TARGET_NAME} PROPERTIES
+    FOLDER shared/8008
+)

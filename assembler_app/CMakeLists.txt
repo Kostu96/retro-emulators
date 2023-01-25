@@ -16,6 +16,7 @@ target_compile_options(${ASM_APP_TARGET_NAME} PRIVATE
 
 target_link_libraries(${ASM_APP_TARGET_NAME} PRIVATE
     asm40xx_lib
+    asm8008_lib
 )
 
 set_target_properties(${ASM_APP_TARGET_NAME} PROPERTIES
