@@ -8,7 +8,18 @@ namespace ASM8008 {
     struct Token
     {
         enum class Type {
+            MN_ACI, MN_ADC, MN_ADD, MN_ADI, MN_ANA, MN_ANI,
+            MN_CALL, MN_CC, MN_CM, MN_CMP, MN_CNC, MN_CNZ, MN_CP, MN_CPE, MN_CPI, MN_CPO, MN_CZ,
+            MN_DB, MN_DCR, MN_DS, MN_DW,
+            MN_END, MN_ENDIF, MN_ENDM, MN_EQU,
             MN_HLT,
+            MN_IF, MN_IN, MN_INR,
+            MN_JC, MN_JM, MN_JMP, MN_JNC, MN_JNZ, MN_JP, MN_JPE, MN_JPO, MN_JZ,
+            MN_MACRO, MN_MOV, MN_MVI,
+            MN_ORA, MN_ORG, MN_ORI, MN_OUT,
+            MN_RAL, MN_RAR, MN_RC, MN_RET, MN_RFC, MN_RLC, MN_RM, MN_RNC, MN_RNZ, MN_RP, MN_RPE, MN_RPO, MN_RRC, MN_RST, MN_RZ,
+            MN_SBB, MN_SBI, MN_SET, MN_SUB, MN_SUI,
+            MN_XRA, MN_XRI,
             MN_COUNT,
 
             Colon,
