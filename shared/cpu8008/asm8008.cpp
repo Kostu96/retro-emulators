@@ -1,6 +1,7 @@
 #include "asm8008.hpp"
 
 #include <cassert>
+#include <iomanip>
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte1)
 #define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)
@@ -13,7 +14,10 @@ namespace ASM8008
 
     void assemble(const char* source, std::vector<u8>& output)
     {
+        const char* current = source;
+        const char* start = source;
 
+        
     }
 
     void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)

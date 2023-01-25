@@ -1,6 +1,7 @@
 #include "disasm8080.hpp"
 
 #include <cassert>
+#include <iomanip>
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte1)
 #define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)

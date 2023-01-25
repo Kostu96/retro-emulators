@@ -1,6 +1,7 @@
 #include "asm_common.hpp"
 
 #include <cstdarg>
+#include <iomanip>
 
 void printBytes(std::stringstream& ss, const u8* code, size_t& addr, u8 count, ...)
 {
@@ -15,22 +16,11 @@ void printBytes(std::stringstream& ss, const u8* code, size_t& addr, u8 count, .
     va_end(args);
 }
 
-u16 digitCharToValue(char c)
+u8 digitCharToValue(char c)
 {
     if (c >= '0' && c <= '9') return c - '0';
     else if (c >= 'A' && c <= 'F') return 10 + c - 'A';
+    else if (c >= 'a' && c <= 'f') return 10 + c - 'a';
 
-    return u16(-1);
-}
-
-bool isDigit(char c)
-{
-    return c >= '0' && c <= '9';
-}
-
-bool isAlpha(char c)
-{
-    return (c >= 'a' && c <= 'z') ||
-           (c >= 'A' && c <= 'Z') ||
-            c == '_';
+    return 0xFF;
 }

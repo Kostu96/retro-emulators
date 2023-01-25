@@ -2,10 +2,9 @@
 #include "parser40xx.hpp"
 
 #include <cassert>
-#include <unordered_map>
+#include <iomanip>
 
-namespace ASM40xx
-{
+namespace ASM40xx {
 
     void assemble(const char* source, std::vector<u8>& output)
     {
