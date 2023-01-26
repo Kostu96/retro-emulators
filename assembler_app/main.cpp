@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 		std::vector<ErrorMessage> errors;
 
 		if (std::strcmp(argv[1], "40xx") == 0)
-			ASM40xx::assemble(buffer, output);
+			ASM40xx::assemble(buffer, output, errors);
 		else if(std::strcmp(argv[1], "8008") == 0)
 			ASM8008::assemble(buffer, output, errors);
 

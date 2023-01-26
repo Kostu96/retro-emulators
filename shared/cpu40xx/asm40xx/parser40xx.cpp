@@ -47,6 +47,15 @@ namespace ASM40xx {
         m_symbolTable.emplace(std::string_view{ "R15" }, 0xF);
     }
 
+    bool Parser::parse()
+    {
+        advance();
+        while (!match(Token::Type::EndOfSource))
+            line();
+
+        return !m_hadError;
+    }
+
     void Parser::advance()
     {
         m_previous = m_current;
@@ -294,7 +303,10 @@ namespace ASM40xx {
             m_output.push_back(0xEA);
             m_address++;
             break;
-        case Token::Type::MN_RDX:
+        case Token::Type::MN_RD0:
+        case Token::Type::MN_RD1:
+        case Token::Type::MN_RD2:
+        case Token::Type::MN_RD3:
             m_output.push_back(0xEC | (m_previous.start[2] - '0'));
             m_address++;
             break;
@@ -342,7 +354,10 @@ namespace ASM40xx {
             m_output.push_back(0xE2);
             m_address++;
             break;
-        case Token::Type::MN_WRX:
+        case Token::Type::MN_WR0:
+        case Token::Type::MN_WR1:
+        case Token::Type::MN_WR2:
+        case Token::Type::MN_WR3:
             m_output.push_back(0xE4 | (m_previous.start[2] - '0'));
             m_address++;
             break;

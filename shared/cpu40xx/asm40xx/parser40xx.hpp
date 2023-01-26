@@ -12,10 +12,11 @@ namespace ASM40xx {
     public:
         explicit Parser(const char* source);
 
+        bool parse();
+    private:
         void advance();
         void line();
         bool match(Token::Type type);
-    private:
         void errorAt(const Token& token, const char* message);
         void consume(Token::Type type, const char* message);
         void instruction();

@@ -6,15 +6,10 @@
 
 namespace ASM40xx {
 
-    void assemble(const char* source, std::vector<u8>& output)
+    bool assemble(const char* source, std::vector<u8>& output, std::vector<ErrorMessage>& errors)
     {
         Parser parser{ source };
-
-        u32 line = -1;
-        parser.advance();
-        while(!parser.match(Token::Type::EndOfSource))
-            parser.line();
-
+        return parser.parse();
     }
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte)
