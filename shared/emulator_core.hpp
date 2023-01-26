@@ -1,7 +1,9 @@
 #pragma once
-#include "asm_common.hpp"
+#include "type_aliases.hpp"
 
 #include <vector>
+
+struct DisassemblyLine;
 
 struct CharVertex {
     u16 x, y;

@@ -3,21 +3,72 @@
 
 namespace ASM40xx {
 
+    Scanner::Scanner(const char* source) :
+        m_start{ source },
+        m_current{ source }
+    {
+        m_mnemonics.emplace("ADD", Token::Type::MN_ADD);
+        m_mnemonics.emplace("ADM", Token::Type::MN_ADM);
+        m_mnemonics.emplace("BBL", Token::Type::MN_BBL);
+        m_mnemonics.emplace("CLB", Token::Type::MN_CLB);
+        m_mnemonics.emplace("CLC", Token::Type::MN_CLC);
+        m_mnemonics.emplace("CMA", Token::Type::MN_CMA);
+        m_mnemonics.emplace("CMC", Token::Type::MN_CMC);
+        m_mnemonics.emplace("DAA", Token::Type::MN_DAA);
+        m_mnemonics.emplace("DAC", Token::Type::MN_DAC);
+        m_mnemonics.emplace("DCL", Token::Type::MN_DCL);
+        m_mnemonics.emplace("FIM", Token::Type::MN_FIM);
+        m_mnemonics.emplace("FIN", Token::Type::MN_FIN);
+        m_mnemonics.emplace("IAC", Token::Type::MN_IAC);
+        m_mnemonics.emplace("INC", Token::Type::MN_INC);
+        m_mnemonics.emplace("ISZ", Token::Type::MN_ISZ);
+        m_mnemonics.emplace("JCN", Token::Type::MN_JCN);
+        m_mnemonics.emplace("JIN", Token::Type::MN_JIN);
+        m_mnemonics.emplace("JMS", Token::Type::MN_JMS);
+        m_mnemonics.emplace("JUN", Token::Type::MN_JUN);
+        m_mnemonics.emplace("KBP", Token::Type::MN_KBP);
+        m_mnemonics.emplace("LD",  Token::Type::MN_LD);
+        m_mnemonics.emplace("LDM", Token::Type::MN_LDM);
+        m_mnemonics.emplace("NOP", Token::Type::MN_NOP);
+        m_mnemonics.emplace("RAL", Token::Type::MN_RAL);
+        m_mnemonics.emplace("RAR", Token::Type::MN_RAR);
+        m_mnemonics.emplace("RDM", Token::Type::MN_RDM);
+        m_mnemonics.emplace("RDR", Token::Type::MN_RDR);
+        m_mnemonics.emplace("RDX", Token::Type::MN_RDX);
+        m_mnemonics.emplace("SBM", Token::Type::MN_SBM);
+        m_mnemonics.emplace("SRC", Token::Type::MN_SRC);
+        m_mnemonics.emplace("STC", Token::Type::MN_STC);
+        m_mnemonics.emplace("SUB", Token::Type::MN_SUB);
+        m_mnemonics.emplace("TCC", Token::Type::MN_TCC);
+        m_mnemonics.emplace("TCS", Token::Type::MN_TCS);
+        m_mnemonics.emplace("WMP", Token::Type::MN_WMP);
+        m_mnemonics.emplace("WRM", Token::Type::MN_WRM);
+        m_mnemonics.emplace("WRR", Token::Type::MN_WRR);
+        m_mnemonics.emplace("WRX", Token::Type::MN_WRX);
+        m_mnemonics.emplace("XCH", Token::Type::MN_XCH);
+    }
+
     Token Scanner::getToken() {
         skipWhitespace();
         m_start = m_current;
         if (*m_current == '\0') return makeToken(Token::Type::EndOfSource);
 
-        if (isAlpha(*m_current))
-        {
-            while (isAlpha(*m_current) || isDigit(*m_current)) m_current++;
-            return makeToken(identifierType());
-        }
-
         if (isDigit(*m_current))
         {
             while (isDigit(*m_current)) m_current++;
             return numberToken();
+        }
+
+        if (isAlpha(*m_current))
+        {
+            while (isAlpha(*m_current) || isDigit(*m_current)) m_current++;
+
+            std::string_view str{ m_start, (size_t)(m_current - m_start) };
+            Token::Type type;
+            if (m_mnemonics.find(str, type))
+                return makeToken(type);
+
+            return makeToken(Token::Type::Label);
         }
 
         switch (*m_current++)
@@ -51,162 +102,6 @@ namespace ASM40xx {
             }
     }
 
-    Token::Type Scanner::identifierType()
-    {
-        switch (m_start[0]) {
-        case 'A':
-            if (m_current - m_start > 1 && m_start[1] == 'D' && m_current - m_start > 2)
-                switch (m_start[2])
-                {
-                case 'D': return checkMnemonic(3, 0, "", Token::Type::MN_ADD);
-                case 'M': return checkMnemonic(3, 0, "", Token::Type::MN_ADM);
-                }
-            break;
-        case 'B': return checkMnemonic(1, 2, "BL", Token::Type::MN_BBL);
-        case 'C':
-            if (m_current - m_start > 1)
-                switch (m_start[1])
-                {
-                case 'L':
-                    if (m_current - m_start > 2)
-                        switch (m_start[2])
-                        {
-                        case 'B': return checkMnemonic(3, 0, "", Token::Type::MN_CLB);
-                        case 'C': return checkMnemonic(3, 0, "", Token::Type::MN_CLC);
-                        }
-                    break;
-                case 'M':
-                    if (m_current - m_start > 2)
-                        switch (m_start[2])
-                        {
-                        case 'A': return checkMnemonic(3, 0, "", Token::Type::MN_CMA);
-                        case 'C': return checkMnemonic(3, 0, "", Token::Type::MN_CMC);
-                        }
-                    break;
-                }
-            break;
-        case 'D':
-            if (m_current - m_start > 1)
-                switch (m_start[1])
-                {
-                case 'A':
-                    if (m_current - m_start > 2)
-                        switch (m_start[2])
-                        {
-                        case 'A': return checkMnemonic(3, 0, "", Token::Type::MN_DAA);
-                        case 'C': return checkMnemonic(3, 0, "", Token::Type::MN_DAC);
-                        }
-                    break;
-                case 'C': return checkMnemonic(1, 2, "CL", Token::Type::MN_DCL);
-                }
-            break;
-        case 'F':
-            if (m_current - m_start > 1 && m_start[1] == 'I' && m_current - m_start > 2)
-                switch (m_start[2])
-                {
-                case 'M': return checkMnemonic(3, 0, "", Token::Type::MN_FIM);
-                case 'N': return checkMnemonic(3, 0, "", Token::Type::MN_FIN);
-                }
-            break;
-        case 'I':
-            if (m_current - m_start > 1)
-                switch (m_start[1])
-                {
-                case 'A': return checkMnemonic(2, 1, "C", Token::Type::MN_IAC);
-                case 'N': return checkMnemonic(2, 1, "C", Token::Type::MN_INC);
-                case 'S': return checkMnemonic(2, 1, "Z", Token::Type::MN_ISZ);
-                }
-            break;
-        case 'J':
-            if (m_current - m_start > 1)
-                switch (m_start[1])
-                {
-                case 'C': return checkMnemonic(2, 1, "N", Token::Type::MN_JCN);
-                case 'I': return checkMnemonic(2, 1, "N", Token::Type::MN_JIN);
-                case 'M': return checkMnemonic(2, 1, "S", Token::Type::MN_JMS);
-                case 'U': return checkMnemonic(2, 1, "N", Token::Type::MN_JUN);
-                }
-            break;
-        case 'K': return checkMnemonic(1, 2, "BP", Token::Type::MN_KBP);
-        case 'L':
-            if (m_current - m_start > 1 && m_start[1] == 'D')
-            {
-                if (m_current - m_start > 2 && m_start[2] == 'M')
-                    return checkMnemonic(3, 0, "", Token::Type::MN_LDM);
-
-                return checkMnemonic(2, 0, "", Token::Type::MN_LD);
-            }
-            break;
-        case 'N': return checkMnemonic(1, 2, "OP", Token::Type::MN_NOP);
-        case 'R':
-            if (m_current - m_start > 1)
-                switch (m_start[1])
-                {
-                case 'A':
-                    if (m_current - m_start > 2)
-                        switch (m_start[2])
-                        {
-                        case 'L': return checkMnemonic(3, 0, "", Token::Type::MN_RAL);
-                        case 'R': return checkMnemonic(3, 0, "", Token::Type::MN_RAR);
-                        }
-                    break;
-                case 'D':
-                    if (m_current - m_start > 2)
-                        switch (m_start[2])
-                        {
-                        case 'M': return checkMnemonic(3, 0, "", Token::Type::MN_RDM);
-                        case 'R': return checkMnemonic(3, 0, "", Token::Type::MN_RDR);
-                        case 'X': return checkMnemonic(3, 0, "", Token::Type::MN_RDX);
-                        }
-                    break;
-                }
-            break;
-        case 'S':
-            if (m_current - m_start > 1)
-                switch (m_start[1])
-                {
-                case 'B': return checkMnemonic(2, 1, "M", Token::Type::MN_SBM);
-                case 'R': return checkMnemonic(2, 1, "C", Token::Type::MN_SRC);
-                case 'T': return checkMnemonic(2, 1, "C", Token::Type::MN_STC);
-                case 'U': return checkMnemonic(2, 1, "B", Token::Type::MN_SUB);
-                }
-            break;
-        case 'T':
-            if (m_current - m_start > 1 && m_start[1] == 'C' && m_current - m_start > 2)
-                switch (m_start[2])
-                {
-                case 'C': return checkMnemonic(3, 0, "", Token::Type::MN_TCC);
-                case 'S': return checkMnemonic(3, 0, "", Token::Type::MN_TCS);
-                }
-            break;
-        case 'W':
-            if (m_current - m_start > 1)
-                switch (m_start[1])
-                {
-                case 'M': return checkMnemonic(2, 1, "P", Token::Type::MN_WMP);
-                case 'R':
-                    switch (m_start[2])
-                    {
-                    case 'M': return checkMnemonic(3, 0, "", Token::Type::MN_WRM);
-                    case 'R': return checkMnemonic(3, 0, "", Token::Type::MN_WRR);
-                    case 'X': return checkMnemonic(3, 0, "", Token::Type::MN_WRX);
-                    }
-                    break;
-                }
-            break;
-        case 'X': return checkMnemonic(1, 2, "CH", Token::Type::MN_XCH);
-        }
-
-        return Token::Type::Label;
-    }
-
-    Token::Type Scanner::checkMnemonic(int m_start, int length, const char* rest, Token::Type type)
-    {
-        if (m_current - this->m_start == m_start + length &&
-            memcmp(this->m_start + m_start, rest, length) == 0) return type;
-        return Token::Type::Label;
-    }
-
     Token Scanner::makeToken(Token::Type type)
     {
         Token token;
@@ -236,38 +131,22 @@ namespace ASM40xx {
         if (m_current[0] == 'H')
         {
             m_current++;
-
-            u16 pos = 1;
-            for (int i = token.length - 1; i >= 0; i--)
-            {
-                value += digitCharToValue(token.start[i]) * pos;
-                pos *= 16;
-            }
+            stringToValue(token.start, token.length, NumberBase::Hex, token.value);
+        }
+        else if (m_current[0] == 'Q' || m_current[0] == 'O')
+        {
+            m_current++;
+            stringToValue(token.start, token.length, NumberBase::Oct, token.value);
+        }
+        else if (m_current[0] == 'B')
+        {
+            m_current++;
+            stringToValue(token.start, token.length, NumberBase::Bin, token.value);
         }
         else
-        {
-            u16 pos = 1;
-            for (int i = token.length - 1; i >= 0; i--)
-            {
-                value += digitCharToValue(token.start[i]) * pos;
-                pos *= 10;
-            }
-        }
-        token.value = value;
+            stringToValue(token.start, token.length, NumberBase::Dec, token.value);
 
         return token;
-    }
-
-    bool Scanner::isDigit(char c)
-    {
-        return (c >= '0' && c <= '9') ||
-               (c >= 'A' && c <= 'F');
-    }
-
-    bool Scanner::isAlpha(char c)
-    {
-        return (c >= 'A' && c <= 'Z') ||
-                c == '_';
     }
 
 }

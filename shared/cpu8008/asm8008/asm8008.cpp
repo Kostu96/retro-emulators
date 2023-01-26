@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <iomanip>
+#include <unordered_map>
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte1)
 #define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)
@@ -16,10 +17,43 @@ namespace ASM8008
     void assemble(const char* source, std::vector<u8>& output, std::vector<ErrorMessage>& errors)
     {
         Scanner scanner{ source, errors };
+        std::unordered_map<std::string_view, u16> labels;
 
+        u32 line = 1;
+        u16 address = 0;
         Token token = scanner.getToken();
-        while (token.type != Token::Type::EndOfSource)
+        while (token.type != Token::Type::MN_END)
         {
+            switch (token.type)
+            {
+            case Token::Type::Unknown:
+                errors.push_back({ line, "Unexpected character." });
+                break;
+            case Token::Type::EndOfSource:
+                errors.push_back({ line, "Expected 'END' as the last mnemonic of the source." });
+                break;
+            case Token::Type::EndOfLine:
+                line++;
+                break;
+            case Token::Type::Label: {
+                std::string_view str{ token.start, token.length };
+
+                token = scanner.getToken();
+                if (token.type != Token::Type::Colon)
+                    errors.push_back({ line, "Unterminated label." });
+
+                labels.emplace(str, address);
+            } break;
+            default:
+                if (token.type < Token::Type::MN_Count)
+                {
+
+                }
+                else
+                {
+                    errors.push_back({ line, "Unexpected token." });
+                }
+            }
 
             token = scanner.getToken();
         }

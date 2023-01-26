@@ -1,5 +1,6 @@
 #pragma once
 #include "asm_common.hpp"
+#include "trie.hpp"
 
 #include <vector>
 
@@ -16,11 +17,12 @@ namespace ASM8008 {
             MN_IF, MN_IN, MN_INR,
             MN_JC, MN_JM, MN_JMP, MN_JNC, MN_JNZ, MN_JP, MN_JPE, MN_JPO, MN_JZ,
             MN_MACRO, MN_MOV, MN_MVI,
+            MN_NOP,
             MN_ORA, MN_ORG, MN_ORI, MN_OUT,
             MN_RAL, MN_RAR, MN_RC, MN_RET, MN_RFC, MN_RLC, MN_RM, MN_RNC, MN_RNZ, MN_RP, MN_RPE, MN_RPO, MN_RRC, MN_RST, MN_RZ,
             MN_SBB, MN_SBI, MN_SET, MN_SUB, MN_SUI,
             MN_XRA, MN_XRI,
-            MN_COUNT,
+            MN_Count,
 
             Colon,
             Comma,
@@ -46,24 +48,18 @@ namespace ASM8008 {
     class Scanner
     {
     public:
-        Scanner(const char* source, std::vector<ErrorMessage>& errors) :
-            m_start{ source },
-            m_current{ source },
-            m_errors{ errors } {}
+        Scanner(const char* source, std::vector<ErrorMessage>& errors);
 
         Token getToken();
     private:
         Token makeToken(Token::Type type);
         Token numberToken();
-        Token::Type identifierType();
-        Token::Type checkMnemonic(int m_start, int length, const char* rest, Token::Type type);
         void skipWhitespacesAndComments();
-        bool isDigit(char c);
-        bool isAlpha(char c);
 
         const char* m_start;
         const char* m_current;
         std::vector<ErrorMessage>& m_errors;
+        Trie<Token::Type> m_mnemonics;
     };
 
 }

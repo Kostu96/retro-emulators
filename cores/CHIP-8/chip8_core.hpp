@@ -1,5 +1,6 @@
 #pragma once
 #include "../../shared/emulator_core.hpp"
+#include "../../shared/asm_common/asm_common.hpp"
 
 class CHIP8Core :
     public EmulatorCore

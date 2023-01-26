@@ -1,5 +1,6 @@
 #pragma once
-#include "type_aliases.hpp"
+#include "../type_aliases.hpp"
+#include "trie.hpp"
 
 namespace ASM40xx {
 
@@ -45,23 +46,18 @@ namespace ASM40xx {
     class Scanner
     {
     public:
-        explicit Scanner(const char* source) :
-            m_start{ source },
-            m_current{ source } {}
+        explicit Scanner(const char* source);
 
         Token getToken();
     private:
         void skipWhitespace();
-        Token::Type identifierType();
-        Token::Type checkMnemonic(int start, int length, const char* rest, Token::Type type);
         Token makeToken(Token::Type type);
         Token errorToken(const char* message);
         Token numberToken();
-        bool isDigit(char c);
-        bool isAlpha(char c);
 
         const char* m_start;
         const char* m_current;
+        Trie<Token::Type> m_mnemonics;
     };
 
 }

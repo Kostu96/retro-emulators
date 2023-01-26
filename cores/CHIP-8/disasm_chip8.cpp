@@ -1,5 +1,6 @@
 #include "disasm_chip8.hpp"
 #include "chip8_instruction.hpp"
+#include "../../shared/asm_common/asm_common.hpp"
 
 #include <cassert>
 #include <cstdarg>
