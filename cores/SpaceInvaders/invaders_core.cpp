@@ -6,7 +6,7 @@
 
 static struct
 {
-#include "rom.inl"
+    u8 rom[0x100];
 
     u8 read(u16 address) const { return rom[address]; }
 } ROM;

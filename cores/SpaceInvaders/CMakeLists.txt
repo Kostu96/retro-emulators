@@ -4,7 +4,6 @@ set(INVADERS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/invaders_core.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/invaders_core.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/rom.inl
 )
 
 add_library(${INVADERS_TARGET_NAME} SHARED ${INVADERS_SOURCES})

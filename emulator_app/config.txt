@@ -1,0 +1,6 @@
+# default emulator config file
+
+SpaceInvadersERomPath = "C:\Users\Konstanty\Desktop\retro-extras\builtin_roms\space_invaders\invaders_e.bin"
+SpaceInvadersFRomPath = "C:\Users\Konstanty\Desktop\retro-extras\builtin_roms\space_invaders\invaders_f.bin"
+SpaceInvadersGRomPath = "C:\Users\Konstanty\Desktop\retro-extras\builtin_roms\space_invaders\invaders_g.bin"
+SpaceInvadersHRomPath = "C:\Users\Konstanty\Desktop\retro-extras\builtin_roms\space_invaders\invaders_h.bin"

@@ -17,8 +17,6 @@ extern "C"
     }
 }
 
-#define ROM_SERIES1
-
 static struct {
     u8 memory[0x2000];
 
@@ -36,48 +34,22 @@ static struct {
 } VRAM;
 
 static struct {
-#if defined(ROM_SERIES1)
-#include "roms/basic1_C000.inl"
-#endif
-#if defined(ROM_SERIES2)
-#include "roms/basic2_C000.inl"
-#endif
-#if defined(ROM_SERIES4)
-#include "roms/basic4_B000.inl"
-#endif
+    u8 basic[0x100];
 
-    u8 read(u16 address) const { return BASIC[address]; }
+    u8 read(u16 address) const { return basic[address]; }
 } BASIC;
 
 static struct {
-#if defined(ROM_SERIES1)
-#include "roms/editor1_E000.inl"
-#endif
-#if defined(ROM_SERIES2)
-#include "roms/editor2_E000.inl"
-#endif
-#if defined(ROM_SERIES4)
-#include "roms/editor4_E000.inl"
-#endif
+    u8 editor[0x100];
 
-        u8 read(u16 address) const { return EDITOR[address]; }
+    u8 read(u16 address) const { return editor[address]; }
 } EDITOR;
 
 static struct {
-#if defined(ROM_SERIES1)
-#include "roms/kernal1_F000.inl"
-#endif
-#if defined(ROM_SERIES2)
-#include "roms/kernal2_F000.inl"
-#endif
-#if defined(ROM_SERIES4)
-#include "roms/kernal4_F000.inl"
-#endif
+    u8 kernal[0x100];
 
-        u8 read(u16 address) const { return KERNAL[address]; }
+    u8 read(u16 address) const { return kernal[address]; }
 } KERNAL;
-
-#include "roms/charset.inl"
 
 void PETCore::render(CharVertex* verts) const
 {
