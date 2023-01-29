@@ -1,101 +1,13 @@
-#include "dll_loader.hpp"
 #include "../shared/emulator_core.hpp"
+#include "dll_loader.hpp"
 #include "gui.hpp"
 #include "renderer.hpp"
 
 #include <glad/gl.h>
-#include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
 #include <chrono>
-
-#pragma region OGLStuff
-glw::Shader* pointShader = nullptr;
-CharVertex charVertices[64*32];
-glw::VertexBuffer* charVBO = nullptr;
-glw::VertexArray* charVAO = nullptr;
-
-glw::Shader* textureShader = nullptr;
-struct TextureVertex {
-    f32 x, y;
-    f32 u, v;
-} textureVertices[] = {
-    -1.f, -1.f, 0.f, 0.f,
-     1.f, -1.0f, 1.f, 0.f,
-     1.f,  1.f, 1.f, 1.f,
-    -1.f,  1.f, 0.f, 1.f
-};
-u8 textureIndices[] = {
-    0, 1, 2,
-    2, 3, 0
-};
-glw::VertexBuffer* textureVBO = nullptr;
-glw::IndexBuffer* textureIBO = nullptr;
-glw::VertexArray* textureVAO = nullptr;
-
-glw::Framebuffer* FBO = nullptr;
-
-void init(u16 fbWidth, u16 fbHeight)
-{
-    glActiveTexture(GL_TEXTURE0);
-
-    pointShader = new glw::Shader{};
-    //pointShader->createFromSource(pointVertSource, pointFragSource);
-    textureShader = new glw::Shader{};
-    //textureShader->createFromSource(textureVertSource, textureFragSource);
-
-    charVBO = new glw::VertexBuffer{ sizeof(charVertices) };
-    glw::VertexLayout pointLayout{ {
-        { glw::LayoutElement::DataType::U16_2, false },
-        { glw::LayoutElement::DataType::U8_4, true, true }
-    } };
-    charVAO = new glw::VertexArray{ *charVBO, pointLayout };
-
-    textureVBO = new glw::VertexBuffer{ textureVertices, sizeof(textureVertices) };
-    textureIBO = new glw::IndexBuffer{ textureIndices, sizeof(textureIndices) / sizeof(u8), glw::IndexBuffer::IndexType::U8 };
-    glw::VertexLayout texturelayout{ {
-        { glw::LayoutElement::DataType::F32_2 },
-        { glw::LayoutElement::DataType::F32_2 }
-    } };
-    textureVAO = new glw::VertexArray{ *textureVBO, texturelayout };
-    textureVAO->setIndexBuffer(*textureIBO);
-
-    for (u16 row = 0; row < 32; row++)
-        for (u16 col = 0; col < 64; col++)
-        {
-            charVertices[row * 64 + col].x = col;
-            charVertices[row * 64 + col].y = row;
-            charVertices[row * 64 + col].color = 0;
-        }
-
-    FBO = new glw::Framebuffer{
-        glw::Framebuffer::Properties{ fbWidth, fbHeight, 1, {
-            glw::TextureSpecification{
-                glw::TextureFormat::RGBA8,
-                glw::TextureFilter::Nearest,
-                glw::TextureFilter::Nearest,
-                glw::TextureWrapMode::Clamp
-            }
-        }}
-    };
-}
-
-void shutdown()
-{
-    delete FBO;
-
-    delete textureVAO;
-    delete textureIBO;
-    delete textureVBO;
-
-    delete charVAO;
-    delete charVBO;
-
-    delete textureShader;
-    delete pointShader;
-}
-#pragma endregion
 
 static void glfwErrorCallback(int error, const char* description)
 {
@@ -110,10 +22,9 @@ static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int a
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2)
-    {
+    if (argc < 2) {
         std::cerr << "Invalid number of arguments.\n";
-        return -1;
+        std::terminate();
     }
 
     DllLoader<EmulatorCore> loader{ argv[1] };
@@ -177,22 +88,16 @@ int main(int argc, char* argv[])
 
                 glClear(GL_COLOR_BUFFER_BIT);
 
-                FBO->bind();
+                /*FBO->bind();
                 charVAO->bind();
                 pointShader->bind();
                 glViewport(0, 0, settings.frameWidth, settings.frameHeight);
                 core->render(charVertices);
                 charVBO->bind();
                 charVBO->setData(charVertices, sizeof(charVertices));
-                glDrawArrays(GL_POINTS, 0, settings.frameWidth * settings.frameHeight);
+                glDrawArrays(GL_POINTS, 0, settings.frameWidth * settings.frameHeight);*/
 
-                FBO->unbind();
-                textureVAO->bind();
-                textureShader->bind();
-                glViewport(BORDER_SIZE, BORDER_SIZE, settings.windowWidth, settings.windowHeight);
-                FBO->getAttachments()[0].bind(0);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
-                glFinish();
+                Renderer::renderFrame(BORDER_SIZE, BORDER_SIZE, settings.windowWidth, settings.windowHeight);
             }
 
             GUI::beginFrame();

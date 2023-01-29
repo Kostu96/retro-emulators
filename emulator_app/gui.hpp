@@ -14,11 +14,8 @@ struct GLFWwindow;
 namespace GUI {
 
     void init(GLFWwindow* window);
-
     void shutdown();
-
     void beginFrame();
-
     void render();
 
     struct MemoryView

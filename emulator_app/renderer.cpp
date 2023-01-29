@@ -98,4 +98,15 @@ namespace Renderer {
         delete pointShader;
 	}
 
+    void renderFrame(int x, int y, int width, int height)
+    {
+        FBO->unbind();
+        textureVAO->bind();
+        textureShader->bind();
+        glViewport(x, y, width, height);
+        FBO->getAttachments()[0].bind(0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+        glFinish();
+    }
+
 }
