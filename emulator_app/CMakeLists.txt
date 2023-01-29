@@ -3,8 +3,11 @@ set(EMU_APP_TARGET_NAME emulator_app)
 set(EMU_APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/dll_loader.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gui.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/shader_sources.inl
 )
 

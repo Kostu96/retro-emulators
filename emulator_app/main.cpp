@@ -1,11 +1,7 @@
 #include "dll_loader.hpp"
 #include "../shared/emulator_core.hpp"
-#include "shader_sources.inl"
-
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
 #include "gui.hpp"
+#include "renderer.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -45,9 +41,9 @@ void init(u16 fbWidth, u16 fbHeight)
     glActiveTexture(GL_TEXTURE0);
 
     pointShader = new glw::Shader{};
-    pointShader->createFromSource(pointVertSource, pointFragSource);
+    //pointShader->createFromSource(pointVertSource, pointFragSource);
     textureShader = new glw::Shader{};
-    textureShader->createFromSource(textureVertSource, textureFragSource);
+    //textureShader->createFromSource(textureVertSource, textureFragSource);
 
     charVBO = new glw::VertexBuffer{ sizeof(charVertices) };
     glw::VertexLayout pointLayout{ {
@@ -114,160 +110,109 @@ static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int a
 
 int main(int argc, char* argv[])
 {
-    if (argc > 1)
-    {
-        DllLoader<EmulatorCore> loader{ argv[1] };
-        if (!loader.openLib()) {
-           std::cerr << "Cannot open library: " << argv[1] << '\n';
-           std::terminate();
-        }
-
-        {
-            auto core = loader.createInstance();
-            
-            if (argc > 2)
-                core->loadROM(argv[2]);
-            
-            core->reset();
-
-            glfwSetErrorCallback(glfwErrorCallback);
-            if (!glfwInit()) {
-                std::cerr << "GLFW init failed!\n";
-                std::terminate();
-            }
-
-            auto& settings = core->getEmulatorSettings();
-            glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
-            GLFWwindow* window = glfwCreateWindow(settings.windowWidth, settings.windowHeight,
-                                                  settings.windowTitle, nullptr, nullptr);
-            if (!window) {
-                std::cerr << "GLFW window creation failed!\n";
-                std::terminate();
-            }
-            glfwSetKeyCallback(window, glfwKeyCallback);
-            glfwSetWindowUserPointer(window, core.get());
-            glfwMakeContextCurrent(window);
-
-            IMGUI_CHECKVERSION();
-            ImGui::CreateContext();
-            ImGuiIO& io = ImGui::GetIO();
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-            ImGui::StyleColorsDark();
-            ImGui_ImplGlfw_InitForOpenGL(window, true);
-            ImGui_ImplOpenGL3_Init("#version 450");
-
-            MemoryView memoryView;
-            DisassemblyView disassemblyView;
-
-            glw::init(glfwGetProcAddress);
-            init(settings.frameWidth, settings.frameHeight);
-
-            bool paused = true;
-            std::chrono::steady_clock::time_point lastFrameTime;
-            std::chrono::duration<double, std::micro> elapsedTime{ 0 };
-            while (!glfwWindowShouldClose(window))
-            {
-                auto time = std::chrono::steady_clock::now();
-                std::chrono::duration<double, std::micro> dt = time - lastFrameTime;
-                elapsedTime += dt;
-                lastFrameTime = time;
-
-                glfwPollEvents();
-
-                if (!paused)
-                    core->update(dt.count() * 0.001);
-
-                if (elapsedTime > std::chrono::duration<double, std::milli>(16.67))
-                {
-                    elapsedTime -= std::chrono::duration<double, std::milli>(16.67);
-
-                    FBO->bind();
-                    charVAO->bind();
-                    pointShader->bind();
-                    glViewport(0, 0, settings.frameWidth, settings.frameHeight);
-                    core->render(charVertices);
-                    charVBO->bind();
-                    charVBO->setData(charVertices, sizeof(charVertices));
-                    glDrawArrays(GL_POINTS, 0, settings.frameWidth * settings.frameHeight);
-
-                    FBO->unbind();
-                    textureVAO->bind();
-                    textureShader->bind();
-                    glViewport(0, 0, settings.windowWidth, settings.windowHeight);
-                    FBO->getAttachments()[0].bind(0);
-                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
-                    glFinish();
-                }
-
-                ImGui_ImplOpenGL3_NewFrame();
-                ImGui_ImplGlfw_NewFrame();
-                ImGui::NewFrame();
-
-                for (size_t i = 0; i < core->getNumMemories(); i++)
-                    memoryView.drawWindow((std::string{ "Memory " } + std::to_string(i)).c_str(), core, i);
-                disassemblyView.drawWindow(core);
-
-                static bool Open2 = true;
-                if (ImGui::Begin("State", &Open2, ImGuiWindowFlags_NoScrollbar))
-                {
-                    auto& state = core->getState();
-                    for (auto& entry : state)
-                    {
-                        ImGui::Text(entry.label);
-                        ImGui::SameLine();
-                        ImGui::Text("%0*X", entry.width, entry.value);
-                        if (entry.sameLine) ImGui::SameLine();
-                        if (entry.separator) ImGui::Separator();
-                    }
-
-                    ImGui::Separator();
-
-                    ImGui::BeginDisabled(!paused);
-                    if (ImGui::Button("Run")) paused = false;
-                    ImGui::EndDisabled();
-                    ImGui::SameLine();
-
-                    ImGui::BeginDisabled(paused);
-                    if (ImGui::Button("Pause")) paused = true;
-                    ImGui::EndDisabled();
-                    ImGui::SameLine();
-
-                    ImGui::BeginDisabled(!paused);
-                    if (ImGui::Button("Step")) core->update(dt.count() * 0.001);
-                    ImGui::EndDisabled();
-                    ImGui::SameLine();
-                    
-                    if (ImGui::Button("Reset")) core->reset();
-                }
-                ImGui::End();
-
-                ImGui::Render();
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-                if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-                {
-                    GLFWwindow* backup_current_context = glfwGetCurrentContext();
-                    ImGui::UpdatePlatformWindows();
-                    ImGui::RenderPlatformWindowsDefault();
-                    glfwMakeContextCurrent(backup_current_context);
-                }
-
-                glfwSwapBuffers(window);
-            }
-
-            shutdown();
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
-            glfwTerminate();
-
-        }
-        loader.closeLib();
-    }
-    else
+    if (argc < 2)
     {
         std::cerr << "Invalid number of arguments.\n";
+        return -1;
     }
+
+    DllLoader<EmulatorCore> loader{ argv[1] };
+    if (!loader.openLib()) {
+        std::cerr << "Cannot open library: " << argv[1] << '\n';
+        std::terminate();
+    }
+
+    {
+        auto core = loader.createInstance();
+            
+        if (argc > 2)
+            core->loadROM(argv[2]);
+            
+        core->reset();
+
+        glfwSetErrorCallback(glfwErrorCallback);
+        if (!glfwInit()) {
+            std::cerr << "GLFW init failed!\n";
+            std::terminate();
+        }
+
+        constexpr u16 BORDER_SIZE = 16;
+        auto& settings = core->getEmulatorSettings();
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
+        GLFWwindow* window = glfwCreateWindow(settings.windowWidth + 2 * BORDER_SIZE, settings.windowHeight + 2 * BORDER_SIZE,
+                                                settings.windowTitle, nullptr, nullptr);
+        if (!window) {
+            std::cerr << "GLFW window creation failed!\n";
+            std::terminate();
+        }
+        glfwSetKeyCallback(window, glfwKeyCallback);
+        glfwSetWindowUserPointer(window, core.get());
+        glfwMakeContextCurrent(window);
+
+        GUI::init(window);
+        GUI::MemoryView memoryView;
+        GUI::DisassemblyView disassemblyView;
+        GUI::StateView stateView;
+
+        Renderer::init(settings.frameWidth, settings.frameHeight, glfwGetProcAddress);
+
+        bool paused = true;
+        std::chrono::steady_clock::time_point lastFrameTime;
+        std::chrono::duration<double, std::micro> elapsedTime{ 0 };
+        while (!glfwWindowShouldClose(window))
+        {
+            auto time = std::chrono::steady_clock::now();
+            std::chrono::duration<double, std::micro> dt = time - lastFrameTime;
+            elapsedTime += dt;
+            lastFrameTime = time;
+
+            glfwPollEvents();
+
+            if (!paused)
+                core->update(dt.count() * 0.001);
+
+            if (elapsedTime > std::chrono::duration<double, std::milli>(16.67))
+            {
+                elapsedTime -= std::chrono::duration<double, std::milli>(16.67);
+
+                glClear(GL_COLOR_BUFFER_BIT);
+
+                FBO->bind();
+                charVAO->bind();
+                pointShader->bind();
+                glViewport(0, 0, settings.frameWidth, settings.frameHeight);
+                core->render(charVertices);
+                charVBO->bind();
+                charVBO->setData(charVertices, sizeof(charVertices));
+                glDrawArrays(GL_POINTS, 0, settings.frameWidth * settings.frameHeight);
+
+                FBO->unbind();
+                textureVAO->bind();
+                textureShader->bind();
+                glViewport(BORDER_SIZE, BORDER_SIZE, settings.windowWidth, settings.windowHeight);
+                FBO->getAttachments()[0].bind(0);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+                glFinish();
+            }
+
+            GUI::beginFrame();
+
+            for (size_t i = 0; i < core->getNumMemories(); i++)
+                memoryView.drawWindow((std::string{ "Memory " } + std::to_string(i)).c_str(), core, i);
+            disassemblyView.drawWindow(core);
+            stateView.drawWindow(core, paused, dt.count() * 0.001);
+
+            GUI::render();
+
+            glfwSwapBuffers(window);
+        }
+
+        Renderer::shutdown();
+        GUI::shutdown();
+        glfwTerminate();
+
+    }
+    loader.closeLib();
 
     return 0;
 }
