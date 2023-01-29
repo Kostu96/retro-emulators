@@ -1,7 +1,7 @@
 #pragma once
 #include "../memory_map.hpp"
 
-class CPU4040
+class CPU40xx
 {
 public:
     using ReadInputFunc = std::function<u8(u8)>;
@@ -38,10 +38,10 @@ public:
     u8 getSRCReg() const { return SRCReg; }
     u8 getCMRAM() const { return CMRAM; }
 
-    explicit CPU4040(Mode mode);
-    ~CPU4040();
-    CPU4040(const CPU4040&) = delete;
-    CPU4040& operator=(const CPU4040&) = delete;
+    explicit CPU40xx(Mode mode);
+    ~CPU40xx();
+    CPU40xx(const CPU40xx&) = delete;
+    CPU40xx& operator=(const CPU40xx&) = delete;
 private:
     void incPC() { m_stack[getSP()]++; }
     u8 loadRAM4();
@@ -120,7 +120,7 @@ private:
 };
 
 template<Mapable Device>
-inline void CPU4040::map(Device& device, AddressRange range)
+inline void CPU40xx::map(Device& device, AddressRange range)
 {
     m_readMap.emplace_back(
         ReadMapEntry{
@@ -137,7 +137,7 @@ inline void CPU4040::map(Device& device, AddressRange range)
 }
 
 template<ConstMapable ConstDevice>
-inline void CPU4040::map(const ConstDevice& device, AddressRange range)
+inline void CPU40xx::map(const ConstDevice& device, AddressRange range)
 {
     m_readMap.emplace_back(
         ReadMapEntry{

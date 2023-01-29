@@ -83,7 +83,7 @@ void MCS40Core::update(double /*dt*/)
 }
 
 MCS40Core::MCS40Core() :
-    m_cpu{ CPU4040::Mode::Intel4040 },
+    m_cpu{ CPU40xx::Mode::Intel4040 },
     m_emulatorSettings{ 1, 1, 256, 128, "MCS-40" }
 {
     m_cpu.map(ROM, { 0x0000, 0x00FF });

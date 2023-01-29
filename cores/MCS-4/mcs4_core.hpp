@@ -32,7 +32,7 @@ private:
     const size_t m_memorySizes[3] = { 0x100, 32 * 4, 8 * 4 };
     const int m_memoryColsNumbers[3] = { 16, 8, 2 };
 
-    CPU4040 m_cpu;
+    CPU40xx m_cpu;
 
     const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;

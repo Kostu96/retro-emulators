@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-void CPU4040::reset()
+void CPU40xx::reset()
 {
     std::memset(m_regs, 0, REGS_SIZE);
     std::memset(m_stack, 0, STACK_SIZE * 2);
@@ -14,7 +14,7 @@ void CPU4040::reset()
     CMRAM = 0;
 }
 
-void CPU4040::clock()
+void CPU40xx::clock()
 {
     u8 opcode = loadROM8(getPC());
     incPC();
@@ -92,7 +92,7 @@ void CPU4040::clock()
     }
 }
 
-CPU4040::CPU4040(Mode mode) :
+CPU40xx::CPU40xx(Mode mode) :
     m_mode{ mode },
     REGS_SIZE{ mode == Mode::Intel4004 ? 8u : 12u },
     STACK_SIZE{ mode == Mode::Intel4004 ? 4u : 8u },
@@ -100,13 +100,13 @@ CPU4040::CPU4040(Mode mode) :
     m_stack{ new u16[STACK_SIZE] }
 {}
 
-CPU4040::~CPU4040()
+CPU40xx::~CPU40xx()
 {
     delete[] m_regs;
     delete[] m_stack;
 }
 
-u8 CPU4040::loadROM8(u16 address) const
+u8 CPU40xx::loadROM8(u16 address) const
 {
     u8 data = 0;
     bool read = false;
@@ -124,7 +124,7 @@ u8 CPU4040::loadROM8(u16 address) const
     return data;
 }
 
-u8 CPU4040::loadRAM4()
+u8 CPU40xx::loadRAM4()
 {
     u16 address = 0;
     address |= CMRAM >> 1;
@@ -146,7 +146,7 @@ u8 CPU4040::loadRAM4()
     return data;
 }
 
-void CPU4040::storeRAM4(u8 data)
+void CPU40xx::storeRAM4(u8 data)
 {
     u16 address = 0;
     address |= CMRAM >> 1;
@@ -166,7 +166,7 @@ void CPU4040::storeRAM4(u8 data)
     assert(stored && "Unhandled memory read");
 }
 
-void CPU4040::ADD(const u8* regs, u8 idx)
+void CPU40xx::ADD(const u8* regs, u8 idx)
 {
     u8 value = regs[idx / 2];
     u8 temp = ACC + (idx % 2 ? value & 0xF : value >> 4) + CY;
@@ -174,41 +174,41 @@ void CPU4040::ADD(const u8* regs, u8 idx)
     CY = temp >> 4;
 }
 
-void CPU4040::ADM()
+void CPU40xx::ADM()
 {
     u8 temp = ACC + loadRAM4() + CY;
     ACC = temp;
     CY = temp >> 4;
 }
 
-void CPU4040::BBL(u8 data)
+void CPU40xx::BBL(u8 data)
 {
     SP--;
     ACC = data;
 }
 
-void CPU4040::CLB()
+void CPU40xx::CLB()
 {
     ACC = 0;
     CY = 0;
 }
 
-void CPU4040::CLC()
+void CPU40xx::CLC()
 {
     CY = 0;
 }
 
-void CPU4040::CMA()
+void CPU40xx::CMA()
 {
     ACC = ~ACC;
 }
 
-void CPU4040::CMC()
+void CPU40xx::CMC()
 {
     CY = ~CY;
 }
 
-void CPU4040::DAA()
+void CPU40xx::DAA()
 {
     if (ACC > 9 || CY) {
         u8 temp = ACC + 6;
@@ -217,40 +217,40 @@ void CPU4040::DAA()
     }
 }
 
-void CPU4040::DAC()
+void CPU40xx::DAC()
 {
     u8 temp = ACC + 0xF;
     ACC = temp;
     CY = temp >> 4;;
 }
 
-void CPU4040::DCL()
+void CPU40xx::DCL()
 {
     if (ACC == 0) CMRAM = 1;
     else CMRAM = ACC << 1;
 }
 
-void CPU4040::FIM(u8* reg)
+void CPU40xx::FIM(u8* reg)
 {
     *reg = loadROM8(getPC());
     incPC();
 }
 
-void CPU4040::FIN(u8* reg)
+void CPU40xx::FIN(u8* reg)
 {
     u16 addr = m_regs[0];
     if ((getPC() & 0xFF) == 0xFF) addr += 0x100;
     *reg = loadROM8(addr);
 }
 
-void CPU4040::IAC()
+void CPU40xx::IAC()
 {
     u8 temp = ACC + 1;
     ACC = temp;
     CY = temp >> 4;
 }
 
-void CPU4040::INC(u8* regs, u8 idx)
+void CPU40xx::INC(u8* regs, u8 idx)
 {
     regs += idx / 2;
     u8 temp = (idx % 2 ? *regs & 0xF : *regs >> 4) + 1;
@@ -259,7 +259,7 @@ void CPU4040::INC(u8* regs, u8 idx)
     *regs |= idx % 2 ? temp : temp << 4;
 }
 
-void CPU4040::ISZ(u8* regs, u8 idx)
+void CPU40xx::ISZ(u8* regs, u8 idx)
 {
     u8 address = loadROM8(getPC());
     incPC();
@@ -278,7 +278,7 @@ void CPU4040::ISZ(u8* regs, u8 idx)
     }
 }
 
-void CPU4040::JCN(u8 condition)
+void CPU40xx::JCN(u8 condition)
 {
     u8 address = loadROM8(getPC());
     incPC();
@@ -299,14 +299,14 @@ void CPU4040::JCN(u8 condition)
     }
 }
 
-void CPU4040::JIN(const u8* reg)
+void CPU40xx::JIN(const u8* reg)
 {
     if ((getPC() & 0xFF) == 0xFF) incPC();
     m_stack[getSP()] &= 0xF00;
     m_stack[getSP()] |= m_regs[0];
 }
 
-void CPU4040::JMS(u16 highNibble)
+void CPU40xx::JMS(u16 highNibble)
 {
     u16 addr = (highNibble << 8) | loadROM8(getPC());
     incPC();
@@ -314,12 +314,12 @@ void CPU4040::JMS(u16 highNibble)
     m_stack[getSP()] = addr;
 }
 
-void CPU4040::JUN(u16 highNibble)
+void CPU40xx::JUN(u16 highNibble)
 {
     m_stack[getSP()] = (highNibble << 8) | loadROM8(getPC());
 }
 
-void CPU4040::KBP()
+void CPU40xx::KBP()
 {
     u8 temp = ACC & 0x0Fu;
     switch (temp)
@@ -333,47 +333,47 @@ void CPU4040::KBP()
     }
 }
 
-void CPU4040::LD(const u8* regs, u8 idx)
+void CPU40xx::LD(const u8* regs, u8 idx)
 {
     u8 value = regs[idx / 2];
     ACC = idx % 2 ? value : value >> 4;
 }
 
-void CPU4040::LDM(u8 data)
+void CPU40xx::LDM(u8 data)
 {
     ACC = data;
 }
 
-void CPU4040::RAL()
+void CPU40xx::RAL()
 {
     CY = ACC >> 3;
     ACC <<= 1;
     ACC |= CY;
 }
 
-void CPU4040::RAR()
+void CPU40xx::RAR()
 {
     CY = ACC;
     ACC >>= 1;
     ACC |= CY << 3;
 }
 
-void CPU4040::RDM()
+void CPU40xx::RDM()
 {
     ACC = loadRAM4();
 }
 
-void CPU4040::RDR()
+void CPU40xx::RDR()
 {
     ACC = m_readROMIO(ROMChip);
 }
 
-void CPU4040::RDX(u8 charIdx)
+void CPU40xx::RDX(u8 charIdx)
 {
     ACC = m_readRAMStatus((RAMChip << 4) | (RAMRegIdx << 2) | charIdx);
 }
 
-void CPU4040::SBM()
+void CPU40xx::SBM()
 {
     u8 value = ~loadRAM4() & 0xF;
     u8 temp = ACC + value + CY;
@@ -381,17 +381,17 @@ void CPU4040::SBM()
     CY = temp >> 4;
 }
 
-void CPU4040::SRC(const u8* reg)
+void CPU40xx::SRC(const u8* reg)
 {
     SRCReg = *reg;
 }
 
-void CPU4040::STC()
+void CPU40xx::STC()
 {
     CY = 1;
 }
 
-void CPU4040::SUB(const u8* regs, u8 idx)
+void CPU40xx::SUB(const u8* regs, u8 idx)
 {
     u8 value = ~regs[idx / 2];
     u8 temp = ACC + (idx % 2 ? value & 0xF : value >> 4) + CY;
@@ -399,39 +399,39 @@ void CPU4040::SUB(const u8* regs, u8 idx)
     CY = temp >> 4;
 }
 
-void CPU4040::TCC()
+void CPU40xx::TCC()
 {
     ACC = CY;
     CY = 0;
 }
 
-void CPU4040::TCS()
+void CPU40xx::TCS()
 {
     ACC = 9 + CY;
     CY = 0;
 }
 
-void CPU4040::WMP()
+void CPU40xx::WMP()
 {
     m_writeRAMOut(RAMChip, ACC);
 }
 
-void CPU4040::WRM()
+void CPU40xx::WRM()
 {
     storeRAM4(ACC);
 }
 
-void CPU4040::WRR()
+void CPU40xx::WRR()
 {
     m_writeROMIO(ROMChip, ACC);
 }
 
-void CPU4040::WRX(u8 charIdx)
+void CPU40xx::WRX(u8 charIdx)
 {
     m_writeRAMStatus((RAMChip << 4) | (RAMRegIdx << 2) | charIdx, ACC);
 }
 
-void CPU4040::XCH(u8* regs, u8 idx)
+void CPU40xx::XCH(u8* regs, u8 idx)
 {
     u8 temp = ACC;
     u8 value = regs[idx / 2];

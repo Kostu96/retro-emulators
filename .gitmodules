@@ -7,3 +7,6 @@
 [submodule "ImGui"]
 	path = third_party/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "gtest"]
+	path = third_party/googletest
+	url = https://github.com/google/googletest.git

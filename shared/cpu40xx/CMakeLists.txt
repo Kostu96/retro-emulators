@@ -18,3 +18,5 @@ target_include_directories(${CPU40XX_LIB_TARGET_NAME} PUBLIC
 set_target_properties(${CPU40XX_LIB_TARGET_NAME} PROPERTIES
     FOLDER shared/40xx
 )
+
+add_subdirectory(tests)
