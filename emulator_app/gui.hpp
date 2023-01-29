@@ -16,7 +16,7 @@ namespace GUI {
     void init(GLFWwindow* window);
     void shutdown();
     void beginFrame();
-    void render();
+    void renderFrame();
 
     struct MemoryView
     {

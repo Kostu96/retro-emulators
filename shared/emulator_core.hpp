@@ -24,8 +24,8 @@ struct EmulatorSettings
     u16 frameWidth;
     u16 frameHeight;
     u16 windowWidth;
-    u16 windowHeight;
-    char windowTitle[248];
+    u16 windowHeight; // TODO: move window size and zoom level to app
+    char windowTitle[120];
 };
 
 class EmulatorCore
@@ -50,4 +50,8 @@ public:
     virtual void loadROM(const char* filename) = 0;
     virtual void reset() = 0;
     virtual void update(double dt) = 0;
+
+    using RenderPointCallback = void(*)(u16, u16, u32);
+
+    virtual void setRenderPointCallback(RenderPointCallback /*callback*/) {}
 };

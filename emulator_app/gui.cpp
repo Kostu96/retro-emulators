@@ -32,7 +32,7 @@ namespace GUI {
         ImGui::NewFrame();
     }
 
-    void render()
+    void renderFrame()
     {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

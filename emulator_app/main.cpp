@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
 
     {
         auto core = loader.createInstance();
+        core->setRenderPointCallback(Renderer::renderPoint);
             
         if (argc > 2)
             core->loadROM(argv[2]);
@@ -49,7 +50,6 @@ int main(int argc, char* argv[])
 
         constexpr u16 BORDER_SIZE = 16;
         auto& settings = core->getEmulatorSettings();
-        glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
         GLFWwindow* window = glfwCreateWindow(settings.windowWidth + 2 * BORDER_SIZE, settings.windowHeight + 2 * BORDER_SIZE,
                                                 settings.windowTitle, nullptr, nullptr);
         if (!window) {
@@ -61,11 +61,11 @@ int main(int argc, char* argv[])
         glfwMakeContextCurrent(window);
 
         GUI::init(window);
+        Renderer::init(settings.frameWidth, settings.frameHeight, glfwGetProcAddress);
+
         GUI::MemoryView memoryView;
         GUI::DisassemblyView disassemblyView;
         GUI::StateView stateView;
-
-        Renderer::init(settings.frameWidth, settings.frameHeight, glfwGetProcAddress);
 
         bool paused = true;
         std::chrono::steady_clock::time_point lastFrameTime;
@@ -77,8 +77,6 @@ int main(int argc, char* argv[])
             elapsedTime += dt;
             lastFrameTime = time;
 
-            glfwPollEvents();
-
             if (!paused)
                 core->update(dt.count() * 0.001);
 
@@ -88,28 +86,22 @@ int main(int argc, char* argv[])
 
                 glClear(GL_COLOR_BUFFER_BIT);
 
-                /*FBO->bind();
-                charVAO->bind();
-                pointShader->bind();
-                glViewport(0, 0, settings.frameWidth, settings.frameHeight);
-                core->render(charVertices);
-                charVBO->bind();
-                charVBO->setData(charVertices, sizeof(charVertices));
-                glDrawArrays(GL_POINTS, 0, settings.frameWidth * settings.frameHeight);*/
-
+                Renderer::beginFrame();
                 Renderer::renderFrame(BORDER_SIZE, BORDER_SIZE, settings.windowWidth, settings.windowHeight);
+
+                GUI::beginFrame();
+
+                for (size_t i = 0; i < core->getNumMemories(); i++)
+                    memoryView.drawWindow((std::string{ "Memory " } + std::to_string(i)).c_str(), core, i);
+                disassemblyView.drawWindow(core);
+                stateView.drawWindow(core, paused, dt.count() * 0.001);
+
+                GUI::renderFrame();
+
+                glfwSwapBuffers(window);
             }
 
-            GUI::beginFrame();
-
-            for (size_t i = 0; i < core->getNumMemories(); i++)
-                memoryView.drawWindow((std::string{ "Memory " } + std::to_string(i)).c_str(), core, i);
-            disassemblyView.drawWindow(core);
-            stateView.drawWindow(core, paused, dt.count() * 0.001);
-
-            GUI::render();
-
-            glfwSwapBuffers(window);
+            glfwPollEvents();
         }
 
         Renderer::shutdown();
