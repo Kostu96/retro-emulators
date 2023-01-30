@@ -1,2 +1,2 @@
 Emulation of the cpu:
-Intel 8008
+- Intel 8008
