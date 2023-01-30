@@ -17,7 +17,6 @@ public:
     u8 getByteAt(u16 address, size_t memoryIndex) const override;
     u16 getPC() const override { return m_cpu.getPC(); }
 
-    void render(CharVertex* verts) const override;
     void handleKey(int key, int action) override;
 
     void loadROM(const char* filename) override {}

@@ -19,21 +19,6 @@ extern "C"
     }
 }
 
-void CHIP8Core::render(CharVertex* verts) const
-{
-    for (u16 row = 0; row < 32; row++)
-        for (u16 col = 0; col < 8; col++)
-        {
-            u16 screenIndex = row * 8 + col;
-            for (u16 bit = 0; bit < 8; bit++)
-            {
-                u16 vertIndex = row * 64 + col * 8 + bit;
-                bool on = Screen[screenIndex] & (1 << (7 - bit));
-                verts[vertIndex].color = on ? 0xFFFFFFFF : 0;
-            }
-        }
-}
-
 void CHIP8Core::handleKey(int key, int action)
 {
     constexpr int KEY1 = 49;

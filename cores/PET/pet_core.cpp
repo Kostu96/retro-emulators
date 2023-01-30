@@ -51,20 +51,17 @@ static struct {
     u8 read(u16 address) const { return kernal[address]; }
 } KERNAL;
 
-void PETCore::render(CharVertex* verts) const
+/*for (u16 offset = 0; offset < 1000; offset++)
 {
-    /*for (u16 offset = 0; offset < 1000; offset++)
-    {
-        u8 character = VRAM[offset];
-        const u8* char_data = charset[character];
-        for (u8 row = 0; row < 8; row++)
-            for (u8 col = 0; col < 8; col++)
-            {
-                u8 bit = (0x80 >> col);
-                verts[offset][row][col].color = (char_data[row] & bit) ? 0xFF558371 : 0xFFDBF5E9;
-            }
-    }*/
-}
+    u8 character = VRAM[offset];
+    const u8* char_data = charset[character];
+    for (u8 row = 0; row < 8; row++)
+        for (u8 col = 0; col < 8; col++)
+        {
+            u8 bit = (0x80 >> col);
+            verts[offset][row][col].color = (char_data[row] & bit) ? 0xFF558371 : 0xFFDBF5E9;
+        }
+}*/
 
 void PETCore::handleKey(int key, int action)
 {

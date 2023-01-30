@@ -45,11 +45,6 @@ u8 InvadersCore::getByteAt(u16 address, size_t memoryIndex) const
     return m_cpu.load8(address);
 }
 
-void InvadersCore::render(CharVertex* verts) const
-{
-    
-}
-
 void InvadersCore::handleKey(int key, int action)
 {
     constexpr int KEY1 = 49;
@@ -88,6 +83,41 @@ InvadersCore::InvadersCore() :
     m_cpu{ CPU8080::Mode::Intel8080 },
     m_emulatorSettings{ 256, 224, 256, 224, "Space Invaders" }
 {
+    // TODO: change to config file library
+    std::ifstream cfgFile{ "config.txt" };
+    assert(cfgFile.is_open());
+
+    std::string line;
+    while (std::getline(cfgFile, line))
+    {
+        if (line[0] == '#') continue;
+        if (line.compare(0, 21, "SpaceInvadersERomPath") == 0)
+        {
+            std::string path = line.substr(25, line.size() - 25 - 1);
+            std::ifstream romFile{ path };
+            assert(cfgFile.is_open());
+        }
+        else if (line.compare(0, 21, "SpaceInvadersFRomPath") == 0)
+        {
+            std::string path = line.substr(25, line.size() - 25 - 1);
+            std::ifstream romFile{ path };
+            assert(cfgFile.is_open());
+        }
+        else if (line.compare(0, 21, "SpaceInvadersGRomPath") == 0)
+        {
+            std::string path = line.substr(25, line.size() - 25 - 1);
+            std::ifstream romFile{ path };
+            assert(cfgFile.is_open());
+        }
+        else if (line.compare(0, 21, "SpaceInvadersHRomPath") == 0)
+        {
+            std::string path = line.substr(25, line.size() - 25 - 1);
+            std::ifstream romFile{ path };
+            assert(cfgFile.is_open());
+        }
+
+    }
+
     m_cpu.map(ROM, { 0x0000, 0x1FFF });
     m_cpu.map(RAM, { 0x2000, 0x23FF });
     m_cpu.map(Screen, { 0x2400, 0x3FFF });

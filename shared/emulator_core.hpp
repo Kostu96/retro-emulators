@@ -5,11 +5,6 @@
 
 struct DisassemblyLine;
 
-struct CharVertex {
-    u16 x, y;
-    u32 color;
-};
-
 struct StateEntry
 {
     u16 value;
@@ -44,7 +39,6 @@ public:
     virtual u8 getByteAt(u16 address, size_t memoryIndex) const = 0;
     virtual u16 getPC() const = 0;
 
-    virtual void render(CharVertex* /*verts*/) const {};
     virtual void handleKey(int /*key*/, int /*action*/) {};
 
     virtual void loadROM(const char* filename) = 0;

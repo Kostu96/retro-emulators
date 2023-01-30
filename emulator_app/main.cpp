@@ -3,7 +3,6 @@
 #include "gui.hpp"
 #include "renderer.hpp"
 
-#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
@@ -82,8 +81,7 @@ int main(int argc, char* argv[])
             {
                 elapsedTime -= std::chrono::duration<double, std::milli>(16.67);
 
-                glClear(GL_COLOR_BUFFER_BIT);
-
+                Renderer::clear();
                 Renderer::beginFrame();
 
                 if (!paused)
