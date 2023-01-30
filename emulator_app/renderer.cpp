@@ -6,15 +6,22 @@
 
 namespace Renderer {
 
-    struct CharVertex {
+    struct PointVertex {
         u16 x, y;
         u32 color;
     };
+    static_assert(sizeof(PointVertex) == 8);
 
-    static glw::Shader* pointShader = nullptr;
-    static CharVertex charVertices[64 * 32];
-    static glw::VertexBuffer* charVBO = nullptr;
-    static glw::VertexArray* charVAO = nullptr;
+    static struct RendererData
+    {
+        u16 maxPointVerticesPerBatch = 0;
+        PointVertex* pointVBOBase = nullptr;
+        PointVertex* pointVBOPtr = nullptr;
+        glw::Shader* pointShader = nullptr;
+        glw::VertexArray* pointVAO = nullptr;
+        glw::VertexBuffer* pointVBO = nullptr;
+    }
+    s_data;
 
     static glw::Shader* textureShader = nullptr;
     static struct TextureVertex {
@@ -36,23 +43,40 @@ namespace Renderer {
 
     static glw::Framebuffer* FBO = nullptr;
 
-	void init(u16 frameWidth, u16 frameHeight, glw::GLWLoadFunc loadFunc)
-	{
-		glw::init(loadFunc);
+    static void beginPointBatch()
+    {
+        s_data.pointVBOPtr = s_data.pointVBOBase;
+    }
+
+    static void endPointBatch()
+    {
+        size_t dataSize = (uintptr_t)s_data.pointVBOPtr - (uintptr_t)s_data.pointVBOBase;
+        if (dataSize > 0)
+        {
+            s_data.pointVBO->setData(s_data.pointVBOBase, dataSize);
+            s_data.pointVAO->bind();
+            s_data.pointShader->bind();
+            glDrawArrays(GL_POINTS, 0, (GLsizei)(dataSize / sizeof(PointVertex)));
+        }
+    }
+
+    void init(u16 frameWidth, u16 frameHeight, glw::GLWLoadFunc loadFunc)
+    {
+        glw::init(loadFunc);
 
         glActiveTexture(GL_TEXTURE0);
 
-        pointShader = new glw::Shader{};
-        pointShader->createFromSource(pointVertSource, pointFragSource);
-        textureShader = new glw::Shader{};
-        textureShader->createFromSource(textureVertSource, textureFragSource);
+        s_data.pointShader = new glw::Shader{};
+        s_data.pointShader->createFromSource(pointVertSource, pointFragSource);
 
-        charVBO = new glw::VertexBuffer{ sizeof(charVertices) };
+        s_data.maxPointVerticesPerBatch = frameWidth * frameHeight;
+        s_data.pointVBOBase = new PointVertex[s_data.maxPointVerticesPerBatch];
+        s_data.pointVBO = new glw::VertexBuffer{ s_data.maxPointVerticesPerBatch * sizeof(PointVertex) };
         glw::VertexLayout pointLayout{ {
             { glw::LayoutElement::DataType::U16_2, false },
             { glw::LayoutElement::DataType::U8_4, true, true }
         } };
-        charVAO = new glw::VertexArray{ *charVBO, pointLayout };
+        s_data.pointVAO = new glw::VertexArray{ *s_data.pointVBO, pointLayout };
 
         textureVBO = new glw::VertexBuffer{ textureVertices, sizeof(textureVertices) };
         textureIBO = new glw::IndexBuffer{ textureIndices, sizeof(textureIndices) / sizeof(u8), glw::IndexBuffer::IndexType::U8 };
@@ -63,13 +87,8 @@ namespace Renderer {
         textureVAO = new glw::VertexArray{ *textureVBO, texturelayout };
         textureVAO->setIndexBuffer(*textureIBO);
 
-        for (u16 row = 0; row < 32; row++)
-            for (u16 col = 0; col < 64; col++)
-            {
-                charVertices[row * 64 + col].x = col;
-                charVertices[row * 64 + col].y = row;
-                charVertices[row * 64 + col].color = 0;
-            }
+        textureShader = new glw::Shader{};
+        textureShader->createFromSource(textureVertSource, textureFragSource);
 
         FBO = new glw::Framebuffer{
             glw::Framebuffer::Properties{ frameWidth, frameHeight, 1, {
@@ -81,33 +100,35 @@ namespace Renderer {
                 }
             }}
         };
-	}
+    }
 
-	void shutdown()
-	{
+    void shutdown()
+    {
         delete FBO;
 
         delete textureVAO;
         delete textureIBO;
         delete textureVBO;
-
-        delete charVAO;
-        delete charVBO;
-
         delete textureShader;
-        delete pointShader;
-	}
+
+        delete s_data.pointVAO;
+        delete s_data.pointVBO;
+        delete s_data.pointShader;
+        delete[] s_data.pointVBOBase;
+    }
 
     void beginFrame()
     {
         FBO->bind();
-        charVAO->bind();
-        pointShader->bind();
         glViewport(0, 0, FBO->getProperties().width, FBO->getProperties().height);
+
+        beginPointBatch();
     }
 
     void renderFrame(s32 x, s32 y, s32 width, s32 height)
     {
+        endPointBatch();
+
         FBO->unbind();
         textureVAO->bind();
         textureShader->bind();
@@ -118,7 +139,17 @@ namespace Renderer {
 
     void renderPoint(u16 x, u16 y, u32 color)
     {
+        if (((uintptr_t)s_data.pointVBOPtr - (uintptr_t)s_data.pointVBOBase) / sizeof(PointVertex)
+            >= s_data.maxPointVerticesPerBatch)
+        {
+            endPointBatch();
+            beginPointBatch();
+        }
 
+        s_data.pointVBOPtr->x = x;
+        s_data.pointVBOPtr->y = y;
+        s_data.pointVBOPtr->color = color;
+        s_data.pointVBOPtr++;
     }
 
 }

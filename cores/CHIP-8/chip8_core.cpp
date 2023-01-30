@@ -246,6 +246,15 @@ void CHIP8Core::update(double dt)
             GPR[0xF] = (Screen[index] & m_memory[I + i] >> x_bit) | (Screen[index + 1] & m_memory[I + i] << (8 - x_bit));
             Screen[index] ^= m_memory[I + i] >> x_bit;
             Screen[index + 1] ^= m_memory[I + i] << (8 - x_bit);
+
+            for (u16 bit = 0; bit < 8; bit++)
+            {
+                //u16 vertIndex = row * 64 + col * 8 + bit;
+                bool on = Screen[index] & (1 << (7 - bit));
+                m_renderPoint(x, y + i, on ? 0xFFFFFFFF : 0);
+                on = Screen[index + 1] & (1 << (7 - bit));
+                m_renderPoint(8 + x, y + i, on ? 0xFFFFFFFF : 0);
+            }
         }
     } break;
     case 0xE:

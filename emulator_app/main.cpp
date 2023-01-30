@@ -77,9 +77,6 @@ int main(int argc, char* argv[])
             elapsedTime += dt;
             lastFrameTime = time;
 
-            if (!paused)
-                core->update(dt.count() * 0.001);
-
             if (elapsedTime > std::chrono::duration<double, std::milli>(16.67))
             {
                 elapsedTime -= std::chrono::duration<double, std::milli>(16.67);
@@ -87,6 +84,10 @@ int main(int argc, char* argv[])
                 glClear(GL_COLOR_BUFFER_BIT);
 
                 Renderer::beginFrame();
+
+                if (!paused)
+                    core->update(dt.count() * 0.001);
+
                 Renderer::renderFrame(BORDER_SIZE, BORDER_SIZE, settings.windowWidth, settings.windowHeight);
 
                 GUI::beginFrame();
