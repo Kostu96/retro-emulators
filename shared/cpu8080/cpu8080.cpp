@@ -160,9 +160,9 @@ void CPU8080::clock()
     case 0xBE: CMP(load8(HL)); break;
     case 0xBF: CMP(A); break;
 
-    case 0xC0: RET(!F.bits.Z); break;
+    case 0xC0: RET(!F.Z); break;
 
-    case 0xC2: JMP(!F.bits.Z); break;
+    case 0xC2: JMP(!F.Z); break;
     case 0xC3: JMP(true); break;
 
     case 0xC6: ADD(load8(PC++)); break;
@@ -171,7 +171,7 @@ void CPU8080::clock()
 
     case 0xCD: CALL(true); break;
 
-    case 0xD0: RET(!F.bits.C); break;
+    case 0xD0: RET(!F.C); break;
     case 0xD1: DE = pop16(); break;
 
     case 0xD3: /* to be implemented */ break;
@@ -317,10 +317,11 @@ void CPU8080::ADD(u8 value)
     u16 result = A + value;
     u8 result4bit = (A & 0xF) + (value & 0xF);
     A = result;
-    F.bits.Z = (A == 0);
-    F.bits.S = 0;
-    F.bits.AC = result4bit >> 4;
-    F.bits.C = result >> 8;
+    F.Z = (A == 0);
+    F.S = result >> 7;
+    F.AC = result4bit >> 4;
+    F.C = result >> 8;
+    F.P = (std::bitset<8>(A).count() % 2) == 0;
 }
 
 void CPU8080::ADDHL(u16 value)
@@ -328,30 +329,30 @@ void CPU8080::ADDHL(u16 value)
     u32 result = HL + value;
     u16 result12bit = (HL & 0xFFF) + (value & 0xFFF);
     HL = result;
-    F.bits.Z = (HL == 0);
-    F.bits.S = 0;
-    F.bits.AC = result12bit >> 12;
-    F.bits.C = result >> 16;
+    F.Z = (HL == 0);
+    F.S = 0;
+    F.AC = result12bit >> 12;
+    F.C = result >> 16;
 }
 
 void CPU8080::CMP(u8 value)
 {
     u16 result = (s16)A - (s16)value;
     u8 result4bit = (s8)A - (s8)value;
-    F.bits.Z = (result == 0);
-    F.bits.S = 1;
-    F.bits.AC = (result4bit >> 4) & 1;
-    F.bits.C = (result >> 8) & 1;
+    F.Z = (result == 0);
+    F.S = 1;
+    F.AC = (result4bit >> 4) & 1;
+    F.C = (result >> 8) & 1;
 }
 
 void CPU8080::DECR(u8& reg)
 {
     u8 tempBit = ~reg & 0x10;
     reg--;
-    F.bits.AC = ((reg & 0x10) & tempBit) >> 4;
-    F.bits.S = 1;
-    F.bits.Z = reg == 0;
-    F.bits.P = (std::bitset<8>(reg).count() % 2) == 0;
+    F.AC = ((reg & 0x10) & tempBit) >> 4;
+    F.S = 1;
+    F.Z = reg == 0;
+    F.P = (std::bitset<8>(reg).count() % 2) == 0;
 }
 
 void CPU8080::DECRP(u16& reg)
@@ -363,10 +364,10 @@ void CPU8080::INCR(u8& reg)
 {
     u8 tempBit = reg & 0x10;
     reg++;
-    F.bits.AC = (~(reg & 0x10) & tempBit) >> 4;
-    F.bits.S = 0;
-    F.bits.Z = reg == 0;
-    F.bits.P = (std::bitset<8>(reg).count() % 2) == 0;
+    F.AC = (~(reg & 0x10) & tempBit) >> 4;
+    F.S = 0;
+    F.Z = reg == 0;
+    F.P = (std::bitset<8>(reg).count() % 2) == 0;
 }
 
 void CPU8080::INCRP(u16& reg)
@@ -377,24 +378,24 @@ void CPU8080::INCRP(u16& reg)
 void CPU8080::RRC()
 {
     F.byte = 0;
-    F.bits.C = A & 1;
+    F.C = A & 1;
     A >>= 1;
-    A |= F.bits.C;
+    A |= F.C;
 }
 
 void CPU8080::AND(u8 value)
 {
     A &= value;
     F.byte = 0;
-    F.bits.Z = A == 0;
-    F.bits.AC = 1;
+    F.Z = A == 0;
+    F.AC = 1;
 }
 
 void CPU8080::XOR(u8 value)
 {
     A ^= value;
     F.byte = 0x0F;
-    F.bits.Z = A == 0;
+    F.Z = A == 0;
 }
 
 void CPU8080::JMP(bool flag)

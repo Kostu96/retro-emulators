@@ -77,16 +77,20 @@ int main(int argc, char* argv[])
             elapsedTime += dt;
             lastFrameTime = time;
 
-            if (elapsedTime > std::chrono::duration<double, std::milli>(16.67))
+            bool doRender = elapsedTime > std::chrono::duration<double, std::milli>(16.67);
+            if (doRender)
             {
                 elapsedTime -= std::chrono::duration<double, std::milli>(16.67);
 
                 Renderer::clear();
                 Renderer::beginFrame();
+            }
 
-                if (!paused)
-                    core->update(dt.count() * 0.001);
-
+            if (!paused)
+                core->update(dt.count() * 0.001);
+            
+            if (doRender)
+            {
                 Renderer::renderFrame(BORDER_SIZE, BORDER_SIZE, settings.windowWidth, settings.windowHeight);
 
                 GUI::beginFrame();

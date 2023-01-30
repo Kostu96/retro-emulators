@@ -1,4 +1,4 @@
-set(CPU8080_TARGET_NAME cpu8080)
+set(CPU8080_TARGET_NAME cpu8080_lib)
 
 set(CPU8080_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
@@ -20,5 +20,7 @@ target_link_libraries(${CPU8080_TARGET_NAME} PUBLIC
 )
 
 set_target_properties(${CPU8080_TARGET_NAME} PROPERTIES
-    FOLDER shared
+    FOLDER shared/8080
 )
+
+add_subdirectory(tests)

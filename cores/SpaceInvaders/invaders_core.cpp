@@ -6,7 +6,7 @@
 
 static struct
 {
-    u8 rom[0x100];
+    u8 rom[0x2000];
 
     u8 read(u16 address) const { return rom[address]; }
 } ROM;
@@ -81,7 +81,7 @@ void InvadersCore::update(double /*dt*/)
 
 InvadersCore::InvadersCore() :
     m_cpu{ CPU8080::Mode::Intel8080 },
-    m_emulatorSettings{ 256, 224, 256, 224, "Space Invaders" }
+    m_emulatorSettings{ 256, 224, 256 * 2, 224 * 2, "Space Invaders" }
 {
     // TODO: change to config file library
     std::ifstream cfgFile{ "config.txt" };
@@ -94,29 +94,37 @@ InvadersCore::InvadersCore() :
         if (line.compare(0, 21, "SpaceInvadersERomPath") == 0)
         {
             std::string path = line.substr(25, line.size() - 25 - 1);
-            std::ifstream romFile{ path };
-            assert(cfgFile.is_open());
+            std::ifstream romFile{ path, std::ios_base::binary };
+            assert(romFile.is_open());
+            romFile.read((char*)(ROM.rom + 0x1800), 0x800);
+            romFile.close();
         }
         else if (line.compare(0, 21, "SpaceInvadersFRomPath") == 0)
         {
             std::string path = line.substr(25, line.size() - 25 - 1);
-            std::ifstream romFile{ path };
-            assert(cfgFile.is_open());
+            std::ifstream romFile{ path, std::ios_base::binary };
+            assert(romFile.is_open());
+            romFile.read((char*)(ROM.rom + 0x1000), 0x800);
+            romFile.close();
         }
         else if (line.compare(0, 21, "SpaceInvadersGRomPath") == 0)
         {
             std::string path = line.substr(25, line.size() - 25 - 1);
-            std::ifstream romFile{ path };
-            assert(cfgFile.is_open());
+            std::ifstream romFile{ path, std::ios_base::binary };
+            assert(romFile.is_open());
+            romFile.read((char*)(ROM.rom + 0x0800), 0x800);
+            romFile.close();
         }
         else if (line.compare(0, 21, "SpaceInvadersHRomPath") == 0)
         {
             std::string path = line.substr(25, line.size() - 25 - 1);
-            std::ifstream romFile{ path };
-            assert(cfgFile.is_open());
+            std::ifstream romFile{ path, std::ios_base::binary };
+            assert(romFile.is_open());
+            romFile.read((char*)(ROM.rom + 0x0000), 0x800);
+            romFile.close();
         }
-
     }
+    cfgFile.close();
 
     m_cpu.map(ROM, { 0x0000, 0x1FFF });
     m_cpu.map(RAM, { 0x2000, 0x23FF });

@@ -24,7 +24,7 @@ public:
             u8 unused5 : 1; // 5
             u8 S       : 1; // 6
             u8 Z       : 1; // 7
-        } bits;
+        };
         u8 byte;
     };
 

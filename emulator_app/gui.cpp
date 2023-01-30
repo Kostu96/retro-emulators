@@ -154,9 +154,9 @@ namespace GUI {
                             ImGui::Text(line.buffer);
                     }
 
-                ImGui::SetScrollFromPosY(
+                /*ImGui::SetScrollFromPosY(
                     ImGui::GetCursorStartPos().y + findLine(core->getPC(), core->getMemorySizes()[0], disassembly) * ImGui::GetTextLineHeight()
-                );
+                );*/
                 ImGui::EndChild();
             }
             ImGui::End();
