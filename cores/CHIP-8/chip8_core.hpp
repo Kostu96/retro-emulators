@@ -23,6 +23,7 @@ public:
     void reset() override;
     void update(double dt) override;
 
+    void setClearCallback(ClearCallback callback) override { m_clear = callback; }
     void setRenderPointCallback(RenderPointCallback callback) override { m_renderPoint = callback; }
 
     CHIP8Core();
@@ -56,5 +57,6 @@ private:
     std::vector<DisassemblyLine> m_disassembly;
     std::vector<StateEntry> m_state;
 
+    ClearCallback m_clear = nullptr;
     RenderPointCallback m_renderPoint = nullptr;
 };

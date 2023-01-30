@@ -143,7 +143,10 @@ void CHIP8Core::update(double dt)
     {
     case 0x0:
         if (instruction.word == 0x00E0)
+        {
             std::memset(Screen, 0, 8 * 32);
+            m_clear();
+        }
         else if (instruction.word == 0x00EE)
         {
             PC = (Stack[SP - 2] << 8);
@@ -249,11 +252,10 @@ void CHIP8Core::update(double dt)
 
             for (u16 bit = 0; bit < 8; bit++)
             {
-                //u16 vertIndex = row * 64 + col * 8 + bit;
                 bool on = Screen[index] & (1 << (7 - bit));
-                m_renderPoint(x, y + i, on ? 0xFFFFFFFF : 0);
+                m_renderPoint(x_byte * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
                 on = Screen[index + 1] & (1 << (7 - bit));
-                m_renderPoint(8 + x, y + i, on ? 0xFFFFFFFF : 0);
+                m_renderPoint((x_byte + 1) * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
             }
         }
     } break;

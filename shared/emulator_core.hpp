@@ -51,7 +51,9 @@ public:
     virtual void reset() = 0;
     virtual void update(double dt) = 0;
 
+    using ClearCallback = void(*)();
     using RenderPointCallback = void(*)(u16, u16, u32);
 
+    virtual void setClearCallback(ClearCallback /*callback*/) {}
     virtual void setRenderPointCallback(RenderPointCallback /*callback*/) {}
 };

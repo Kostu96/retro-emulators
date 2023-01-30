@@ -10,5 +10,6 @@ namespace Renderer {
 	void beginFrame();
 	void renderFrame(s32 x, s32 y, s32 width, s32 height);
 
+	void clear();
 	void renderPoint(u16 x, u16 y, u32 color);
 }

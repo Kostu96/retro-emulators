@@ -137,6 +137,11 @@ namespace Renderer {
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
     }
 
+    void clear()
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
     void renderPoint(u16 x, u16 y, u32 color)
     {
         if (((uintptr_t)s_data.pointVBOPtr - (uintptr_t)s_data.pointVBOBase) / sizeof(PointVertex)

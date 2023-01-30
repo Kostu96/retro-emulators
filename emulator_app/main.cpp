@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
 
     {
         auto core = loader.createInstance();
+        core->setClearCallback(Renderer::clear);
         core->setRenderPointCallback(Renderer::renderPoint);
             
         if (argc > 2)
