@@ -5,41 +5,28 @@
 struct CPU8080InstructionsTests :
 	public testing::Test
 {
-	struct CPUState
-	{
-		u16 PC;
-		u16 SP;
-		u16 AF;
-		u16 BC;
-		u16 DE;
-		u16 HL;
-	};
+	static constexpr u16 ROM_SIZE = 12;
 
 	struct {
-		u8 buffer[2];
+		u8 buffer[ROM_SIZE]{};
 
 		u8 read(u16 address) const { return buffer[address]; }
 	} ROM;
 
 	CPU8080 CPU;
-	CPUState referenceCPUState;
+	CPU8080::State referenceCPUState;
 
 	CPU8080InstructionsTests() :
 		CPU{ CPU8080::Mode::Intel8080 }
 	{
-		CPU.map(ROM, { 0x0000, 0x0001 });
+		CPU.map(ROM, { 0x0000, ROM_SIZE - 1 });
 	}
 
 	void SetUp() override
 	{
 		CPU.reset();
 
-		referenceCPUState.PC = CPU.getPC();
-		referenceCPUState.SP = CPU.getSP();
-		referenceCPUState.AF = CPU.getAF();
-		referenceCPUState.BC = CPU.getBC();
-		referenceCPUState.DE = CPU.getDE();
-		referenceCPUState.HL = CPU.getHL();
+		std::memcpy(&referenceCPUState, &CPU.m_state, sizeof(CPU8080::State));
 	}
 
 	void TearDown() override
@@ -60,4 +47,44 @@ TEST_F(CPU8080InstructionsTests, NOPTest)
 	CPU.clock();
 
 	referenceCPUState.PC = 0x0001;
+}
+
+TEST_F(CPU8080InstructionsTests, JMPTest)
+{
+	ROM.buffer[0] = 0xC3;
+	ROM.buffer[1] = 0xAD;
+	ROM.buffer[2] = 0xDE;
+
+	CPU.clock(); // TODO: should take 3 cycles
+
+	referenceCPUState.PC = 0xDEAD;
+}
+
+TEST_F(CPU8080InstructionsTests, LXITest)
+{
+	ROM.buffer[0x0] = 0x01;
+	ROM.buffer[0x1] = 0x23;
+	ROM.buffer[0x2] = 0x01;
+
+	ROM.buffer[0x3] = 0x11;
+	ROM.buffer[0x4] = 0x67;
+	ROM.buffer[0x5] = 0x45;
+
+	ROM.buffer[0x6] = 0x21;
+	ROM.buffer[0x7] = 0xAB;
+	ROM.buffer[0x8] = 0x89;
+
+	ROM.buffer[0x9] = 0x31;
+	ROM.buffer[0xA] = 0xEF;
+	ROM.buffer[0xB] = 0xCD;
+
+	int cycles = 4; // TODO: should take 12 cycles
+	while (cycles--)
+		CPU.clock();
+
+	referenceCPUState.BC = 0x0123;
+	referenceCPUState.DE = 0x4567;
+	referenceCPUState.HL = 0x89AB;
+	referenceCPUState.SP = 0xCDEF;
+	referenceCPUState.PC = 0x000C;
 }

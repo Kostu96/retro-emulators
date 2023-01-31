@@ -3,6 +3,12 @@
 
 #include <vector>
 
+#if defined(CPU8080_TESTS)
+#define PRIVATE public
+#else
+#define PRIVATE private
+#endif
+
 class CPU8080
 {
 public:
@@ -11,21 +17,6 @@ public:
         Intel8080,
         Z80,
         GameBoy
-    };
-
-    union Flags
-    {
-        struct {
-            u8 C       : 1; // 0
-            u8 unused1 : 1; // 1
-            u8 P       : 1; // 2
-            u8 unused3 : 1; // 3
-            u8 AC      : 1; // 4
-            u8 unused5 : 1; // 5
-            u8 S       : 1; // 6
-            u8 Z       : 1; // 7
-        };
-        u8 byte;
     };
 
     template <Mapable Device>
@@ -37,17 +28,63 @@ public:
     void clock();
 
     u8 load8(u16 address) const;
-    u16 getAF() const { return AF; }
-    u16 getBC() const { return BC; }
-    u16 getDE() const { return DE; }
-    u16 getHL() const { return HL; }
-    u16 getSP() const { return SP; }
-    u16 getPC() const { return PC; }
+    u16 getAF() const { return m_state.AF; }
+    u16 getBC() const { return m_state.BC; }
+    u16 getDE() const { return m_state.DE; }
+    u16 getHL() const { return m_state.HL; }
+    u16 getSP() const { return m_state.SP; }
+    u16 getPC() const { return m_state.PC; }
 
     explicit CPU8080(Mode mode) : m_mode{ mode } {}
     CPU8080(const CPU8080&) = delete;
     CPU8080& operator=(const CPU8080&) = delete;
-private:
+PRIVATE:
+    union Flags
+    {
+        struct {
+            u8 C : 1;       // 0
+            u8 unused1 : 1; // 1
+            u8 P : 1;       // 2
+            u8 unused3 : 1; // 3
+            u8 AC : 1;      // 4
+            u8 unused5 : 1; // 5
+            u8 S : 1;       // 6
+            u8 Z : 1;       // 7
+        };
+        u8 byte;
+    };
+
+    struct State
+    {
+        u16 PC;
+        u16 SP;
+        union {
+            struct {
+                u8 A;
+                Flags F;
+            };
+            u16 AF;
+        };
+        union {
+            struct {
+                u8 B, C;
+            };
+            u16 BC;
+        };
+        union {
+            struct {
+                u8 D, E;
+            };
+            u16 DE;
+        };
+        union {
+            struct {
+                u8 H, L;
+            };
+            u16 HL;
+        };
+    };
+
     u16 load16(u16 address);
     void store8(u16 address, u8 data);
     void store16(u16 address, u16 data);
@@ -81,34 +118,7 @@ private:
     void CALL(bool flag);
     void RET(bool flag);
 
-    // CPU State:
-    u16 PC;
-    u16 SP;
-    union {
-        struct {
-            u8 A;
-            Flags F;
-        };
-        u16 AF;
-    };
-    union {
-        struct {
-            u8 B, C;
-        };
-        u16 BC;
-    };
-    union {
-        struct {
-            u8 D, E;
-        };
-        u16 DE;
-    };
-    union {
-        struct {
-            u8 H, L;
-        };
-        u16 HL;
-    };
+    State m_state;
 
     // Helpers:
     const Mode m_mode;
