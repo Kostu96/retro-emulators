@@ -25,7 +25,7 @@ void CPU8080::clock()
     case 0x05: DECR(m_state.B); break;
     case 0x06: LDR(m_state.B, load8(m_state.PC++)); break;
 
-    case 0x0A: LDR(m_state.A, load8(m_state.BC)); break;
+    //case 0x0A: LDR(m_state.A, load8(m_state.BC)); break;
 
     case 0x0D: DECR(m_state.C); break;
     case 0x0E: LDR(m_state.C, load8(m_state.PC++)); break;
@@ -36,6 +36,7 @@ void CPU8080::clock()
     case 0x13: INCRP(m_state.DE); break;
     case 0x14: INCR(m_state.D); break;
     case 0x15: DECR(m_state.D); break;
+    case 0x16: LDR(m_state.D, load8(m_state.PC++)); break;
 
     case 0x19: ADDHL(m_state.DE); break;
     case 0x1A: LDR(m_state.A, load8(m_state.DE)); break;
@@ -50,6 +51,8 @@ void CPU8080::clock()
     case 0x26: LDR(m_state.H, load8(m_state.PC++)); break;
 
     case 0x29: ADDHL(m_state.HL); break;
+
+    case 0x2E: LDR(m_state.L, load8(m_state.PC++)); break;
 
     case 0x31: LDRP(m_state.SP, load16(m_state.PC)); m_state.PC += 2; break;
     case 0x32: LDM(load16(m_state.PC), m_state.A); m_state.PC += 2; break;

@@ -67,19 +67,19 @@ PRIVATE:
         };
         union {
             struct {
-                u8 B, C;
+                u8 C, B;
             };
             u16 BC;
         };
         union {
             struct {
-                u8 D, E;
+                u8 E, D;
             };
             u16 DE;
         };
         union {
             struct {
-                u8 H, L;
+                u8 L, H;
             };
             u16 HL;
         };

@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
         glfwSetKeyCallback(window, glfwKeyCallback);
         glfwSetWindowUserPointer(window, core.get());
         glfwMakeContextCurrent(window);
+        glfwSwapInterval(0);
 
         GUI::init(window);
         Renderer::init(settings.frameWidth, settings.frameHeight, glfwGetProcAddress);
@@ -77,17 +78,17 @@ int main(int argc, char* argv[])
             elapsedTime += dt;
             lastFrameTime = time;
 
-            bool doRender = elapsedTime > std::chrono::duration<double, std::milli>(16.67);
+            bool doRender = elapsedTime > std::chrono::duration<double, std::micro>(33333);
             if (doRender)
             {
-                elapsedTime -= std::chrono::duration<double, std::milli>(16.67);
+                elapsedTime -= std::chrono::duration<double, std::micro>(33333);
 
                 Renderer::clear();
                 Renderer::beginFrame();
             }
 
             if (!paused)
-                core->update(dt.count() * 0.001);
+                core->update(dt.count() * 0.000001);
             
             if (doRender)
             {
@@ -103,9 +104,8 @@ int main(int argc, char* argv[])
                 GUI::renderFrame();
 
                 glfwSwapBuffers(window);
+                glfwPollEvents();
             }
-
-            glfwPollEvents();
         }
 
         Renderer::shutdown();
