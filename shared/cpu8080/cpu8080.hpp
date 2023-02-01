@@ -26,6 +26,7 @@ public:
 
     void reset();
     void clock();
+    void interrupt(u8 vector);
 
     u8 load8(u16 address) const;
     u16 getAF() const { return m_state.AF; }
@@ -83,6 +84,8 @@ PRIVATE:
             };
             u16 HL;
         };
+
+        bool InterruptEnabled;
     };
 
     u16 load16(u16 address);
@@ -97,26 +100,41 @@ PRIVATE:
     void LDR(u8& dst, u8 value);
     void LDRP(u16& dst, u16 value);
     void LDM(u16 address, u8 value);
-    void XCH();
+    void XCHG();
+    void XTHL();
 
     // Arithmetic group
     void ADD(u8 value);
+    void ADC(u8 value);
+    void SUB(u8 value);
+    void SBB(u8 value);
     void ADDHL(u16 value);
     void CMP(u8 value);
     void DECR(u8& reg);
     void DECRP(u16& reg);
+    void DECM();
     void INCR(u8& reg);
     void INCRP(u16& reg);
+    void INCM();
     void RRC();
+    void RLC();
+    void RAR();
+    void RAL();
+    void DAA();
 
     // Logical group
     void AND(u8 value);
+    void OR(u8 value);
     void XOR(u8 value);
+    void STC();
+    void CMC();
+    void CMA();
 
     // Branch group
     void JMP(bool flag);
     void CALL(bool flag);
     void RET(bool flag);
+    void RST(u8 vector);
 
     State m_state;
 

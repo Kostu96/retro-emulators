@@ -4,6 +4,8 @@
 #include <cstring>
 #include <fstream>
 
+//#define CPU_DIAG
+
 static struct
 {
     u8 rom[0x2000];
@@ -72,8 +74,61 @@ void InvadersCore::reset()
     updateState();
 }
 
-void InvadersCore::update(double /*dt*/)
+#include <cstdio>
+
+void InvadersCore::update(double dt)
 {
+#ifdef CPU_DIAG
+    if (m_cpu.getPC() == 0x0005)
+    {
+        u8 C = m_cpu.getBC() & 0xFF;
+        u16 DE = m_cpu.getDE();
+
+        if (C == 0x9)
+        {
+            char* str = (char*)&ROM.rom[DE];
+            while (*str != '$')
+                printf("%c", *str++);
+        }
+        else if (C == 0x2)
+        {
+            printf("%c", DE & 0xF);
+        }
+    }
+#else
+    if (m_cpu.getPC() == 0x1A5C)
+    {
+        std::memset(Screen.screen, 0, 0x1C00);
+    }
+#endif
+
+    static double timer = 0.0;
+    timer += dt;
+
+    if (timer > 1.0 / 60.0)
+    {
+        timer -= 1.0 / 60.0;
+        m_cpu.interrupt(2);
+
+        u16 x = 0, y = 0;
+        for (u16 i = 0; i < 0x1C00; i++)
+        {
+            u8 byte = Screen.screen[i];
+            for (u16 bit = 0; bit < 8; bit++)
+            {
+                bool on = byte & (1 << (7 - bit));
+                m_renderPoint(x, y, on ? 0xFFFFFFFF : 0);
+            }
+
+            x++;
+            if (x >= 256)
+            {
+                x = 0;
+                y++;
+            }
+        }
+    }
+
     m_cpu.clock();
 
     updateState();
@@ -83,6 +138,24 @@ InvadersCore::InvadersCore() :
     m_cpu{ CPU8080::Mode::Intel8080 },
     m_emulatorSettings{ 256, 224, 256 * 2, 224 * 2, "Space Invaders" }
 {
+#ifdef CPU_DIAG
+    std::ifstream file{ "C:\\Users\\kmisiak\\myplace\\retro-extras\\programs\\8080\\cpudiag.bin", std::ios_base::binary };
+    assert(file.is_open());
+    file.read((char*)(ROM.rom + 0x0100), 0x5A7);
+    file.read((char*)RAM.ram, 0x1);
+    file.close();
+
+    ROM.rom[0x0000] = 0xC3;
+    ROM.rom[0x0001] = 0x00;
+    ROM.rom[0x0002] = 0x01;
+
+    ROM.rom[0x0170] = 0x07;
+
+    ROM.rom[0x0005] = 0xC9; // Early out from syscall
+
+    m_cpu.map(ROM, { 0x0000, 0x06A5 });
+    m_cpu.map(RAM, { 0x06A6, 0x16A5 });
+#else
     // TODO: change to config file library
     std::ifstream cfgFile{ "config.txt" };
     assert(cfgFile.is_open());
@@ -126,8 +199,12 @@ InvadersCore::InvadersCore() :
     }
     cfgFile.close();
 
+    ROM.rom[0x1A5C] = 0xC9; // Early out from ClearScreen routine
+
     m_cpu.map(ROM, { 0x0000, 0x1FFF });
     m_cpu.map(RAM, { 0x2000, 0x23FF });
+#endif
+
     m_cpu.map(Screen, { 0x2400, 0x3FFF });
 
     disassemble(ROM.rom, 0x2000, m_disassembly);

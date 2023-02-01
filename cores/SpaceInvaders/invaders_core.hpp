@@ -23,6 +23,8 @@ public:
     void reset() override;
     void update(double dt) override;
     
+    void setRenderPointCallback(RenderPointCallback callback) override { m_renderPoint = callback; }
+
     InvadersCore();
 private:
     void updateState();
@@ -35,4 +37,6 @@ private:
     const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;
     std::vector<StateEntry> m_state;
+
+    RenderPointCallback m_renderPoint = nullptr;
 };
