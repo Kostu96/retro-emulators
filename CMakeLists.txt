@@ -9,3 +9,5 @@ add_subdirectory(shared)
 add_subdirectory(cores)
 add_subdirectory(assembler_app)
 add_subdirectory(emulator_app)
+
+add_subdirectory(gameboy)
