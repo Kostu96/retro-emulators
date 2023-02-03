@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-struct CPU8080InstructionsTests :
+struct CPU8080ModeI8080Tests :
 	public testing::Test
 {
 	static constexpr u16 ROM_SIZE = 0x10;
@@ -14,7 +14,7 @@ struct CPU8080InstructionsTests :
 	CPU8080 CPU;
 	CPU8080::State referenceCPUState;
 
-	CPU8080InstructionsTests() :
+	CPU8080ModeI8080Tests() :
 		CPU{ CPU8080::Mode::Intel8080 },
 		referenceCPUState{ CPU8080::Mode::Intel8080 }
 	{
@@ -49,7 +49,7 @@ struct CPU8080InstructionsTests :
 	}
 };
 
-TEST_F(CPU8080InstructionsTests, NOPTest)
+TEST_F(CPU8080ModeI8080Tests, NOPTest)
 {
 	rom[0] = 0x00; // NOP
 
@@ -58,7 +58,7 @@ TEST_F(CPU8080InstructionsTests, NOPTest)
 	referenceCPUState.PC = 0x0001;
 }
 
-TEST_F(CPU8080InstructionsTests, JMPTest)
+TEST_F(CPU8080ModeI8080Tests, JMPTest)
 {
 	rom[0] = 0xC3;
 	rom[1] = 0xAD;
@@ -69,7 +69,7 @@ TEST_F(CPU8080InstructionsTests, JMPTest)
 	referenceCPUState.PC = 0xDEAD;
 }
 
-TEST_F(CPU8080InstructionsTests, LXITest)
+TEST_F(CPU8080ModeI8080Tests, LXITest)
 {
 	rom[0x0] = 0x01;
 	rom[0x1] = 0x23;
@@ -98,7 +98,7 @@ TEST_F(CPU8080InstructionsTests, LXITest)
 	referenceCPUState.PC = 0x000C;
 }
 
-TEST_F(CPU8080InstructionsTests, MVITest)
+TEST_F(CPU8080ModeI8080Tests, MVITest)
 {
 	rom[0x0] = 0x06;
 	rom[0x1] = 0x01; // MVI B, 0x01

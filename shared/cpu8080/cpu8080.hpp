@@ -41,7 +41,7 @@ public:
     CPU8080(const CPU8080&) = delete;
     CPU8080& operator=(const CPU8080&) = delete;
 PRIVATE:
-    union Flags
+    class Flags
     {
     public:
         explicit Flags(Mode mode) : m_mode{ mode } {}
@@ -50,8 +50,8 @@ PRIVATE:
         void setCarry(u8 value);
         u8 getHalfCarry();
         void setHalfCarry(u8 value);
-        u8 getNegative();
-        void setNegative(u8 value);
+        u8 getSubtract();
+        void setSubtract(u8 value);
         u8 getZero();
         void setZero(u8 value);
         u8 getSign();
@@ -59,26 +59,29 @@ PRIVATE:
         u8 getParity();
         void setParity(u8 value);
     private:
-        struct {
-            u8 alwaysZero : 4; // 0-3
-            u8 Carry      : 1; // 4
-            u8 HalfCarry  : 1; // 5
-            u8 Negative   : 1; // 6
-            u8 Zero       : 1; // 7
-        } m_gb;
+        union {
+            struct {
+                u8 alwaysZero : 4; // 0-3
+                u8 Carry      : 1; // 4
+                u8 HalfCarry  : 1; // 5
+                u8 Subtract   : 1; // 6
+                u8 Zero       : 1; // 7
+            } m_gb;
 
-        struct {
-            u8 Carry     : 1; // 0
-            u8 unused1   : 1; // 1
-            u8 Parity    : 1; // 2
-            u8 unused3   : 1; // 3
-            u8 HalfCarry : 1; // 4
-            u8 unused5   : 1; // 5
-            u8 Sign      : 1; // 6
-            u8 Zero      : 1; // 7
-        } m_i8080;
+            struct {
+                u8 Carry     : 1; // 0
+                u8 unused1   : 1; // 1
+                u8 Parity    : 1; // 2
+                u8 unused3   : 1; // 3
+                u8 HalfCarry : 1; // 4
+                u8 unused5   : 1; // 5
+                u8 Sign      : 1; // 6
+                u8 Zero      : 1; // 7
+            } m_i8080;
 
-        u8 m_byte;
+            u8 m_byte;
+        };
+
         Mode m_mode;
     };
 
@@ -159,6 +162,7 @@ PRIVATE:
     void CMC();
     void CMA();
     void JMP(bool flag);
+    void JR(bool flag);
     void CALL(bool flag);
     void RET(bool flag);
     void RST(u8 vector);
