@@ -44,7 +44,7 @@ extern "C"
 
 u8 InvadersCore::getByteAt(u16 address, size_t memoryIndex) const
 {
-    return m_cpu.load8(address);
+    return 0xCD;
 }
 
 void InvadersCore::handleKey(int key, int action)
@@ -201,11 +201,11 @@ InvadersCore::InvadersCore() :
 
     ROM.rom[0x1A5C] = 0xC9; // Early out from ClearScreen routine
 
-    m_cpu.map(ROM, { 0x0000, 0x1FFF });
-    m_cpu.map(RAM, { 0x2000, 0x23FF });
+    /*m_cpu.map(ROM, { 0x0000, 0x1FFF });
+    m_cpu.map(RAM, { 0x2000, 0x23FF });*/
 #endif
 
-    m_cpu.map(Screen, { 0x2400, 0x3FFF });
+    //m_cpu.map(Screen, { 0x2400, 0x3FFF });
 
     disassemble(ROM.rom, 0x2000, m_disassembly);
 

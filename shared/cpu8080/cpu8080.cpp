@@ -3,6 +3,139 @@
 #include <bitset>
 #include <cassert>
 
+
+u8 CPU8080::Flags::getCarry()
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: return m_i8080.Carry;
+    case Mode::GameBoy: return m_gb.Carry;
+    }
+
+    assert(false && "Unhandled mode");
+    return 0xFF;
+}
+
+void CPU8080::Flags::setCarry(u8 value)
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: m_i8080.Carry = value;
+    case Mode::GameBoy: m_gb.Carry = value;
+    }
+
+    assert(false && "Unhandled mode");
+}
+
+u8 CPU8080::Flags::getHalfCarry()
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: return m_i8080.HalfCarry;
+    case Mode::GameBoy: return m_gb.HalfCarry;
+    }
+
+    assert(false && "Unhandled mode");
+    return 0xFF;
+}
+
+void CPU8080::Flags::setHalfCarry(u8 value)
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: m_i8080.HalfCarry = value;
+    case Mode::GameBoy: m_gb.HalfCarry = value;
+    }
+
+    assert(false && "Unhandled mode");
+}
+
+u8 CPU8080::Flags::getNegative()
+{
+    switch (m_mode)
+    {
+    case Mode::GameBoy: return m_gb.Negative;
+    }
+
+    assert(false && "Unhandled mode");
+    return 0xFF;
+}
+
+void CPU8080::Flags::setNegative(u8 value)
+{
+    switch (m_mode)
+    {
+    case Mode::GameBoy: m_gb.Negative = value;
+    }
+
+    assert(false && "Unhandled mode");
+}
+
+u8 CPU8080::Flags::getZero()
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: return m_i8080.Zero;
+    case Mode::GameBoy: return m_gb.Zero;
+    }
+
+    assert(false && "Unhandled mode");
+    return 0xFF;
+}
+
+void CPU8080::Flags::setZero(u8 value)
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: m_i8080.Zero = value;
+    case Mode::GameBoy: m_gb.Zero = value;
+    }
+
+    assert(false && "Unhandled mode");
+}
+
+u8 CPU8080::Flags::getSign()
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: return m_i8080.Sign;
+    }
+
+    assert(false && "Unhandled mode");
+    return 0xFF;
+}
+
+void CPU8080::Flags::setSign(u8 value)
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: m_i8080.Sign = value;
+    }
+
+    assert(false && "Unhandled mode");
+}
+
+u8 CPU8080::Flags::getParity()
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: return m_i8080.Parity;
+    }
+
+    assert(false && "Unhandled mode");
+    return 0xFF;
+}
+
+void CPU8080::Flags::setParity(u8 value)
+{
+    switch (m_mode)
+    {
+    case Mode::Intel8080: m_i8080.Parity = value;
+    }
+
+    assert(false && "Unhandled mode");
+}
+
 void CPU8080::reset()
 {
     m_state.AF = 0;
@@ -12,13 +145,35 @@ void CPU8080::reset()
     m_state.SP = 0xF000;
     m_state.PC = 0;
     m_state.InterruptEnabled = false;
+
+    m_prefixMode = false;
 }
 
 void CPU8080::clock()
 {
-    u8 instruction = load8(m_state.PC++);
+    u8 opcode = load8(m_state.PC++);
 
-    switch (instruction)
+    if (m_prefixMode)
+    {
+        m_prefixMode = false;
+        prefixInstruction(opcode);
+    }
+    else 
+        standardInstruction(opcode);
+}
+
+void CPU8080::interrupt(u8 vector)
+{
+    if (m_state.InterruptEnabled)
+    {
+        m_state.InterruptEnabled = false;
+        RST(vector);
+    }
+}
+
+void CPU8080::standardInstruction(u8 opcode)
+{
+    switch (opcode)
     {
     case 0x00: break;
     case 0x01: LDRP(m_state.BC, load16(m_state.PC)); m_state.PC += 2; break;
@@ -70,7 +225,19 @@ void CPU8080::clock()
     case 0x2F: CMA(); break;
 
     case 0x31: LDRP(m_state.SP, load16(m_state.PC)); m_state.PC += 2; break;
-    case 0x32: LDM(load16(m_state.PC), m_state.A); m_state.PC += 2; break;
+    case 0x32: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            LDM(m_state.HL--, m_state.A);
+            break;
+        default:
+        case Mode::Intel8080:
+            LDM(load16(m_state.PC), m_state.A);
+            m_state.PC += 2;
+            break;
+        }
+    } break;
     case 0x33: INCRP(m_state.SP); break;
     case 0x34: INCM(); break;
     case 0x35: DECM(); break;
@@ -212,175 +379,101 @@ void CPU8080::clock()
     case 0xBD: CMP(m_state.L); break;
     case 0xBE: CMP(load8(m_state.HL)); break;
     case 0xBF: CMP(m_state.A); break;
-    case 0xC0: RET(!m_state.F.Z); break;
+    case 0xC0: RET(!m_state.F.getZero()); break;
     case 0xC1: m_state.BC = pop16(); break;
-    case 0xC2: JMP(!m_state.F.Z); break;
+    case 0xC2: JMP(!m_state.F.getZero()); break;
     case 0xC3: JMP(true); break;
-    case 0xC4: CALL(!m_state.F.Z); break;
+    case 0xC4: CALL(!m_state.F.getZero()); break;
     case 0xC5: push16(m_state.BC); break;
     case 0xC6: ADD(load8(m_state.PC++)); break;
     case 0xC7: RST(0); break;
-    case 0xC8: RET(m_state.F.Z); break;
+    case 0xC8: RET(m_state.F.getZero()); break;
     case 0xC9: RET(true); break;
-    case 0xCA: JMP(m_state.F.Z); break;
-
-    case 0xCC: CALL(m_state.F.Z); break;
+    case 0xCA: JMP(m_state.F.getZero()); break;
+    case 0xCB: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            m_prefixMode = true;
+            break;
+        default:
+        case Mode::Intel8080:
+            assert(false && "Unhandled standard instruction");
+            break;
+        }
+    } break;
+    case 0xCC: CALL(m_state.F.getZero()); break;
     case 0xCD: CALL(true); break;
     case 0xCE: ADC(load8(m_state.PC++)); break;
     case 0xCF: RST(1); break;
-    case 0xD0: RET(!m_state.F.C); break;
+    case 0xD0: RET(!m_state.F.getCarry()); break;
     case 0xD1: m_state.DE = pop16(); break;
-    case 0xD2: JMP(!m_state.F.C); break;
+    case 0xD2: JMP(!m_state.F.getCarry()); break;
     case 0xD3: load8(m_state.PC++); /* to be implemented */ break;
-    case 0xD4: CALL(!m_state.F.C); break;
+    case 0xD4: CALL(!m_state.F.getCarry()); break;
     case 0xD5: push16(m_state.DE); break;
     case 0xD6: SUB(load8(m_state.PC++)); break;
     case 0xD7: RST(2); break;
-    case 0xD8: RET(m_state.F.C); break;
+    case 0xD8: RET(m_state.F.getCarry()); break;
 
-    case 0xDA: JMP(m_state.F.C); break;
+    case 0xDA: JMP(m_state.F.getCarry()); break;
     case 0xDB: load8(m_state.PC++); /* to be implemented */ break;
-    case 0xDC: CALL(m_state.F.C); break;
+    case 0xDC: CALL(m_state.F.getCarry()); break;
 
     case 0xDE: SBB(load8(m_state.PC++)); break;
     case 0xDF: RST(3); break;
-    case 0xE0: RET(!m_state.F.P); break;
+    case 0xE0: RET(!m_state.F.getParity()); break;
     case 0xE1: m_state.HL = pop16(); break;
-    case 0xE2: JMP(!m_state.F.P); break;
+    case 0xE2: JMP(!m_state.F.getParity()); break;
     case 0xE3: XTHL(); break;
-    case 0xE4: CALL(!m_state.F.P); break;
+    case 0xE4: CALL(!m_state.F.getParity()); break;
     case 0xE5: push16(m_state.HL); break;
     case 0xE6: AND(load8(m_state.PC++)); break;
     case 0xE7: RST(4); break;
-    case 0xE8: RET(m_state.F.P); break;
+    case 0xE8: RET(m_state.F.getParity()); break;
     case 0xE9: m_state.PC = m_state.HL; break;
-    case 0xEA: JMP(m_state.F.P); break;
+    case 0xEA: JMP(m_state.F.getParity()); break;
     case 0xEB: XCHG(); break;
-    case 0xEC: CALL(m_state.F.P); break;
+    case 0xEC: CALL(m_state.F.getParity()); break;
 
     case 0xEE: XOR(load8(m_state.PC++)); break;
     case 0xEF: RST(5); break;
-    case 0xF0: RET(!m_state.F.S); break;
+    case 0xF0: RET(!m_state.F.getSign()); break;
     case 0xF1: m_state.AF = pop16(); break;
-    case 0xF2: JMP(!m_state.F.S); break;
+    case 0xF2: JMP(!m_state.F.getSign()); break;
     case 0xF3: m_state.InterruptEnabled = false; break;
-    case 0xF4: CALL(!m_state.F.S); break;
+    case 0xF4: CALL(!m_state.F.getSign()); break;
     case 0xF5: push16(m_state.AF); break;
     case 0xF6: OR(load8(m_state.PC++)); break;
     case 0xF7: RST(6); break;
-    case 0xF8: RET(m_state.F.S); break;
+    case 0xF8: RET(m_state.F.getSign()); break;
     case 0xF9: m_state.SP = m_state.HL; break;
-    case 0xFA: JMP(m_state.F.S); break;
+    case 0xFA: JMP(m_state.F.getSign()); break;
     case 0xFB: m_state.InterruptEnabled = true; break;
-    case 0xFC: CALL(m_state.F.S); break;
+    case 0xFC: CALL(m_state.F.getSign()); break;
 
     case 0xFE: CMP(load8(m_state.PC++)); break;
     case 0xFF: RST(7); break;
     default:
-        assert(false && "Unhandled instruction");
+        assert(false && "Unhandled standard instruction");
     }
 }
 
-void CPU8080::interrupt(u8 vector)
+void CPU8080::prefixInstruction(u8 opcode)
 {
-    if (m_state.InterruptEnabled)
+    switch (opcode)
     {
-        m_state.InterruptEnabled = false;
-        RST(vector);
+    case 0x7C: BIT(m_state.H, 7);
+    default:
+        assert(false && "Unhandled prefix instruction");
     }
 }
 
-u8 CPU8080::load8(u16 address) const
+void CPU8080::BIT(u8 value, u8 bit)
 {
-    u8 data = 0;
-    bool read = false;
-    for (auto& entry : m_readMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            data = entry.read(offset);
-            read = true;
-            break;
-        }
-    }
-    assert(read && "Unhandled memory read");
-    return data;
-}
-
-u16 CPU8080::load16(u16 address)
-{
-    u16 data = 0;
-    bool read = false;
-    for (auto& entry : m_readMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            data = entry.read(offset + 1);
-            data <<= 8;
-            data |= entry.read(offset);
-            read = true;
-            break;
-        }
-    }
-    assert(read && "Unhandled memory read");
-    return data;
-}
-
-void CPU8080::store8(u16 address, u8 data)
-{
-    bool stored = false;
-    for (auto& entry : m_writeMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            entry.write(offset, data);
-            stored = true;
-            break;
-        }
-    }
-    assert(stored && "Unhandled memory write");
-}
-
-void CPU8080::store16(u16 address, u16 data)
-{
-    bool stored = false;
-    for (auto& entry : m_writeMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            entry.write(offset, data & 0xFF);
-            entry.write(offset + 1, data >> 8);
-            stored = true;
-            break;
-        }
-    }
-    assert(stored && "Unhandled memory write");
-}
-
-void CPU8080::push8(u8 data)
-{
-    store8(--m_state.SP, data);
-}
-
-void CPU8080::push16(u16 data)
-{
-    store16(m_state.SP - 2, data);
-    m_state.SP -= 2;
-}
-
-u8 CPU8080::pop8()
-{
-    return load8(m_state.SP++);
-}
-
-u16 CPU8080::pop16()
-{
-    m_state.SP += 2;
-    return load16(m_state.SP - 2);
+    m_state.F.setZero((value >> bit) & 1);
+    m_state.F.setNegative(0);
+    m_state.F.setHalfCarry(1);
 }
 
 void CPU8080::LDR(u8& dst, u8 value)
@@ -421,23 +514,23 @@ void CPU8080::ADD(u8 value)
     u16 result = m_state.A + value;
     u8 result4bit = (m_state.A & 0xF) + (value & 0xF);
     m_state.A = result;
-    m_state.F.Z = (m_state.A == 0);
-    m_state.F.S = result >> 7;
-    m_state.F.AC = result4bit >> 4;
-    m_state.F.C = result >> 8;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setSign(result >> 7);
+    m_state.F.setHalfCarry(result4bit >> 4);
+    m_state.F.setCarry(result >> 8);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::ADC(u8 value)
 {
-    u16 result = m_state.A + value + m_state.F.C;
+    u16 result = m_state.A + value + m_state.F.getCarry();
     u8 result4bit = (m_state.A & 0xF) + (value & 0xF);
     m_state.A = result;
-    m_state.F.Z = (m_state.A == 0);
-    m_state.F.S = result >> 7;
-    m_state.F.AC = result4bit >> 4;
-    m_state.F.C = result >> 8;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setSign(result >> 7);
+    m_state.F.setHalfCarry(result4bit >> 4);
+    m_state.F.setCarry(result >> 8);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::SUB(u8 value)
@@ -445,51 +538,51 @@ void CPU8080::SUB(u8 value)
     u16 result = (s16)m_state.A - (s16)value;
     u8 result4bit = (s8)m_state.A - (s8)value;
     m_state.A = result;
-    m_state.F.Z = (m_state.A == 0);
-    m_state.F.S = result >> 7;
-    m_state.F.AC = result4bit >> 4;
-    m_state.F.C = result >> 8;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setSign(result >> 7);
+    m_state.F.setHalfCarry(result4bit >> 4);
+    m_state.F.setCarry(result >> 8);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::SBB(u8 value)
 {
-    u16 result = (s16)m_state.A - (s16)value - m_state.F.C;
+    u16 result = (s16)m_state.A - (s16)value - m_state.F.getCarry();
     u8 result4bit = (s8)m_state.A - (s8)value;
     m_state.A = result;
-    m_state.F.Z = (m_state.A == 0);
-    m_state.F.S = result >> 7;
-    m_state.F.AC = result4bit >> 4;
-    m_state.F.C = result >> 8;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setSign(result >> 7);
+    m_state.F.setHalfCarry(result4bit >> 4);
+    m_state.F.setCarry(result >> 8);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::ADDHL(u16 value)
 {
     u32 result = m_state.HL + value;
     m_state.HL = result;
-    m_state.F.C = result >> 16;
+    m_state.F.setCarry(result >> 16);
 }
 
 void CPU8080::CMP(u8 value)
 {
     u16 result = (s16)m_state.A - (s16)value;
     u8 result4bit = (s8)m_state.A - (s8)value;
-    m_state.F.Z = (result == 0);
-    m_state.F.S = result >> 7;
-    m_state.F.AC = (result4bit >> 4) & 1;
-    m_state.F.C = (result >> 8) & 1;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(result == 0);
+    m_state.F.setSign(result >> 7);
+    m_state.F.setHalfCarry(result4bit >> 4);
+    m_state.F.setCarry(result >> 8);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::DECR(u8& reg)
 {
     u8 tempBit = ~reg & 0x10;
     reg--;
-    m_state.F.AC = ((reg & 0x10) & tempBit) >> 4;
-    m_state.F.S = reg >> 7;
-    m_state.F.Z = reg == 0;
-    m_state.F.P = (std::bitset<8>(reg).count() % 2) == 0;
+    m_state.F.setHalfCarry(((reg & 0x10) & tempBit) >> 4);
+    m_state.F.setSign(reg >> 7);
+    m_state.F.setZero(reg == 0);
+    m_state.F.setParity((std::bitset<8>(reg).count() % 2) == 0);
 }
 
 void CPU8080::DECRP(u16& reg)
@@ -502,10 +595,10 @@ void CPU8080::DECM()
     u8 value = load8(m_state.HL);
     u8 tempBit = ~value & 0x10;
     value--;
-    m_state.F.AC = ((value & 0x10) & tempBit) >> 4;
-    m_state.F.S = value >> 7;
-    m_state.F.Z = value == 0;
-    m_state.F.P = (std::bitset<8>(value).count() % 2) == 0;
+    m_state.F.setHalfCarry(((value & 0x10) & tempBit) >> 4);
+    m_state.F.setSign(value >> 7);
+    m_state.F.setZero(value == 0);
+    m_state.F.setParity((std::bitset<8>(value).count() % 2) == 0);
     store8(m_state.HL, value);
 }
 
@@ -513,10 +606,10 @@ void CPU8080::INCR(u8& reg)
 {
     u8 tempBit = reg & 0x10;
     reg++;
-    m_state.F.AC = (~(reg & 0x10) & tempBit) >> 4;
-    m_state.F.S = reg >> 7;
-    m_state.F.Z = reg == 0;
-    m_state.F.P = (std::bitset<8>(reg).count() % 2) == 0;
+    m_state.F.setHalfCarry((~(reg & 0x10) & tempBit) >> 4);
+    m_state.F.setSign(reg >> 7);
+    m_state.F.setZero(reg == 0);
+    m_state.F.setParity((std::bitset<8>(reg).count() % 2) == 0);
 }
 
 void CPU8080::INCRP(u16& reg)
@@ -529,39 +622,39 @@ void CPU8080::INCM()
     u8 value = load8(m_state.HL);
     u8 tempBit = value & 0x10;
     value++;
-    m_state.F.AC = (~(value & 0x10) & tempBit) >> 4;
-    m_state.F.S = value >> 7;
-    m_state.F.Z = value == 0;
-    m_state.F.P = (std::bitset<8>(value).count() % 2) == 0;
+    m_state.F.setHalfCarry((~(value & 0x10) & tempBit) >> 4);
+    m_state.F.setSign(value >> 7);
+    m_state.F.setZero(value == 0);
+    m_state.F.setParity((std::bitset<8>(value).count() % 2) == 0);
     store8(m_state.HL, value);
 }
 
 void CPU8080::RRC()
 {
-    m_state.F.C = m_state.A & 1;
+    m_state.F.setCarry(m_state.A & 1);
     m_state.A >>= 1;
-    m_state.A |= m_state.F.C << 7;
+    m_state.A |= m_state.F.getCarry() << 7;
 }
 
 void CPU8080::RLC()
 {
-    m_state.F.C = m_state.A >> 7;
+    m_state.F.setCarry(m_state.A >> 7);
     m_state.A <<= 1;
-    m_state.A |= m_state.F.C;
+    m_state.A |= m_state.F.getCarry();
 }
 
 void CPU8080::RAR()
 {
-    u8 temp = m_state.F.C << 7;
-    m_state.F.C = m_state.A & 1;
+    u8 temp = m_state.F.getCarry() << 7;
+    m_state.F.setCarry(m_state.A & 1);
     m_state.A >>= 1;
     m_state.A |= temp;
 }
 
 void CPU8080::RAL()
 {
-    u8 temp = m_state.F.C;
-    m_state.F.C = m_state.A >> 7;
+    u8 temp = m_state.F.getCarry();
+    m_state.F.setCarry(m_state.A >> 7);
     m_state.A <<= 1;
     m_state.A |= temp;
 }
@@ -570,51 +663,48 @@ void CPU8080::DAA()
 {
     u16 value = m_state.A;
 
-    if ((value & 0x0F) > 9 || m_state.F.AC)
+    if ((value & 0x0F) > 9 || m_state.F.getHalfCarry())
         value += 0x06;
 
-    if ((value >> 4) > 9 || m_state.F.C)
+    if ((value >> 4) > 9 || m_state.F.getCarry())
         value += 0x60;
 
     m_state.A = value;
-    m_state.F.C = value >> 8;
-    m_state.F.S = m_state.A >> 7;
-    m_state.F.Z = m_state.A == 0;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setCarry(value >> 8);
+    m_state.F.setSign(m_state.A >> 7);
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::AND(u8 value)
 {
     m_state.A &= value;
-    m_state.F.byte = 0;
-    m_state.F.Z = m_state.A == 0;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::OR(u8 value)
 {
     m_state.A |= value;
-    m_state.F.byte = 0;
-    m_state.F.Z = m_state.A == 0;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::XOR(u8 value)
 {
     m_state.A ^= value;
-    m_state.F.byte = 0;
-    m_state.F.Z = m_state.A == 0;
-    m_state.F.P = (std::bitset<8>(m_state.A).count() % 2) == 0;
+    m_state.F.setZero(m_state.A == 0);
+    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
 }
 
 void CPU8080::STC()
 {
-    m_state.F.C = 1;
+    m_state.F.setCarry(1);
 }
 
 void CPU8080::CMC()
 {
-    m_state.F.C = ~m_state.F.C;
+    m_state.F.setCarry(~m_state.F.getCarry());
 }
 
 void CPU8080::CMA()

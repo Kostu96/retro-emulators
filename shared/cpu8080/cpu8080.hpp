@@ -1,6 +1,7 @@
 #pragma once
-#include "../memory_map.hpp"
+#include "../type_aliases.hpp"
 
+#include <functional>
 #include <vector>
 
 #if defined(CPU8080_TESTS)
@@ -15,20 +16,20 @@ public:
     enum class Mode : u8
     {
         Intel8080,
+        Intel8085,
         Z80,
         GameBoy
     };
 
-    template <Mapable Device>
-    void map(Device& device, AddressRange range);
-    template <ConstMapable ConstDevice>
-    void map(const ConstDevice& device, AddressRange range);
+    using ReadMemoryCallback = std::function<u8(u16)>;
+    using WriteMemoryCallback = std::function<void(u16, u8)>;
+    void mapReadMemoryCallback(ReadMemoryCallback callback) { load8 = callback; }
+    void mapWriteMemoryCallback(WriteMemoryCallback callback) { store8 = callback; }
 
     void reset();
     void clock();
     void interrupt(u8 vector);
 
-    u8 load8(u16 address) const;
     u16 getAF() const { return m_state.AF; }
     u16 getBC() const { return m_state.BC; }
     u16 getDE() const { return m_state.DE; }
@@ -36,27 +37,55 @@ public:
     u16 getSP() const { return m_state.SP; }
     u16 getPC() const { return m_state.PC; }
 
-    explicit CPU8080(Mode mode) : m_mode{ mode } {}
+    explicit CPU8080(Mode mode) : m_mode{ mode }, m_state{ mode } {}
     CPU8080(const CPU8080&) = delete;
     CPU8080& operator=(const CPU8080&) = delete;
 PRIVATE:
     union Flags
     {
+    public:
+        explicit Flags(Mode mode) : m_mode{ mode } {}
+
+        u8 getCarry();
+        void setCarry(u8 value);
+        u8 getHalfCarry();
+        void setHalfCarry(u8 value);
+        u8 getNegative();
+        void setNegative(u8 value);
+        u8 getZero();
+        void setZero(u8 value);
+        u8 getSign();
+        void setSign(u8 value);
+        u8 getParity();
+        void setParity(u8 value);
+    private:
         struct {
-            u8 C : 1;       // 0
-            u8 unused1 : 1; // 1
-            u8 P : 1;       // 2
-            u8 unused3 : 1; // 3
-            u8 AC : 1;      // 4
-            u8 unused5 : 1; // 5
-            u8 S : 1;       // 6
-            u8 Z : 1;       // 7
-        };
-        u8 byte;
+            u8 alwaysZero : 4; // 0-3
+            u8 Carry      : 1; // 4
+            u8 HalfCarry  : 1; // 5
+            u8 Negative   : 1; // 6
+            u8 Zero       : 1; // 7
+        } m_gb;
+
+        struct {
+            u8 Carry     : 1; // 0
+            u8 unused1   : 1; // 1
+            u8 Parity    : 1; // 2
+            u8 unused3   : 1; // 3
+            u8 HalfCarry : 1; // 4
+            u8 unused5   : 1; // 5
+            u8 Sign      : 1; // 6
+            u8 Zero      : 1; // 7
+        } m_i8080;
+
+        u8 m_byte;
+        Mode m_mode;
     };
 
     struct State
     {
+        explicit State(Mode mode) : F{ mode } {}
+
         u16 PC;
         u16 SP;
         union {
@@ -88,22 +117,24 @@ PRIVATE:
         bool InterruptEnabled;
     };
 
-    u16 load16(u16 address);
-    void store8(u16 address, u8 data);
-    void store16(u16 address, u16 data);
-    void push8(u8 data);
-    void push16(u16 data);
-    u8 pop8();
-    u16 pop16();
+    void standardInstruction(u8 opcode);
+    void prefixInstruction(u8 opcode);
 
-    // Data transfer group
+    ReadMemoryCallback load8 = nullptr;
+    WriteMemoryCallback store8 = nullptr;
+    u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }
+    void store16(u16 address, u16 data) const { store8(address, data & 0xFF); store8(address + 1, data >> 8); }
+    void push8(u8 data) { store8(--m_state.SP, data); }
+    void push16(u16 data) { store16(m_state.SP - 2, data); m_state.SP -= 2; }
+    u8 pop8() { return load8(m_state.SP++); }
+    u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
+
+    void BIT(u8 value, u8 bit);
     void LDR(u8& dst, u8 value);
     void LDRP(u16& dst, u16 value);
     void LDM(u16 address, u8 value);
     void XCHG();
     void XTHL();
-
-    // Arithmetic group
     void ADD(u8 value);
     void ADC(u8 value);
     void SUB(u8 value);
@@ -121,16 +152,12 @@ PRIVATE:
     void RAR();
     void RAL();
     void DAA();
-
-    // Logical group
     void AND(u8 value);
     void OR(u8 value);
     void XOR(u8 value);
     void STC();
     void CMC();
     void CMA();
-
-    // Branch group
     void JMP(bool flag);
     void CALL(bool flag);
     void RET(bool flag);
@@ -138,36 +165,6 @@ PRIVATE:
 
     State m_state;
 
-    // Helpers:
     const Mode m_mode;
-    std::vector<ReadMapEntry> m_readMap;
-    std::vector<WriteMapEntry> m_writeMap;
+    bool m_prefixMode;
 };
-
-template<Mapable Device>
-inline void CPU8080::map(Device& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-    m_writeMap.emplace_back(
-        WriteMapEntry{
-            range,
-            [&device](u16 address, u8 data) { return device.write(address, data); }
-        }
-    );
-}
-
-template<ConstMapable ConstDevice>
-inline void CPU8080::map(const ConstDevice& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-}
