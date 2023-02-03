@@ -22,7 +22,7 @@ static void glfwErrorCallback(int error, const char* description)
     std::cerr << "GLFW error " << error << ": " << description << '\n';
 }
 
-int main()
+int main(int /*argc*/, char* argv[])
 {
     glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit()) {
@@ -49,7 +49,7 @@ int main()
     CPU8080 cpu{ CPU8080::Mode::GameBoy };
 
     u8 bootloader[256];
-    std::ifstream file{ "C:/Users/kmisiak/myplace/retro-extras/builtin_roms/gameboy/DMG_ROM.bin", std::ios_base::binary };
+    std::ifstream file{ argv[1], std::ios_base::binary};
     if (!file.is_open()) {
         std::cerr << "Cannot open bootloader file!\n";
         std::terminate();

@@ -432,7 +432,18 @@ void CPU8080::standardInstruction(u8 opcode)
 
     case 0xDE: SBB(load8(m_state.PC++)); break;
     case 0xDF: RST(3); break;
-    case 0xE0: RET(!m_state.F.getParity()); break;
+    case 0xE0: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            LDM(0xFF00 | load8(m_state.PC++), m_state.A);
+            break;
+        default:
+        case Mode::Intel8080:
+            RET(!m_state.F.getParity());
+            break;
+        }
+    } break;
     case 0xE1: m_state.HL = pop16(); break;
     case 0xE2: {
         switch (m_mode)
@@ -628,9 +639,18 @@ void CPU8080::INCR(u8& reg)
     u8 tempBit = reg & 0x10;
     reg++;
     m_state.F.setHalfCarry((~(reg & 0x10) & tempBit) >> 4);
-    m_state.F.setSign(reg >> 7);
     m_state.F.setZero(reg == 0);
-    m_state.F.setParity((std::bitset<8>(reg).count() % 2) == 0);
+
+    switch (m_mode)
+    {
+    case Mode::GameBoy:
+        m_state.F.setSubtract(0);
+        break;
+    case Mode::Intel8080:
+        m_state.F.setSign(reg >> 7);
+        m_state.F.setParity((std::bitset<8>(reg).count() % 2) == 0);
+        break;
+    }
 }
 
 void CPU8080::INCRP(u16& reg)
