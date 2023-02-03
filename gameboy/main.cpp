@@ -58,20 +58,60 @@ int main(int /*argc*/, char* argv[])
     file.close();
 
     u8 vram[0x2000];
+    u8 hram[0x80];
 
     const AddressRange ROM_RANGE{  0x0000, 0x7FFF };
     const AddressRange VRAM_RANGE{ 0x8000, 0x9FFF };
+    const AddressRange APU1_RANGE{ 0xFF10, 0xFF14 };
+    const AddressRange APU2_RANGE{ 0xFF24, 0xFF26 };
+    const AddressRange PPU_RANGE{  0xFF40, 0xFF47 };
+    const AddressRange HRAM_RANGE{ 0xFF80, 0xFFFF };
 
-    cpu.mapReadMemoryCallback([&bootloader](u16 address)
+    cpu.mapReadMemoryCallback([&](u16 address)
         {
-            return bootloader[address];
+            u16 offset;
+            if (ROM_RANGE.contains(address, offset))
+                return bootloader[offset];
+
+            if (PPU_RANGE.contains(address, offset))
+                return u8{0x90}; // TODO: graphics
+            
+            if (HRAM_RANGE.contains(address, offset))
+                return hram[offset];
+
+            assert(false && "Unhandled read");
+            return u8{};
         });
 
     cpu.mapWriteMemoryCallback([&](u16 address, u8 data)
         {
             u16 offset;
-            if (VRAM_RANGE.contains(address, offset))
+            if (VRAM_RANGE.contains(address, offset)) {
                 vram[offset] = data;
+                return;
+            }
+
+            if (APU1_RANGE.contains(address, offset)) {
+                // TODO: sound
+                return;
+            }
+
+            if (APU2_RANGE.contains(address, offset)) {
+                // TODO: sound
+                return;
+            }
+
+            if (PPU_RANGE.contains(address, offset)) {
+                // TODO: graphics
+                return;
+            }
+
+            if (HRAM_RANGE.contains(address, offset)) {
+                hram[offset] = data;
+                return;
+            }
+
+            assert(false && "Unhandled write");
         });
 
     cpu.reset();

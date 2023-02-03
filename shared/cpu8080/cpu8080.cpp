@@ -199,6 +199,18 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x15: DECR(m_state.D); break;
     case 0x16: LDR(m_state.D, load8(m_state.PC++)); break;
     case 0x17: RAL(); break;
+    case 0x18: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            JR(true);
+            break;
+        default:
+        case Mode::Intel8080:
+            assert(false && "Unhandled standard instruction");
+        }
+    } break;
+
     case 0x20: {
         switch (m_mode)
         {
@@ -219,13 +231,35 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x1F: RAR(); break;
 
     case 0x21: LDRP(m_state.HL, load16(m_state.PC)); m_state.PC += 2; break;
-    case 0x22: store16(load16(m_state.PC), m_state.HL); m_state.PC += 2; break;
+    case 0x22: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            LDM(m_state.HL++, m_state.A);
+            break;
+        default:
+        case Mode::Intel8080:
+            store16(load16(m_state.PC), m_state.HL);
+            m_state.PC += 2;
+            break;
+        }
+    } break; 
     case 0x23: INCRP(m_state.HL); break;
     case 0x24: INCR(m_state.H); break;
     case 0x25: DECR(m_state.H); break;
     case 0x26: LDR(m_state.H, load8(m_state.PC++)); break;
     case 0x27: DAA(); break;
-
+    case 0x28: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            JR(m_state.F.getZero());
+            break;
+        default:
+        case Mode::Intel8080:
+            assert(false && "Unhandled standard instruction");
+        }
+    } break;
     case 0x29: ADDHL(m_state.HL); break;
     case 0x2A: LDRP(m_state.HL, load16(load16(m_state.PC))); m_state.PC += 2; break;
     case 0x2B: DECRP(m_state.HL); break;
@@ -464,13 +498,36 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0xE7: RST(4); break;
     case 0xE8: RET(m_state.F.getParity()); break;
     case 0xE9: m_state.PC = m_state.HL; break;
-    case 0xEA: JMP(m_state.F.getParity()); break;
+    case 0xEA: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            LDM(load16(m_state.PC), m_state.A);
+            m_state.PC += 2;
+            break;
+        default:
+        case Mode::Intel8080:
+            JMP(m_state.F.getParity());
+            break;
+        }
+    } break;
     case 0xEB: XCHG(); break;
     case 0xEC: CALL(m_state.F.getParity()); break;
 
     case 0xEE: XOR(load8(m_state.PC++)); break;
     case 0xEF: RST(5); break;
-    case 0xF0: RET(!m_state.F.getSign()); break;
+    case 0xF0: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            LDR(m_state.A, load8(0xFF00 | load8(m_state.PC++)));
+            break;
+        default:
+        case Mode::Intel8080:
+            RET(!m_state.F.getSign());
+            break;
+        }
+    } break;
     case 0xF1: m_state.AF = pop16(); break;
     case 0xF2: JMP(!m_state.F.getSign()); break;
     case 0xF3: m_state.InterruptEnabled = false; break;
@@ -495,6 +552,7 @@ void CPU8080::prefixInstruction(u8 opcode)
 {
     switch (opcode)
     {
+    case 0x11: break;
     case 0x7C: BIT(m_state.H, 7); break;
     default:
         assert(false && "Unhandled prefix instruction");
@@ -571,10 +629,19 @@ void CPU8080::SUB(u8 value)
     u8 result4bit = (s8)m_state.A - (s8)value;
     m_state.A = result;
     m_state.F.setZero(m_state.A == 0);
-    m_state.F.setSign(result >> 7);
     m_state.F.setHalfCarry(result4bit >> 4);
     m_state.F.setCarry(result >> 8);
-    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
+
+    switch (m_mode)
+    {
+    case Mode::GameBoy:
+        m_state.F.setSubtract(1);
+        break;
+    case Mode::Intel8080:
+        m_state.F.setSign(result >> 7);
+        m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
+        break;
+    }
 }
 
 void CPU8080::SBB(u8 value)
@@ -601,10 +668,19 @@ void CPU8080::CMP(u8 value)
     u16 result = (s16)m_state.A - (s16)value;
     u8 result4bit = (s8)m_state.A - (s8)value;
     m_state.F.setZero(result == 0);
-    m_state.F.setSign(result >> 7);
     m_state.F.setHalfCarry(result4bit >> 4);
     m_state.F.setCarry(result >> 8);
-    m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
+
+    switch (m_mode)
+    {
+    case Mode::GameBoy:
+        m_state.F.setSubtract(1);
+        break;
+    case Mode::Intel8080:
+        m_state.F.setSign(result >> 7);
+        m_state.F.setParity((std::bitset<8>(m_state.A).count() % 2) == 0);
+        break;
+    }
 }
 
 void CPU8080::DECR(u8& reg)
@@ -612,9 +688,18 @@ void CPU8080::DECR(u8& reg)
     u8 tempBit = ~reg & 0x10;
     reg--;
     m_state.F.setHalfCarry(((reg & 0x10) & tempBit) >> 4);
-    m_state.F.setSign(reg >> 7);
     m_state.F.setZero(reg == 0);
-    m_state.F.setParity((std::bitset<8>(reg).count() % 2) == 0);
+
+    switch (m_mode)
+    {
+    case Mode::GameBoy:
+        m_state.F.setSubtract(1);
+        break;
+    case Mode::Intel8080:
+        m_state.F.setSign(reg >> 7);
+        m_state.F.setParity((std::bitset<8>(reg).count() % 2) == 0);
+        break;
+    }
 }
 
 void CPU8080::DECRP(u16& reg)
