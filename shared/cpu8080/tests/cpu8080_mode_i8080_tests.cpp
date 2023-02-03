@@ -51,7 +51,7 @@ struct CPU8080ModeI8080Tests :
 
 TEST_F(CPU8080ModeI8080Tests, NOPTest)
 {
-	rom[0] = 0x00; // NOP
+	rom[0x0] = 0x00; // NOP
 
 	CPU.clock();
 
@@ -60,9 +60,9 @@ TEST_F(CPU8080ModeI8080Tests, NOPTest)
 
 TEST_F(CPU8080ModeI8080Tests, JMPTest)
 {
-	rom[0] = 0xC3;
-	rom[1] = 0xAD;
-	rom[2] = 0xDE; // JMP 0xDEAD
+	rom[0x0] = 0xC3;
+	rom[0x1] = 0xAD;
+	rom[0x2] = 0xDE; // JMP 0xDEAD
 
 	CPU.clock(); // TODO: should take 3 cycles
 

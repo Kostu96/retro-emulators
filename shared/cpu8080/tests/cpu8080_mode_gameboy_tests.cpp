@@ -34,8 +34,6 @@ struct CPU8080ModeGameBoyTests :
 	void SetUp() override
 	{
 		CPU.reset();
-
-		std::memcpy(&referenceCPUState, &CPU.m_state, sizeof(CPU8080::State));
 	}
 
 	void TearDown() override
@@ -47,13 +45,33 @@ struct CPU8080ModeGameBoyTests :
 		EXPECT_EQ(referenceCPUState.DE, CPU.getDE());
 		EXPECT_EQ(referenceCPUState.HL, CPU.getHL());
 	}
+
+	void takeReferenceCPUState()
+	{
+		std::memcpy(&referenceCPUState, &CPU.m_state, sizeof(CPU8080::State));
+	}
 };
 
 TEST_F(CPU8080ModeGameBoyTests, NOPTest)
 {
-	rom[0] = 0x00; // NOP
+	rom[0x0] = 0x00; // NOP
 
+	takeReferenceCPUState();
 	CPU.clock();
 
 	referenceCPUState.PC = 0x0001;
+}
+
+TEST_F(CPU8080ModeGameBoyTests, LDM_BC_ATest)
+{
+	rom[0x0] = 0x02; // LD (BC), A
+
+	CPU.m_state.BC = 0x8000;
+	CPU.m_state.A = 0x42;
+
+	takeReferenceCPUState();
+	CPU.clock();
+
+	referenceCPUState.PC = 0x0001;
+	EXPECT_EQ(ram[0], 0x42);
 }
