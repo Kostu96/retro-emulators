@@ -13,7 +13,7 @@ public:
     void store8(u16 address, u8 data);
 
     void loadFromMemory(u8* data, size_t size);
-    void loadFromFile(const char* filename);
+    bool loadFromFile(const char* filename);
 private:
     struct Header {
         u8 entryPoint[4];      // 0x100 - 0x103

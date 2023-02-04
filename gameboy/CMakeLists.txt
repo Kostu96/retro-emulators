@@ -20,6 +20,7 @@ target_link_libraries(${GAMEBOY_TAGET_NAME} PRIVATE
     glfw
     glw
     imgui
+    cpp-common-lib
     cpu8080_lib
 )
 

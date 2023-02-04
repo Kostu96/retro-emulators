@@ -1,5 +1,7 @@
 #include "cartridge.hpp"
 
+#include <ccl/helper_functions.h>
+
 #include <cassert>
 #include <cstring>
 #include <iostream>
@@ -80,7 +82,7 @@ u8 Cartridge::load8(u16 address) const
 	return m_data[address];
 }
 
-void Cartridge::store8(u16 address, u8 byte)
+void Cartridge::store8(u16 /*address*/, u8 /*byte*/)
 {
 	//__debugbreak();
 }
@@ -93,29 +95,29 @@ void Cartridge::loadFromMemory(u8* data, size_t size)
 	memcpy_s(m_data, m_size, data, size);
 }
 
-void Cartridge::loadFromFile(const char* filename)
+bool Cartridge::loadFromFile(const char* filename)
 {
-	if (!readFile(filename, nullptr, m_size, true)) {
+	if (!ccl::readFile(filename, nullptr, m_size, true)) {
 		std::cerr << "Failed to read size of cartridge ROM file!\n";
-		abort(); // TODO: exit more gracefuly
+		return false;
 	}
 
 	if (m_size < 0x8000) {
 		std::cerr << "Size of cartridge ROM is less than 32KB!\n";
-		abort();
+		return false;
 	}
 
 	delete[] m_data;
 	m_data = new uint8_t[m_size];
-	if (!readFile(filename, (char*)m_data, m_size, true)) {
+	if (!ccl::readFile(filename, (char*)m_data, m_size, true)) {
 		std::cerr << "Failed to read cartridge ROM file!\n";
-		abort();
+		return false;
 	}
 
 	m_header = (Header*)(m_data + 0x100);
 
-	uint16_t x = 0;
-	for (uint16_t i = 0x0134; i <= 0x014C; ++i)
+	u16 x = 0;
+	for (u16 i = 0x0134; i <= 0x014C; ++i)
 		x = x - m_data[i] - 1;
 
 	if (m_header->CGBFlag == 0xC0)
@@ -124,7 +126,7 @@ void Cartridge::loadFromFile(const char* filename)
 	if (m_header->headerChecksum != (x & 0xFF))
 		std::cerr << "WARNING: Header checksum test doen't pass!\n";
 
-	if (ROMSizeCodeToKB(m_header->ROMSizeCode) != m_size / 1024)
+	if (ROMSizeCodeToKB(m_header->ROMSizeCode) * 1024 != m_size)
 		std::cerr << "WARNING: Header ROM size is different than file size read!\n";
 
 	std::cout << "Loaded cartridge ROM file: " << filename << '\n'
@@ -134,4 +136,6 @@ void Cartridge::loadFromFile(const char* filename)
 		<< "  Type:     " << CartridgeTypeCodeToStr(m_header->cartridgeTypeCode) << '\n'
 		<< "  ROM size: " << ROMSizeCodeToKB(m_header->ROMSizeCode) << "KB\n"
 		<< "  RAM size: " << RAMSizeCodeToKB(m_header->RAMSizeCode) << "KB\n";
+
+	return true;
 }

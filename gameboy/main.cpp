@@ -1,4 +1,5 @@
 #include "cpu8080.hpp"
+#include "cartridge.hpp"
 #include "../shared/memory_map.hpp"
 
 #include <GLFW/glfw3.h>
@@ -57,6 +58,9 @@ int main(int /*argc*/, char* argv[])
     file.read((char*)bootloader, 256);
     file.close();
 
+    Cartridge cart;
+    cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/dmg-acid2.gb");
+
     u8 vram[0x2000];
     u8 hram[0x80];
 
@@ -71,7 +75,10 @@ int main(int /*argc*/, char* argv[])
         {
             u16 offset;
             if (ROM_RANGE.contains(address, offset))
-                return bootloader[offset];
+            {
+                if (offset < 0x100) return bootloader[offset];
+                return cart.load8(offset);
+            }
 
             if (PPU_RANGE.contains(address, offset))
                 return u8{0x90}; // TODO: graphics

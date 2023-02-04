@@ -40,6 +40,7 @@ target_link_libraries(imgui PUBLIC
 )
 
 set_target_properties(
+    cpp-common-lib
     glfw
     glw
     gtest
