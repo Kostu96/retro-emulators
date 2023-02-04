@@ -59,26 +59,34 @@ int main(int /*argc*/, char* argv[])
     file.close();
 
     Cartridge cart;
-    cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/dmg-acid2.gb");
+    cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/blargg_test.gb");
 
     u8 vram[0x2000];
+    u8 wram[0x2000];
     u8 hram[0x80];
 
-    const AddressRange ROM_RANGE{  0x0000, 0x7FFF };
-    const AddressRange VRAM_RANGE{ 0x8000, 0x9FFF };
-    const AddressRange APU1_RANGE{ 0xFF10, 0xFF14 };
-    const AddressRange APU2_RANGE{ 0xFF24, 0xFF26 };
-    const AddressRange PPU_RANGE{  0xFF40, 0xFF47 };
-    const AddressRange HRAM_RANGE{ 0xFF80, 0xFFFF };
+    const AddressRange ROM_RANGE{    0x0000, 0x7FFF };
+    const AddressRange VRAM_RANGE{   0x8000, 0x9FFF };
+    const AddressRange WRAM_RANGE{   0xC000, 0xDFFF };
+    const AddressRange TIMERS_RANGE{ 0xFF04, 0xFF07 };
+    const AddressRange APU1_RANGE{   0xFF10, 0xFF14 };
+    const AddressRange APU2_RANGE{   0xFF24, 0xFF26 };
+    const AddressRange PPU_RANGE{    0xFF40, 0xFF4B };
+    const AddressRange HRAM_RANGE{   0xFF80, 0xFFFF };
+
+    bool mapBootloader = true;
 
     cpu.mapReadMemoryCallback([&](u16 address)
         {
             u16 offset;
             if (ROM_RANGE.contains(address, offset))
             {
-                if (offset < 0x100) return bootloader[offset];
+                if (mapBootloader && offset < 0x100) return bootloader[offset];
                 return cart.load8(offset);
             }
+
+            if (WRAM_RANGE.contains(address, offset))
+                return wram[offset];
 
             if (PPU_RANGE.contains(address, offset))
                 return u8{0x90}; // TODO: graphics
@@ -95,6 +103,16 @@ int main(int /*argc*/, char* argv[])
             u16 offset;
             if (VRAM_RANGE.contains(address, offset)) {
                 vram[offset] = data;
+                return;
+            }
+
+            if (WRAM_RANGE.contains(address, offset)) {
+                wram[offset] = data;
+                return;
+            }
+
+            if (TIMERS_RANGE.contains(address, offset)) {
+                // TODO: timers
                 return;
             }
 
@@ -115,6 +133,18 @@ int main(int /*argc*/, char* argv[])
 
             if (HRAM_RANGE.contains(address, offset)) {
                 hram[offset] = data;
+                return;
+            }
+
+            if (address == 0xFF0F)
+            {
+                // TODO: interrupts
+                return;
+            }
+
+            if (address == 0xFF50)
+            {
+                if (mapBootloader) mapBootloader = false;
                 return;
             }
 

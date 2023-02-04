@@ -117,7 +117,7 @@ bool Cartridge::loadFromFile(const char* filename)
 	m_header = (Header*)(m_data + 0x100);
 
 	u16 x = 0;
-	for (u16 i = 0x0134; i <= 0x014C; ++i)
+	for (u16 i = 0x0134; i <= 0x014C; i++)
 		x = x - m_data[i] - 1;
 
 	if (m_header->CGBFlag == 0xC0)

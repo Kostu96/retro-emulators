@@ -37,58 +37,35 @@ public:
     u16 getSP() const { return m_state.SP; }
     u16 getPC() const { return m_state.PC; }
 
-    explicit CPU8080(Mode mode) : m_mode{ mode }, m_state{ mode } {}
+    explicit CPU8080(Mode mode) : m_mode{ mode } {}
     CPU8080(const CPU8080&) = delete;
     CPU8080& operator=(const CPU8080&) = delete;
 PRIVATE:
-    class Flags
-    {
-    public:
-        explicit Flags(Mode mode) : m_mode{ mode } {}
+    union Flags {
+        struct {
+            u8 alwaysZero : 4; // 0-3
+            u8 Carry      : 1; // 4
+            u8 HalfCarry  : 1; // 5
+            u8 Subtract   : 1; // 6
+            u8 Zero       : 1; // 7
+        } gb;
 
-        u8 getCarry();
-        void setCarry(u8 value);
-        u8 getHalfCarry();
-        void setHalfCarry(u8 value);
-        u8 getSubtract();
-        void setSubtract(u8 value);
-        u8 getZero();
-        void setZero(u8 value);
-        u8 getSign();
-        void setSign(u8 value);
-        u8 getParity();
-        void setParity(u8 value);
-    private:
-        union {
-            struct {
-                u8 alwaysZero : 4; // 0-3
-                u8 Carry      : 1; // 4
-                u8 HalfCarry  : 1; // 5
-                u8 Subtract   : 1; // 6
-                u8 Zero       : 1; // 7
-            } m_gb;
+        struct {
+            u8 Carry     : 1; // 0
+            u8 unused1   : 1; // 1
+            u8 Parity    : 1; // 2
+            u8 unused3   : 1; // 3
+            u8 HalfCarry : 1; // 4
+            u8 unused5   : 1; // 5
+            u8 Sign      : 1; // 6
+            u8 Zero      : 1; // 7
+        } i8080;
 
-            struct {
-                u8 Carry     : 1; // 0
-                u8 unused1   : 1; // 1
-                u8 Parity    : 1; // 2
-                u8 unused3   : 1; // 3
-                u8 HalfCarry : 1; // 4
-                u8 unused5   : 1; // 5
-                u8 Sign      : 1; // 6
-                u8 Zero      : 1; // 7
-            } m_i8080;
-
-            u8 m_byte;
-        };
-
-        Mode m_mode;
+        u8 byte;
     };
 
     struct State
     {
-        explicit State(Mode mode) : F{ mode } {}
-
         u16 PC;
         u16 SP;
         union {
@@ -120,6 +97,19 @@ PRIVATE:
         bool InterruptEnabled;
     };
 
+    u8 getCarryFlag();
+    void setCarryFlag(u8 value);
+    u8 getHalfCarryFlag();
+    void setHalfCarryFlag(u8 value);
+    u8 getSubtractFlag();
+    void setSubtractFlag(u8 value);
+    u8 getZeroFlag();
+    void setZeroFlag(u8 value);
+    u8 getSignFlag();
+    void setSignFlag(u8 value);
+    u8 getParityFlag();
+    void setParityFlag(u8 value);
+
     void standardInstruction(u8 opcode);
     void prefixInstruction(u8 opcode);
 
@@ -133,9 +123,9 @@ PRIVATE:
     u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
 
     void BIT(u8 value, u8 bit);
-    void LDR(u8& dst, u8 value);
     void LDRP(u16& dst, u16 value);
     void LDM(u16 address, u8 value);
+    void LDMM(u16 address, u16 value);
     void XCHG();
     void XTHL();
     void ADD(u8 value);
@@ -150,6 +140,7 @@ PRIVATE:
     void INCR(u8& reg);
     void INCRP(u16& reg);
     void INCM();
+    void RL(u8& reg);
     void RRC();
     void RLC();
     void RAR();

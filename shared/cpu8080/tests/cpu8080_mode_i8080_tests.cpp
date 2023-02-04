@@ -15,8 +15,7 @@ struct CPU8080ModeI8080Tests :
 	CPU8080::State referenceCPUState;
 
 	CPU8080ModeI8080Tests() :
-		CPU{ CPU8080::Mode::Intel8080 },
-		referenceCPUState{ CPU8080::Mode::Intel8080 }
+		CPU{ CPU8080::Mode::Intel8080 }
 	{
 		CPU.mapReadMemoryCallback([&](u16 address)
 			{

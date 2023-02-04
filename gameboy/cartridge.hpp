@@ -29,7 +29,7 @@ private:
         u8 oldLicenseeCode;    // 0x14B
         u8 version;            // 0x14C
         u8 headerChecksum;     // 0x14D
-        u8 globalChecksum;     // 0x14E - 0x14F
+        u8 globalChecksum[2];  // 0x14E - 0x14F
     };
     static_assert(sizeof(Header) == 0x50);
 
