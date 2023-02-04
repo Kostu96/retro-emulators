@@ -93,8 +93,8 @@ PRIVATE:
         u16 SP;
         union {
             struct {
-                u8 A;
                 Flags F;
+                u8 A;
             };
             u16 AF;
         };
