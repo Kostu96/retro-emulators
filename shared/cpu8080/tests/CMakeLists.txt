@@ -2,7 +2,11 @@ set(CPU8080_TESTS_TARGET_NAME cpu8080_tests)
 
 set(CPU8080_TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/cpu8080_mode_gameboy_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu8080_gameboy_mode_arithmetic_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu8080_gameboy_mode_fixture.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu8080_gameboy_mode_jumps_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu8080_gameboy_mode_misc_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu8080_gameboy_mode_transfer_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu8080_mode_i8080_tests.cpp
 )
 
