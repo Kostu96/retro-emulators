@@ -1296,6 +1296,7 @@ TEST_F(CPU8080GameBoyModeTransferGroupTests, LD_HL_SPPlusImm8Test)
 
 	preExecutionState.PC = 0x0004;
 	preExecutionState.HL = 0xDE00;
+	preExecutionState.F.gb.HalfCarry = 1;
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 

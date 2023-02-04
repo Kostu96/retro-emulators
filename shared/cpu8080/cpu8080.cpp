@@ -584,9 +584,16 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0xF8: {
         switch (m_mode)
         {
-        case Mode::GameBoy:
-            LDRP(m_state.HL, m_state.SP + (s8)load8(m_state.PC++));
-            break;
+        case Mode::GameBoy: {
+            u8 imm = load8(m_state.PC++);
+            u32 result = m_state.SP + (s8)imm;
+            u8 halfResult = (m_state.SP & 0xF) + (imm & 0xF);
+            LDRP(m_state.HL, result);
+            setZeroFlag(0);
+            setSubtractFlag(0);
+            setCarryFlag(result >> 16);
+            setHalfCarryFlag(halfResult >> 4);
+        } break;
         default:
         case Mode::Intel8080:
             RET(getSignFlag());
