@@ -1,7 +1,10 @@
 #include "cpu8080.hpp"
 #include "cartridge.hpp"
+#include "ppu.hpp"
 #include "../shared/memory_map.hpp"
 
+#include <glad/gl.h>
+#include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -12,11 +15,16 @@
 
 constexpr u16 FRAME_WIDTH = 160;
 constexpr u16 FRAME_HEIGHT = 144;
-constexpr u16 SCALE = 2;
+constexpr u16 SCALE = 3;
 constexpr u16 BORDER_SIZE = 16;
 constexpr u16 IMGUI_MENU_BAR_HEIGHT = 6;
 constexpr u16 WINDOW_WIDTH = FRAME_WIDTH * SCALE + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE + 2 * BORDER_SIZE + IMGUI_MENU_BAR_HEIGHT;
+
+constexpr u16 VRAM_SIZE = 0x2000;
+
+constexpr u16 TILES_FRAME_WIDTH = 16 * 8;
+constexpr u16 TILES_FRAME_HEIGHT = 24 * 8;
 
 static void glfwErrorCallback(int error, const char* description)
 {
@@ -39,6 +47,19 @@ int main(int /*argc*/, char* argv[])
     glfwMakeContextCurrent(window);
     glfwSwapInterval(0);
 
+    glw::init(glfwGetProcAddress);
+    glw::Renderer::init();
+
+    glw::Framebuffer* tileDataFBO = new glw::Framebuffer{
+        glw::Framebuffer::Properties{ TILES_FRAME_WIDTH, TILES_FRAME_HEIGHT, 1, {
+                glw::TextureSpecification{
+                    glw::TextureFormat::RGBA8,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureWrapMode::Clamp
+                }
+            }} };
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -48,6 +69,7 @@ int main(int /*argc*/, char* argv[])
     ImGui_ImplOpenGL3_Init("#version 450");
 
     CPU8080 cpu{ CPU8080::Mode::GameBoy };
+    PPU ppu;
 
     u8 bootloader[256];
     std::ifstream file{ argv[1], std::ios_base::binary};
@@ -57,17 +79,20 @@ int main(int /*argc*/, char* argv[])
     }
     file.read((char*)bootloader, 256);
     file.close();
+    bootloader[0x0003] = 0x18;
+    bootloader[0x0004] = 0x07;
 
     Cartridge cart;
     cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/blargg_test.gb");
 
-    u8 vram[0x2000];
+    u8* vram = new u8[VRAM_SIZE];
     u8 wram[0x2000];
     u8 hram[0x80];
 
     const AddressRange ROM_RANGE{    0x0000, 0x7FFF };
     const AddressRange VRAM_RANGE{   0x8000, 0x9FFF };
     const AddressRange WRAM_RANGE{   0xC000, 0xDFFF };
+    const AddressRange SERIAL_RANGE{ 0xFF00, 0xFF01 };
     const AddressRange TIMERS_RANGE{ 0xFF04, 0xFF07 };
     const AddressRange APU1_RANGE{   0xFF10, 0xFF14 };
     const AddressRange APU2_RANGE{   0xFF24, 0xFF26 };
@@ -89,7 +114,7 @@ int main(int /*argc*/, char* argv[])
                 return wram[offset];
 
             if (PPU_RANGE.contains(address, offset))
-                return u8{0x90}; // TODO: graphics
+                return ppu.load8(offset);
             
             if (HRAM_RANGE.contains(address, offset))
                 return hram[offset];
@@ -112,6 +137,12 @@ int main(int /*argc*/, char* argv[])
             }
 
             if (TIMERS_RANGE.contains(address, offset)) {
+                if (offset == 0x0)
+                    std::cout << data;
+                return;
+            }
+
+            if (TIMERS_RANGE.contains(address, offset)) {
                 // TODO: timers
                 return;
             }
@@ -127,7 +158,7 @@ int main(int /*argc*/, char* argv[])
             }
 
             if (PPU_RANGE.contains(address, offset)) {
-                // TODO: graphics
+                ppu.store8(offset, data);
                 return;
             }
 
@@ -152,9 +183,48 @@ int main(int /*argc*/, char* argv[])
         });
 
     cpu.reset();
+    ppu.reset();
+
+    u32 colors[4]{
+        0xFFFFFFFF,
+        0xAAAAAAFF,
+        0x555555FF,
+        0x000000FF,
+    };
+
     while (!glfwWindowShouldClose(window))
     {
+        if (mapBootloader && cpu.getPC() == 0x0003)
+        {
+            // bootloader routine to clear the VRAM
+            std::memset(vram, 0, VRAM_SIZE);
+        }
+
         cpu.clock();
+        ppu.clock();
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        tileDataFBO->bind();
+        glViewport(0, 0, TILES_FRAME_WIDTH, TILES_FRAME_HEIGHT);
+        glw::Renderer::beginFrame();
+        u16 address = 0;
+        for (u16 y = 0; y < 24; y++) {
+            for (u16 x = 0; x < 16; x++) {
+                for (u8 tileY = 0; tileY < 16; tileY += 2) {
+                    u8 b1 = vram[address + tileY];
+                    u8 b2 = vram[address + tileY + 1];
+                    for (s8 bit = 7; bit >= 0; bit--) {
+                        u8 color = (((b2 >> bit) & 1) << 1) | ((b1 >> bit) & 1);
+                        glw::Renderer::renderPoint(x * 8 + 7 - bit, y * 8 + tileY / 2, colors[color]);
+                    }
+                }
+
+                address += 16;
+            }
+        }
+        glw::Renderer::endFrame();
+        tileDataFBO->unbind();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -168,6 +238,12 @@ int main(int /*argc*/, char* argv[])
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
+
+        if (ImGui::Begin("Tile Data"))
+        {
+            ImGui::Image((ImTextureID)tileDataFBO->getAttachments()[0].getRendererID(), { TILES_FRAME_WIDTH * 2, TILES_FRAME_HEIGHT * 2 }, { 0, 1 }, { 1, 0 });
+        }
+        ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -184,9 +260,14 @@ int main(int /*argc*/, char* argv[])
         glfwPollEvents();
     }
 
+    delete[] vram;
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+
+    delete tileDataFBO;
+    glw::Renderer::shutdown();
 
     glfwTerminate();
     return 0;

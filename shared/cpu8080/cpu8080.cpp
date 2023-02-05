@@ -640,7 +640,7 @@ void CPU8080::prefixInstruction(u8 opcode)
 
 void CPU8080::BIT(u8 value, u8 bit)
 {
-    setZeroFlag((value >> bit) & 1);
+    setZeroFlag(!((value >> bit) & 1));
     setSubtractFlag(0);
     setHalfCarryFlag(1);
 }

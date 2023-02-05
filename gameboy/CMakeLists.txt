@@ -5,6 +5,8 @@ set(GAMEBOY_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ppu.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ppu.hpp
 )
 
 add_executable(${GAMEBOY_TAGET_NAME} ${GAMEBOY_SOURCES})
