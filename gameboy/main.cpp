@@ -17,10 +17,10 @@
 constexpr u16 FRAME_WIDTH = 160;
 constexpr u16 FRAME_HEIGHT = 144;
 constexpr u16 SCALE = 3;
-constexpr u16 BORDER_SIZE = 16;
+constexpr u16 BORDER_SIZE = 12;
 constexpr u16 IMGUI_MENU_BAR_HEIGHT = 6;
 constexpr u16 WINDOW_WIDTH = FRAME_WIDTH * SCALE + 2 * BORDER_SIZE;
-constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE + 2 * BORDER_SIZE + IMGUI_MENU_BAR_HEIGHT;
+constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE + 2 * BORDER_SIZE;
 
 constexpr u16 VRAM_SIZE = 0x2000;
 
@@ -41,7 +41,7 @@ int main(int /*argc*/, char* argv[])
         std::terminate();
     }
 
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Game Boy", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT + IMGUI_MENU_BAR_HEIGHT, "Game Boy", nullptr, nullptr);
     if (!window) {
         std::cerr << "GLFW window creation failed!\n";
         std::terminate();
@@ -68,7 +68,7 @@ int main(int /*argc*/, char* argv[])
                     glw::TextureFormat::RGBA8,
                     glw::TextureFilter::Nearest,
                     glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Clamp
+                    glw::TextureWrapMode::Repeat
                 }
             }} };
 
@@ -78,7 +78,7 @@ int main(int /*argc*/, char* argv[])
                     glw::TextureFormat::RGBA8,
                     glw::TextureFilter::Nearest,
                     glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Clamp
+                    glw::TextureWrapMode::Repeat
                 }
             }} };
 
@@ -232,15 +232,16 @@ int main(int /*argc*/, char* argv[])
     ppu.reset();
 
     u32 colors[4]{
-        0xFFFFFFFF,
-        0xAAAAAAFF,
-        0x555555FF,
+        0xEEEEEEFF,
+        0x999999FF,
+        0x444444FF,
         0x000000FF,
     };
 
+    glClearColor(0.f, 0.f, 0.f, 0.f);
     while (!glfwWindowShouldClose(window))
     {
-        int repeats = 32;
+        int repeats = 1;
         while (repeats--)
         {
             if (mapBootloader && cpu.getPC() == 0x0003)
@@ -297,7 +298,15 @@ int main(int /*argc*/, char* argv[])
                     if (ppu.getTileDataArea() == 0 && index < 128) index += 256;
                     u16 ypos = index / 16;
                     u16 xpos = index % 16;
-                    glw::Renderer::renderTexture(x * 8, y * 8, xpos * 8, ypos * 8, xpos * 8 + 8, ypos * 8 + 8);
+                    float left = (float)(x * 8) / (256.f * 0.5f) - 1.f;
+                    float right = (float)(x * 8 + 8) / (256.f * 0.5f) - 1.f;
+                    float top = -((float)(y * 8) / (256.f * 0.5f) - 1.f);
+                    float bottom = -((float)(y * 8 + 8) / (256.f * 0.5f) - 1.f);
+                    float u0 = (float)(xpos * 8) / 128.f;
+                    float v0 = 1.f - (float)(ypos * 8) / 192.f;
+                    float u1 = (float)(xpos * 8 + 8) / 128.f;
+                    float v1 = 1.f - (float)(ypos * 8 + 8) / 192.f;
+                    glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
                     address++;
                 }
             }
@@ -319,13 +328,35 @@ int main(int /*argc*/, char* argv[])
                     if (ppu.getTileDataArea() == 0 && index < 128) index += 256;
                     u16 ypos = index / 16;
                     u16 xpos = index % 16;
-                    glw::Renderer::renderTexture(x * 8, y * 8, xpos * 8, ypos * 8, xpos * 8 + 8, ypos * 8 + 8);
+                    float left = (float)(x * 8) / (256.f * 0.5f) - 1.f;
+                    float right = (float)(x * 8 + 8) / (256.f * 0.5f) - 1.f;
+                    float top = -((float)(y * 8) / (256.f * 0.5f) - 1.f);
+                    float bottom = -((float)(y * 8 + 8) / (256.f * 0.5f) - 1.f);
+                    float u0 = (float)(xpos * 8) / 128.f;
+                    float v0 = 1.f - (float)(ypos * 8) / 192.f;
+                    float u1 = (float)(xpos * 8 + 8) / 128.f;
+                    float v1 = 1.f - (float)(ypos * 8 + 8) / 192.f;
+                    glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
                     address++;
                 }
             }
             glw::Renderer::endFrame();
             tileMap1FBO->unbind();
         }
+
+        glw::Renderer::beginFrame();
+        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+        tileMap0FBO->getAttachments()[0].bind(0);
+        float left = (float)BORDER_SIZE / (WINDOW_WIDTH * 0.5f) - 1.f;
+        float right = (float)(BORDER_SIZE + FRAME_WIDTH * SCALE) / (WINDOW_WIDTH * 0.5f) - 1.f;
+        float top = -((float)BORDER_SIZE / (WINDOW_HEIGHT * 0.5f) - 1.f);
+        float bottom = -((float)(BORDER_SIZE + FRAME_HEIGHT * SCALE) / (WINDOW_HEIGHT * 0.5f) - 1.f);
+        float u0 = (float)ppu.getSCX() / 256.f;
+        float v0 = 1.f - (float)ppu.getSCY() / 256.f;
+        float u1 = (float)(ppu.getSCX() + 160) / 256.f;
+        float v1 = 1.f - (float)(ppu.getSCY() + 144) / 256.f;
+        glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
+        glw::Renderer::endFrame();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

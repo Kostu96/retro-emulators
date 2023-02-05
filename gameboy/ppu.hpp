@@ -16,6 +16,8 @@ public:
 	void store8(u16 address, u8 data);
 
 	u8 getTileDataArea() const { return m_LCDControl.WinBGTileData; }
+	u8 getSCY() const { return m_SCY; }
+	u8 getSCX() const { return m_SCX; }
 private:
 	union {
 		struct {
