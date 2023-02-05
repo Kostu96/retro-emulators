@@ -79,12 +79,32 @@ Cartridge::~Cartridge()
 
 u8 Cartridge::load8(u16 address) const
 {
-	return m_data[address];
+	switch (m_header->cartridgeTypeCode)
+	{
+	case 0: return m_data[address];
+	case 1:
+		if (address < 0x2000)
+			return m_data[address];
+
+		return m_data[MBC1RomBank * 0x2000 + address];
+	}
+	
+	assert(false);
+	return 0;
 }
 
-void Cartridge::store8(u16 /*address*/, u8 /*byte*/)
+void Cartridge::store8(u16 address, u8 data)
 {
-	//__debugbreak();
+	switch (m_header->cartridgeTypeCode)
+	{
+	case 1:
+		if (address >= 0x2000 && address < 0x4000) {
+			MBC1RomBank = data ? data : 1;
+			return;
+		}
+	}
+	
+	assert(false);
 }
 
 void Cartridge::loadFromMemory(u8* data, size_t size)

@@ -122,6 +122,9 @@ PRIVATE:
     u8 pop8() { return load8(m_state.SP++); }
     u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
 
+    void SWAP(u8& reg);
+    void SRL(u8& reg);
+    void RR(u8& reg);
     void BIT(u8 value, u8 bit);
     void SETHL(u8 bit);
     void RES(u8& reg, u8 bit);

@@ -105,18 +105,22 @@ int main(int /*argc*/, char* argv[])
     bootloader[0x0004] = 0x07;
 
     Cartridge cart;
-    cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/blargg_test.gb");
+    cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/tetris.gb");
+    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/01-special.gb");
+    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/04-op r,imm.gb");
+    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/06-ld r,r.gb");
+    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/blargg_test.gb");
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/dmg-acid2.gb");
 
     u8* vram = new u8[VRAM_SIZE];
     u8 wram[0x2000];
     u8 hram[0x80];
 
-    const AddressRange ROM_RANGE{    0x0000, 0x7FFF };
+    const AddressRange CART_RANGE{   0x0000, 0x7FFF };
     const AddressRange VRAM_RANGE{   0x8000, 0x9FFF };
     const AddressRange WRAM_RANGE{   0xC000, 0xDFFF };
     const AddressRange OAM_RANGE{    0xFE00, 0xFE9F };
-    const AddressRange SERIAL_RANGE{ 0xFF00, 0xFF01 };
+    const AddressRange SERIAL_RANGE{ 0xFF00, 0xFF02 };
     const AddressRange TIMERS_RANGE{ 0xFF04, 0xFF07 };
     const AddressRange APU1_RANGE{   0xFF10, 0xFF14 };
     const AddressRange APU2_RANGE{   0xFF24, 0xFF26 };
@@ -131,7 +135,7 @@ int main(int /*argc*/, char* argv[])
     cpu.mapReadMemoryCallback([&](u16 address)
         {
             u16 offset;
-            if (ROM_RANGE.contains(address, offset))
+            if (CART_RANGE.contains(address, offset))
             {
                 if (mapBootloader && offset < 0x100) return bootloader[offset];
                 return cart.load8(offset);
@@ -153,6 +157,11 @@ int main(int /*argc*/, char* argv[])
     cpu.mapWriteMemoryCallback([&](u16 address, u8 data)
         {
             u16 offset;
+            if (CART_RANGE.contains(address, offset)) {
+                cart.store8(offset, data);
+                return;
+            }
+
             if (VRAM_RANGE.contains(address, offset)) {
                 redrawTileData = offset < 0x1800;
                 redrawTileMap0 = offset >= 0x1800 && offset < 0x1C00;

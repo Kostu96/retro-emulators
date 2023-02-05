@@ -290,7 +290,17 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x2D: DECR(m_state.L); break;
     case 0x2E: m_state.L = load8(m_state.PC++); break;
     case 0x2F: CMA(); break;
-
+    case 0x30: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            JR(!getCarryFlag());
+            break;
+        default:
+        case Mode::Intel8080:
+            assert(false && "Unhandled standard instruction");
+        }
+    } break;
     case 0x31: m_state.SP = load16(m_state.PC); m_state.PC += 2; break;
     case 0x32: {
         switch (m_mode)
@@ -630,6 +640,14 @@ void CPU8080::prefixInstruction(u8 opcode)
     {
     case 0x11: RL(m_state.C); break;
 
+    case 0x19: RR(m_state.C); break;
+    case 0x1A: RR(m_state.D); break;
+
+    case 0x37: SWAP(m_state.A); break;
+    case 0x38: SRL(m_state.B); break;
+
+    case 0x3F: SRL(m_state.A); break;
+
     case 0x7C: BIT(m_state.H, 7); break;
 
     case 0x7E: BIT(load8(m_state.HL), 7); break;
@@ -646,6 +664,37 @@ void CPU8080::prefixInstruction(u8 opcode)
     default:
         assert(false && "Unhandled prefix instruction");
     }
+}
+
+void CPU8080::SWAP(u8& reg)
+{
+    u8 l = reg & 0x0F;
+    u8 h = reg & 0xF0;
+    reg = (l << 4) | h;
+    setZeroFlag(reg == 0);
+    setSubtractFlag(0);
+    setHalfCarryFlag(0);
+    setCarryFlag(0);
+}
+
+void CPU8080::SRL(u8& reg)
+{
+    setCarryFlag(reg & 1);
+    reg >>= 1;
+    setZeroFlag(reg == 0);
+    setSubtractFlag(0);
+    setHalfCarryFlag(0);
+}
+
+void CPU8080::RR(u8& reg)
+{
+    u8 temp = getCarryFlag();
+    setCarryFlag(reg & 1);
+    reg >>= 1;
+    reg |= temp << 7;
+    setZeroFlag(reg == 0);
+    setSubtractFlag(0);
+    setHalfCarryFlag(0);
 }
 
 void CPU8080::BIT(u8 value, u8 bit)
@@ -845,10 +894,19 @@ void CPU8080::DECM()
     u8 tempBit = ~value & 0x10;
     value--;
     setHalfCarryFlag(((value & 0x10) & tempBit) >> 4);
-    setSignFlag(value >> 7);
     setZeroFlag(value == 0);
-    setParityFlag((std::bitset<8>(value).count() % 2) == 0);
     store8(m_state.HL, value);
+
+    switch (m_mode)
+    {
+    case Mode::GameBoy:
+        setSubtractFlag(1);
+        break;
+    case Mode::Intel8080:
+        setSignFlag(value >> 7);
+        setParityFlag((std::bitset<8>(value).count() % 2) == 0);
+        break;
+    }
 }
 
 void CPU8080::INCR(u8& reg)
