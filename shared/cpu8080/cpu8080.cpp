@@ -176,7 +176,7 @@ void CPU8080::standardInstruction(u8 opcode)
     switch (opcode)
     {
     case 0x00: break;
-    case 0x01: LDRP(m_state.BC, load16(m_state.PC)); m_state.PC += 2; break;
+    case 0x01: m_state.BC = load16(m_state.PC); m_state.PC += 2; break;
     case 0x02: store8(m_state.BC, m_state.A); break;
     case 0x03: INCRP(m_state.BC); break;
     case 0x04: INCR(m_state.B); break;
@@ -203,7 +203,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x0E: m_state.C = load8(m_state.PC++); break;
     case 0x0F: RRC(); break;
 
-    case 0x11: LDRP(m_state.DE, load16(m_state.PC)); m_state.PC += 2; break;
+    case 0x11: m_state.DE = load16(m_state.PC); m_state.PC += 2; break;
     case 0x12: store8(m_state.DE, m_state.A); break;
     case 0x13: INCRP(m_state.DE); break;
     case 0x14: INCR(m_state.D); break;
@@ -241,7 +241,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x1E: m_state.E = load8(m_state.PC++); break;
     case 0x1F: RAR(); break;
 
-    case 0x21: LDRP(m_state.HL, load16(m_state.PC)); m_state.PC += 2; break;
+    case 0x21: m_state.HL = load16(m_state.PC); m_state.PC += 2; break;
     case 0x22: {
         switch (m_mode)
         {
@@ -280,7 +280,7 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         default:
         case Mode::Intel8080:
-            LDRP(m_state.HL, load16(load16(m_state.PC)));
+            m_state.HL = load16(load16(m_state.PC));
             m_state.PC += 2;
             break;
         }
@@ -291,7 +291,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x2E: m_state.L = load8(m_state.PC++); break;
     case 0x2F: CMA(); break;
 
-    case 0x31: LDRP(m_state.SP, load16(m_state.PC)); m_state.PC += 2; break;
+    case 0x31: m_state.SP = load16(m_state.PC); m_state.PC += 2; break;
     case 0x32: {
         switch (m_mode)
         {
@@ -588,7 +588,7 @@ void CPU8080::standardInstruction(u8 opcode)
             u8 imm = load8(m_state.PC++);
             u32 result = m_state.SP + (s8)imm;
             u8 halfResult = (m_state.SP & 0xF) + (imm & 0xF);
-            LDRP(m_state.HL, result);
+            m_state.HL = result;
             setZeroFlag(0);
             setSubtractFlag(0);
             setCarryFlag(result >> 16);
@@ -643,11 +643,6 @@ void CPU8080::BIT(u8 value, u8 bit)
     setZeroFlag(!((value >> bit) & 1));
     setSubtractFlag(0);
     setHalfCarryFlag(1);
-}
-
-void CPU8080::LDRP(u16& dst, u16 value)
-{
-    dst = value;
 }
 
 void CPU8080::LDM(u16 address, u8 value)
