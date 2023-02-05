@@ -633,6 +633,16 @@ void CPU8080::prefixInstruction(u8 opcode)
     case 0x7C: BIT(m_state.H, 7); break;
 
     case 0x7E: BIT(load8(m_state.HL), 7); break;
+
+    case 0xBE: RESHL(7); break;
+
+    case 0xCE: SETHL(1); break;
+
+    case 0xE6: SETHL(4); break;
+
+    case 0xF6: SETHL(6); break;
+
+    case 0xFE: SETHL(7); break;
     default:
         assert(false && "Unhandled prefix instruction");
     }
@@ -643,6 +653,27 @@ void CPU8080::BIT(u8 value, u8 bit)
     setZeroFlag(!((value >> bit) & 1));
     setSubtractFlag(0);
     setHalfCarryFlag(1);
+}
+
+void CPU8080::SETHL(u8 bit)
+{
+    u8 value = load8(m_state.HL);
+    u8 mask = 1 << bit;
+    value |= mask;
+    store8(m_state.HL, value);
+}
+
+void CPU8080::RES(u8& reg, u8 bit)
+{
+
+}
+
+void CPU8080::RESHL(u8 bit)
+{
+    u8 value = load8(m_state.HL);
+    u8 mask = ~(1 << bit);
+    value &= mask;
+    store8(m_state.HL, value);
 }
 
 void CPU8080::LDM(u16 address, u8 value)

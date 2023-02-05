@@ -31,8 +31,19 @@ private:
 		u8 byte;
 	} m_LCDControl;
 
-	u8 m_SCY, m_SCX;
-	u8 m_LY;
+	union {
+		struct {
+			u8 asdf;
+		};
+		u8 byte;
+	} m_LCDStatus;
 
-	u8 m_paletteData;
+	u8 m_SCY, m_SCX;
+	u8 m_LY, m_LYC;
+
+	u8 m_BGpaletteData;
+	u8 m_OBJpalette0Data;
+	u8 m_OBJpalette1Data;
+
+	u8 m_WY, m_WX;
 };

@@ -123,6 +123,9 @@ PRIVATE:
     u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
 
     void BIT(u8 value, u8 bit);
+    void SETHL(u8 bit);
+    void RES(u8& reg, u8 bit);
+    void RESHL(u8 bit);
     void LDM(u16 address, u8 value);
     void LDMM(u16 address, u16 value);
     void XCHG();
