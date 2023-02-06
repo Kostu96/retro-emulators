@@ -62,8 +62,8 @@ int main(int /*argc*/, char* argv[])
     bootloader[0x0004] = 0x07;
 
     Cartridge cart;
-    //std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
-    std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
+    std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
+    //std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
     path += "dmg-acid2.gb";
     cart.loadFromFile(path.c_str());
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/tetris.gb");

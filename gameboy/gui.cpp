@@ -1,6 +1,7 @@
 #include "gui.hpp"
 #include "ppu.hpp"
 
+#include <glw/framebuffer.hpp>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -36,11 +37,12 @@ namespace GUI {
     {
         ImVec2 imageSize = { fbo->getProperties().width * 2.f, fbo->getProperties().height * 2.f };
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::SetNextWindowSize(imageSize, ImGuiCond_Always);
         if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
             ImGui::Image((ImTextureID)fbo->getAttachments()[0].getRendererID(), imageSize, { 0, 1 }, { 1, 0 });
         ImGui::End();
-        ImGui::PopStyleVar();
+        ImGui::PopStyleVar(2);
     }
 
     void update(const PPU& ppu)

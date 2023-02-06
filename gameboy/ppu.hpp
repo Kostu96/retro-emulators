@@ -2,7 +2,10 @@
 #include "../shared/type_aliases.hpp"
 
 #include <ccl/non_copyable.h>
-#include <glw/glw.hpp>
+
+namespace glw {
+	class Framebuffer;
+}
 
 class PPU :
 	public ccl::NonCopyable
@@ -65,7 +68,7 @@ private:
 	static constexpr u16 TILEMAP_FRAME_SIZE = 256;
 
 	void redrawTileData();
-	void redrawTileMap(glw::Framebuffer* tileMapFBO, u16 address);
+	void redrawTileMap(u16 address);
 
 	glw::Framebuffer* m_tileDataFBO;
 	bool m_isTileDataDirty;

@@ -1,6 +1,6 @@
 #include "ppu.hpp"
 
-#include <glad/gl.h>
+#include <glw/glw.hpp>
 
 #include <cassert>
 #include <cstring>
@@ -19,7 +19,7 @@ static u8 s_bgColorMap[4]{
 PPU::PPU() :
     m_VRAM{ new u8[VRAM_SIZE] },
     m_tileDataFBO{ new glw::Framebuffer{
-        glw::Framebuffer::Properties{ TILE_DATA_FRAME_WIDTH, TILE_DATA_FRAME_HEIGHT, 1, {
+        glw::Framebuffer::Properties{ TILE_DATA_FRAME_WIDTH + 15 + 2, TILE_DATA_FRAME_HEIGHT + 23 + 2, 1, {
                 glw::TextureSpecification{
                     glw::TextureFormat::RGBA8,
                     glw::TextureFilter::Nearest,
@@ -68,8 +68,20 @@ void PPU::reset()
 void PPU::clock()
 {
     if (m_isTileDataDirty) { m_isTileDataDirty = false; redrawTileData(); }
-    if (m_isTileMap0Dirty) { m_isTileMap0Dirty = false; redrawTileMap(m_tileMap0FBO, 0x1800); }
-    if (m_isTileMap1Dirty) { m_isTileMap1Dirty = false; redrawTileMap(m_tileMap1FBO, 0x1C00); }
+    
+
+    glw::Renderer::beginFrame(m_tileMap0FBO);
+    redrawTileMap(0x1800);
+    glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX, m_SCY + 144, 0xFF002255);
+    glw::Renderer::renderLine(m_SCX + 160, m_SCY, m_SCX + 160, m_SCY + 144, 0xFF002255);
+    glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX + 160, m_SCY, 0xFF002255);
+    glw::Renderer::renderLine(m_SCX, m_SCY + 144, m_SCX + 160, m_SCY + 144, 0xFF002255);
+    glw::Renderer::endFrame();
+
+    glw::Renderer::beginFrame(m_tileMap1FBO);
+    redrawTileMap(0x1C00);
+    //glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX, m_SCY + 144, 0xFF002255);
+    glw::Renderer::endFrame();
 }
 
 u8 PPU::load8(u16 address) const
@@ -149,9 +161,7 @@ void PPU::clearVRAM()
 
 void PPU::redrawTileData()
 {
-    m_tileDataFBO->bind();
-    glViewport(0, 0, TILE_DATA_FRAME_WIDTH, TILE_DATA_FRAME_HEIGHT);
-    glw::Renderer::beginFrame();
+    glw::Renderer::beginFrame(m_tileDataFBO);
     u16 address = 0;
     for (u16 y = 0; y < 24; y++) {
         for (u16 x = 0; x < 16; x++) {
@@ -160,7 +170,7 @@ void PPU::redrawTileData()
                 u8 b2 = m_VRAM[address + tileY + 1];
                 for (s8 bit = 7; bit >= 0; bit--) {
                     u8 color = (((b2 >> bit) & 1) << 1) | ((b1 >> bit) & 1);
-                    glw::Renderer::renderPoint(x * 8 + 7 - bit, y * 8 + tileY / 2, s_colors[s_bgColorMap[color]]);
+                    glw::Renderer::renderPoint(x * 8 + 7 - bit + (x + 1), y * 8 + tileY / 2 + 1 + (y + 1), s_colors[s_bgColorMap[color]]);
                 }
             }
 
@@ -168,14 +178,10 @@ void PPU::redrawTileData()
         }
     }
     glw::Renderer::endFrame();
-    m_tileDataFBO->unbind();
 }
 
-void PPU::redrawTileMap(glw::Framebuffer* tileMapFBO, u16 address)
+void PPU::redrawTileMap(u16 address)
 {
-    tileMapFBO->bind();
-    glViewport(0, 0, TILEMAP_FRAME_SIZE, TILEMAP_FRAME_SIZE);
-    glw::Renderer::beginFrame();
     m_tileDataFBO->getAttachments()[0].bind(0);
     for (u16 y = 0; y < 32; y++) {
         for (u16 x = 0; x < 32; x++) {
@@ -187,14 +193,12 @@ void PPU::redrawTileMap(glw::Framebuffer* tileMapFBO, u16 address)
             float right = (float)(x * 8 + 8) / (256.f * 0.5f) - 1.f;
             float top = -((float)(y * 8) / (256.f * 0.5f) - 1.f);
             float bottom = -((float)(y * 8 + 8) / (256.f * 0.5f) - 1.f);
-            float u0 = (float)(xpos * 8) / 128.f;
-            float v0 = 1.f - (float)(ypos * 8) / 192.f;
-            float u1 = (float)(xpos * 8 + 8) / 128.f;
-            float v1 = 1.f - (float)(ypos * 8 + 8) / 192.f;
+            float u0 = (float)(xpos * 8 + (xpos + 1)) / (TILE_DATA_FRAME_WIDTH + 15.f + 2.f);
+            float v0 = 1.f - (float)(ypos * 8 + (ypos + 1)) / (TILE_DATA_FRAME_HEIGHT + 23.f + 2.f);
+            float u1 = (float)(xpos * 8 + 8 + (xpos + 1)) / (TILE_DATA_FRAME_WIDTH + 15.f + 2.f);
+            float v1 = 1.f - (float)(ypos * 8 + 8 + (ypos + 1)) / (TILE_DATA_FRAME_HEIGHT + 23.f + 2.f);
             glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
             address++;
         }
     }
-    glw::Renderer::endFrame();
-    tileMapFBO->unbind();
 }
