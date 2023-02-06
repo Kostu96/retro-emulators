@@ -58,11 +58,12 @@ PPU::~PPU()
 
 void PPU::reset()
 {
+    m_SCY = 0;
+    m_SCX = 0;
+
     m_LY = 0x90; // TODO: temp
 
     m_isTileDataDirty = true;
-    m_isTileMap0Dirty = true;
-    m_isTileMap1Dirty = true;
 }
 
 void PPU::clock()
@@ -146,8 +147,6 @@ void PPU::storeVRAM8(u16 address, u8 data)
     m_VRAM[address] = data;
 
     m_isTileDataDirty = address < 0x1800;
-    m_isTileMap0Dirty = address >= 0x1800 && address < 0x1C00;
-    m_isTileMap1Dirty = address >= 0x1C00 && address < 0x2000;
 }
 
 void PPU::clearVRAM()
@@ -155,8 +154,6 @@ void PPU::clearVRAM()
     std::memset(m_VRAM, 0, VRAM_SIZE);
 
     m_isTileDataDirty = true;
-    m_isTileMap0Dirty = true;
-    m_isTileMap1Dirty = true;
 }
 
 void PPU::redrawTileData()
@@ -186,7 +183,7 @@ void PPU::redrawTileMap(u16 address)
     for (u16 y = 0; y < 32; y++) {
         for (u16 x = 0; x < 32; x++) {
             u16 index = m_VRAM[address];
-            if (m_LCDControl.WinBGTileData == 0 && index < 128) index += 256;
+            //if (m_LCDControl.WinBGTileData == 0 && index < 128) index += 256;
             u16 ypos = index / 16;
             u16 xpos = index % 16;
             float left = (float)(x * 8) / (256.f * 0.5f) - 1.f;

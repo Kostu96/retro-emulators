@@ -73,7 +73,5 @@ private:
 	glw::Framebuffer* m_tileDataFBO;
 	bool m_isTileDataDirty;
 	glw::Framebuffer* m_tileMap0FBO;
-	bool m_isTileMap0Dirty;
 	glw::Framebuffer* m_tileMap1FBO;
-	bool m_isTileMap1Dirty;
 };
