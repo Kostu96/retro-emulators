@@ -105,12 +105,12 @@ int main(int /*argc*/, char* argv[])
     bootloader[0x0004] = 0x07;
 
     Cartridge cart;
-    cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/tetris.gb");
+    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/tetris.gb");
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/01-special.gb");
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/04-op r,imm.gb");
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/06-ld r,r.gb");
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/blargg_test.gb");
-    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/dmg-acid2.gb");
+    cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/dmg-acid2.gb");
 
     u8* vram = new u8[VRAM_SIZE];
     u8 wram[0x2000];
@@ -203,8 +203,8 @@ int main(int /*argc*/, char* argv[])
 
             if (PPU_RANGE.contains(address, offset)) {
                 ppu.store8(offset, data);
-                redrawTileMap0 = (offset == 0 && data & 0x10);
-                redrawTileMap1 = (offset == 0 && data & 0x10);
+                //redrawTileMap0 = (offset == 0 && data & 0x10);
+                //redrawTileMap1 = (offset == 0 && data & 0x10);
                 return;
             }
 
@@ -232,16 +232,16 @@ int main(int /*argc*/, char* argv[])
     ppu.reset();
 
     u32 colors[4]{
-        0xEEEEEEFF,
-        0x999999FF,
-        0x444444FF,
-        0x000000FF,
+        0xFFEEEEEE,
+        0xFF999999,
+        0xFF444444,
+        0xFF000000,
     };
 
     glClearColor(0.f, 0.f, 0.f, 0.f);
     while (!glfwWindowShouldClose(window))
     {
-        int repeats = 1;
+        int repeats = 4;
         while (repeats--)
         {
             if (mapBootloader && cpu.getPC() == 0x0003)

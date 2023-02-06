@@ -145,21 +145,25 @@ void CPU8080::reset()
     m_state.SP = 0xF000;
     m_state.PC = 0;
     m_state.InterruptEnabled = false;
+    m_state.IsHalted = false;
 
     m_prefixMode = false;
 }
 
 void CPU8080::clock()
 {
-    u8 opcode = load8(m_state.PC++);
-
-    if (m_prefixMode)
+    if (!m_state.IsHalted)
     {
-        m_prefixMode = false;
-        prefixInstruction(opcode);
+        u8 opcode = load8(m_state.PC++);
+
+        if (m_prefixMode)
+        {
+            m_prefixMode = false;
+            prefixInstruction(opcode);
+        }
+        else
+            standardInstruction(opcode);
     }
-    else 
-        standardInstruction(opcode);
 }
 
 void CPU8080::interrupt(u8 vector)
@@ -394,7 +398,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x73: LDM(m_state.HL, m_state.E); break;
     case 0x74: LDM(m_state.HL, m_state.H); break;
     case 0x75: LDM(m_state.HL, m_state.L); break;
-
+    case 0x76: m_state.IsHalted = true; break;
     case 0x77: LDM(m_state.HL, m_state.A); break;
     case 0x78: m_state.A = m_state.B; break;
     case 0x79: m_state.A = m_state.C; break;
@@ -541,7 +545,25 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0xE5: push16(m_state.HL); break;
     case 0xE6: AND(load8(m_state.PC++)); break;
     case 0xE7: RST(4); break;
-    case 0xE8: RET(getParityFlag()); break;
+    case 0xE8: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy: {
+            u8 imm = load8(m_state.PC++);
+            u32 result = m_state.SP + (s8)imm;
+            u8 halfResult = (m_state.SP & 0xF) + (imm & 0xF);
+            m_state.SP = result;
+            setZeroFlag(0);
+            setSubtractFlag(0);
+            setCarryFlag(result >> 16);
+            setHalfCarryFlag(halfResult >> 4);
+        } break;
+        default:
+        case Mode::Intel8080:
+            RET(getParityFlag());
+            break;
+        }
+    } break;
     case 0xE9: m_state.PC = m_state.HL; break;
     case 0xEA: {
         switch (m_mode)

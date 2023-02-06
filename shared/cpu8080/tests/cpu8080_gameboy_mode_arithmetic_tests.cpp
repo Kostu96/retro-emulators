@@ -71,50 +71,47 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_BCTest)
 TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_DETest)
 {
 	rom[0x0] = 0x19; // ADD HL, DE
-	cpu.HL = 0xDE00;
-	cpu.DE = 0x00AD;
-	cpu.F.byte &= 0x0F;
+
+	CPU.m_state.HL = 0xDE00;
+	CPU.m_state.DE = 0x00AD;
 
 	auto preExecutionState = captureCPUState();
 	CPU.clock();
 	auto postExecutionState = captureCPUState();
 
-	preExecutionState.PC += 1;
+	preExecutionState.PC = 0x0001;
 	preExecutionState.HL = 0xDEAD;
-	preExecutionState.AF |= 0x0;
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
 TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_HLTest)
 {
 	rom[0x0] = 0x29; // ADD HL, HL
-	cpu.HL = 0x4269;
-	cpu.F.byte &= 0x0F;
+
+	CPU.m_state.HL = 0x4269;
 
 	auto preExecutionState = captureCPUState();
 	CPU.clock();
 	auto postExecutionState = captureCPUState();
 
-	preExecutionState.PC += 1;
+	preExecutionState.PC = 0x0001;
 	preExecutionState.HL = 0x84D2;
-	preExecutionState.AF |= 0x0;
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
 TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_SPTest)
 {
 	rom[0x0] = 0x39; // ADD HL, SP
-	cpu.HL = 0xDE00;
-	cpu.SP = 0x00AD;
-	cpu.F.byte &= 0x0F;
+
+	CPU.m_state.HL = 0xDE00;
+	CPU.m_state.SP = 0x00AD;
 
 	auto preExecutionState = captureCPUState();
 	CPU.clock();
 	auto postExecutionState = captureCPUState();
 
-	preExecutionState.PC += 1;
+	preExecutionState.PC = 0x0001;
 	preExecutionState.HL = 0xDEAD;
-	preExecutionState.AF |= 0x000F;
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
@@ -122,17 +119,25 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_SP_Imm8Test)
 {
 	rom[0x0] = 0xE8;
 	rom[0x1] = 0x42; // ADD SP, 0x42 (66)
-	rom[0x1] = 0xE8;
-	rom[0x2] = 0x42; // ADD SP, 0xBE (-66)
-	cpu.SP = 0xDE00;
-	cpu.F.byte &= 0x0F;
+	rom[0x2] = 0xE8;
+	rom[0x3] = 0xBE; // ADD SP, 0xBE (-66)
+
+	CPU.m_state.SP = 0xDE00;
 
 	auto preExecutionState = captureCPUState();
 	CPU.clock();
 	auto postExecutionState = captureCPUState();
 
-	preExecutionState.PC += 2;
+	preExecutionState.PC = 0x0002;
 	preExecutionState.SP = 0xDE42;
-	preExecutionState.AF |= 0x000F;
+	compareCPUStates(preExecutionState, postExecutionState);
+
+	preExecutionState = captureCPUState();
+	CPU.clock();
+	postExecutionState = captureCPUState();
+
+	preExecutionState.PC = 0x0004;
+	preExecutionState.SP = 0xDE00;
+	preExecutionState.F.gb.HalfCarry = 1;
 	compareCPUStates(preExecutionState, postExecutionState);
 }

@@ -95,6 +95,7 @@ PRIVATE:
         };
 
         bool InterruptEnabled;
+        bool IsHalted;
     };
 
     u8 getCarryFlag();
