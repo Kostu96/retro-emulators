@@ -141,10 +141,8 @@ PRIVATE:
     void ADDHL(u16 value);
     void CMP(u8 value);
     void DECR(u8& reg);
-    void DECRP(u16& reg);
     void DECM();
     void INCR(u8& reg);
-    void INCRP(u16& reg);
     void INCM();
     void RL(u8& reg);
     void RRC();

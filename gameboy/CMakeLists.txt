@@ -4,6 +4,8 @@ set(GAMEBOY_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ppu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ppu.hpp

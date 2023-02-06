@@ -182,7 +182,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x00: break;
     case 0x01: m_state.BC = load16(m_state.PC); m_state.PC += 2; break;
     case 0x02: store8(m_state.BC, m_state.A); break;
-    case 0x03: INCRP(m_state.BC); break;
+    case 0x03: m_state.BC++; break;
     case 0x04: INCR(m_state.B); break;
     case 0x05: DECR(m_state.B); break;
     case 0x06: m_state.B = load8(m_state.PC++); break;
@@ -201,7 +201,7 @@ void CPU8080::standardInstruction(u8 opcode)
     } break;
     case 0x09: ADDHL(m_state.BC); break;
     case 0x0A: m_state.A = load8(m_state.BC); break;
-    case 0x0B: DECRP(m_state.BC); break;
+    case 0x0B: m_state.BC--; break;
     case 0x0C: INCR(m_state.C); break;
     case 0x0D: DECR(m_state.C); break;
     case 0x0E: m_state.C = load8(m_state.PC++); break;
@@ -209,7 +209,7 @@ void CPU8080::standardInstruction(u8 opcode)
 
     case 0x11: m_state.DE = load16(m_state.PC); m_state.PC += 2; break;
     case 0x12: store8(m_state.DE, m_state.A); break;
-    case 0x13: INCRP(m_state.DE); break;
+    case 0x13: m_state.DE++; break;
     case 0x14: INCR(m_state.D); break;
     case 0x15: DECR(m_state.D); break;
     case 0x16: m_state.D = load8(m_state.PC++); break;
@@ -239,7 +239,7 @@ void CPU8080::standardInstruction(u8 opcode)
     } break;
     case 0x19: ADDHL(m_state.DE); break;
     case 0x1A: m_state.A = load8(m_state.DE); break;
-    case 0x1B: DECRP(m_state.DE); break;
+    case 0x1B: m_state.DE--; break;
     case 0x1C: INCR(m_state.E); break;
     case 0x1D: DECR(m_state.E); break;
     case 0x1E: m_state.E = load8(m_state.PC++); break;
@@ -259,7 +259,7 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break; 
-    case 0x23: INCRP(m_state.HL); break;
+    case 0x23: m_state.HL++; break;
     case 0x24: INCR(m_state.H); break;
     case 0x25: DECR(m_state.H); break;
     case 0x26: m_state.H = load8(m_state.PC++); break;
@@ -289,7 +289,7 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break;
-    case 0x2B: DECRP(m_state.HL); break;
+    case 0x2B: m_state.HL--; break;
     case 0x2C: INCR(m_state.L); break;
     case 0x2D: DECR(m_state.L); break;
     case 0x2E: m_state.L = load8(m_state.PC++); break;
@@ -319,7 +319,7 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break;
-    case 0x33: INCRP(m_state.SP); break;
+    case 0x33: m_state.SP++; break;
     case 0x34: INCM(); break;
     case 0x35: DECM(); break;
     case 0x36: LDM(m_state.HL, load8(m_state.PC++)); break;
@@ -339,7 +339,7 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break;
-    case 0x3B: DECRP(m_state.SP); break;
+    case 0x3B: m_state.SP--; break;
     case 0x3C: INCR(m_state.A); break;
     case 0x3D: DECR(m_state.A); break;
     case 0x3E: m_state.A = load8(m_state.PC++); break;
@@ -905,11 +905,6 @@ void CPU8080::DECR(u8& reg)
     }
 }
 
-void CPU8080::DECRP(u16& reg)
-{
-    reg--;
-}
-
 void CPU8080::DECM()
 {
     u8 value = load8(m_state.HL);
@@ -948,11 +943,6 @@ void CPU8080::INCR(u8& reg)
         setParityFlag((std::bitset<8>(reg).count() % 2) == 0);
         break;
     }
-}
-
-void CPU8080::INCRP(u16& reg)
-{
-    reg++;
 }
 
 void CPU8080::INCM()
