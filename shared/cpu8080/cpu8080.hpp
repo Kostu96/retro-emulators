@@ -123,13 +123,29 @@ PRIVATE:
     u8 pop8() { return load8(m_state.SP++); }
     u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
 
-    void SWAP(u8& reg);
-    void SRL(u8& reg);
+    // CB prefix instructions:
+    void RLC(u8& reg);
+    void RLCM();
+    void RRC(u8& reg);
+    void RRCM();
+    void RL(u8& reg);
+    void RLM();
     void RR(u8& reg);
+    void RRM();
+    void SLA(u8& reg);
+    void SLAM();
+    void SRA(u8& reg);
+    void SRAM();
+    void SWAP(u8& reg);
+    void SWAPM();
+    void SRL(u8& reg);
+    void SRLM();
     void BIT(u8 value, u8 bit);
-    void SETHL(u8 bit);
     void RES(u8& reg, u8 bit);
-    void RESHL(u8 bit);
+    void RESM(u8 bit);
+    void SET(u8& reg, u8 bit);
+    void SETM(u8 bit);
+
     void XCHG();
     void XTHL();
     void ADD(u8 value);
@@ -142,9 +158,8 @@ PRIVATE:
     void DECM();
     void INCR(u8& reg);
     void INCM();
-    void RL(u8& reg);
-    void RRC();
-    void RLC();
+    void RLCA();
+    void RRCA();
     void RAR();
     void RAL();
     void DAA();

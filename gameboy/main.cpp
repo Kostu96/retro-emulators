@@ -64,11 +64,18 @@ int main(int /*argc*/, char* argv[])
     Cartridge cart;
     //std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
     std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
-    path += "Blargg_tests/cpu_instrs.gb";
-    //path += "Blargg_tests/01-special.gb";
+    //path += "Blargg_tests/cpu_instrs.gb";
+    //path += "Blargg_tests/01-special.gb";            // +
+    //path += "Blargg_tests/02-interrupts.gb";
+    //path += "Blargg_tests/03-op sp,hl.gb";
     //path += "Blargg_tests/04-op r,imm.gb";
-    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/06-ld r,r.gb");
-    //path += "Blargg_tests/07-jr,jp,call,ret,rst.gb";
+    //path += "Blargg_tests/05-op rp.gb";
+    //path += "Blargg_tests/06-ld r,r.gb";             // +
+    //path += "Blargg_tests/07-jr,jp,call,ret,rst.gb"; // +
+    //path += "Blargg_tests/08-misc instrs.gb";        // +
+    //path += "Blargg_tests/09-op r,r.gb";
+    //path += "Blargg_tests/10-bit ops.gb";            // +
+    path += "Blargg_tests/11-op a,(hl).gb";
     //path += "dmg-acid2.gb";
     //path += "tetris.gb";
     cart.loadFromFile(path.c_str());
@@ -76,11 +83,13 @@ int main(int /*argc*/, char* argv[])
     u8 wram[0x2000];
     u8 hram[0x80];
 
+    u8 serial[2];
+
     const AddressRange CART_RANGE{   0x0000, 0x7FFF };
     const AddressRange VRAM_RANGE{   0x8000, 0x9FFF };
     const AddressRange WRAM_RANGE{   0xC000, 0xDFFF };
     const AddressRange OAM_RANGE{    0xFE00, 0xFE9F };
-    const AddressRange SERIAL_RANGE{ 0xFF00, 0xFF02 };
+    const AddressRange SERIAL_RANGE{ 0xFF01, 0xFF02 };
     const AddressRange TIMERS_RANGE{ 0xFF04, 0xFF07 };
     const AddressRange APU1_RANGE{   0xFF10, 0xFF14 };
     const AddressRange APU2_RANGE{   0xFF24, 0xFF26 };
@@ -135,10 +144,11 @@ int main(int /*argc*/, char* argv[])
             }
 
             if (SERIAL_RANGE.contains(address, offset)) {
-                if (offset == 0x0)
+                serial[offset] = data;
+                if (offset == 1 && data == 0x81)
                 {
-                    std::cout << data;
-
+                    std::cout << serial[0];
+                    serial[1] = 0;
                 }
                 return;
             }
@@ -194,12 +204,6 @@ int main(int /*argc*/, char* argv[])
         {
             // bootloader routine to clear the VRAM
             if (mapBootloader && cpu.getPC() == 0x0003) ppu.clearVRAM();
-
-            if (cpu.getPC() == 0x0100)
-                std::cout << "Bootloader handout 0x0100\n";
-
-            if (cpu.getPC() == 0xC000)
-                std::cout << "Test entry 0xC000\n";
 
             cpu.clock();
             //ppu.clock();
