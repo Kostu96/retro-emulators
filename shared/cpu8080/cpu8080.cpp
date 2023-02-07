@@ -164,6 +164,13 @@ void CPU8080::clock()
         else
             standardInstruction(opcode);
     }
+
+    if (m_state.InterruptEnabled)
+    {
+        u8 
+        (load8(0xFFFF) & load8(0xFF0F)))
+
+    }
 }
 
 void CPU8080::interrupt(u8 vector)

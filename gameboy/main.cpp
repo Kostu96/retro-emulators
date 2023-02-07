@@ -75,7 +75,7 @@ int main(int /*argc*/, char* argv[])
     //path += "Blargg_tests/08-misc instrs.gb";        // +
     //path += "Blargg_tests/09-op r,r.gb";
     //path += "Blargg_tests/10-bit ops.gb";            // +
-    path += "Blargg_tests/11-op a,(hl).gb";
+    //path += "Blargg_tests/11-op a,(hl).gb";
     //path += "dmg-acid2.gb";
     //path += "tetris.gb";
     cart.loadFromFile(path.c_str());
@@ -84,6 +84,10 @@ int main(int /*argc*/, char* argv[])
     u8 hram[0x80];
 
     u8 serial[2];
+
+    u8 InterruptFlag = 0;
+    u8 unmapBootloader = 0;
+    u8 InterruptEnable = 0;
 
     const AddressRange CART_RANGE{   0x0000, 0x7FFF };
     const AddressRange VRAM_RANGE{   0x8000, 0x9FFF };
@@ -115,6 +119,10 @@ int main(int /*argc*/, char* argv[])
             
             if (HRAM_RANGE.contains(address, offset))
                 return hram[offset];
+
+            if (address == 0xFF0F) return InterruptFlag;
+            if (address == 0xFF50) return unmapBootloader;
+            if (address == 0xFFFF) return InterruptEnable;
 
             assert(false && "Unhandled read");
             return u8{};
@@ -178,14 +186,16 @@ int main(int /*argc*/, char* argv[])
                 return;
             }
 
-            if (address == 0xFF0F)
-            {
-                // TODO: interrupts
+            if (address == 0xFF0F) {
+                InterruptFlag = data & 0xE;
                 return;
             }
 
-            if (address == 0xFF50)
-            {
+            if (address == 0xFFFF) {
+                InterruptEnable = data & 0xE;
+            }
+
+            if (address == 0xFF50) {
                 if (mapBootloader) mapBootloader = false;
                 return;
             }
