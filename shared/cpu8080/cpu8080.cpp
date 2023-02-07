@@ -3,6 +3,62 @@
 #include <bitset>
 #include <cassert>
 
+static const u8 standardCycleCounts[256]{
+    1,3,2,2,1,1,2,1,5,2,2,2,1,1,2,1,
+    0,3,2,2,1,1,2,1,3,2,2,2,1,1,2,1,
+    2,3,2,2,1,1,2,1,2,2,2,2,1,1,2,1,
+    2,3,2,2,3,3,3,1,2,2,2,2,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    2,2,2,2,2,2,0,2,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    2,3,3,4,3,4,2,4,2,4,3,0,3,6,2,4,
+    2,3,3,0,3,4,2,4,2,4,3,0,3,0,2,4,
+    3,3,2,0,0,4,2,4,4,1,4,0,0,0,2,4,
+    3,3,2,1,0,4,2,4,3,2,4,1,0,0,2,4
+};
+
+static const u8 conditionalCycleCounts[256]{
+    1,3,2,2,1,1,2,1,5,2,2,2,1,1,2,1,
+    0,3,2,2,1,1,2,1,3,2,2,2,1,1,2,1,
+    3,3,2,2,1,1,2,1,3,2,2,2,1,1,2,1,
+    3,3,2,2,3,3,3,1,3,2,2,2,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    2,2,2,2,2,2,0,2,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,
+    5,3,4,4,6,4,2,4,5,4,4,0,6,6,2,4,
+    5,3,4,0,6,4,2,4,5,4,4,0,6,0,2,4,
+    3,3,2,0,0,4,2,4,4,1,4,0,0,0,2,4,
+    3,3,2,1,0,4,2,4,3,2,4,1,0,0,2,4
+};
+
+static const u8 prefixCycleCounts[256]{
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,3,2,2,2,2,2,2,2,3,2,
+    2,2,2,2,2,2,3,2,2,2,2,2,2,2,3,2,
+    2,2,2,2,2,2,3,2,2,2,2,2,2,2,3,2,
+    2,2,2,2,2,2,3,2,2,2,2,2,2,2,3,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2,
+    2,2,2,2,2,2,4,2,2,2,2,2,2,2,4,2
+};
 
 u8 CPU8080::getCarryFlag()
 {
@@ -148,29 +204,82 @@ void CPU8080::reset()
     m_state.IsHalted = false;
 
     m_prefixMode = false;
+    m_conditionalTaken = false;
+    m_EIRequested = false;
+    m_cyclesLeft = 0;
 }
 
 void CPU8080::clock()
 {
-    if (!m_state.IsHalted)
-    {
-        u8 opcode = load8(m_state.PC++);
+    if (m_EIRequested) {
+        m_EIRequested = false;
+        m_state.InterruptEnabled = true;
+    }
 
-        if (m_prefixMode)
-        {
-            m_prefixMode = false;
-            prefixInstruction(opcode);
+    if (!m_state.IsHalted) {
+        if (m_cyclesLeft == 0) {
+            u8 opcode = load8(m_state.PC++);
+
+            if (m_prefixMode) {
+                m_prefixMode = false;
+                prefixInstruction(opcode);
+                m_cyclesLeft = prefixCycleCounts[opcode];
+            }
+            else {
+                standardInstruction(opcode);
+                m_cyclesLeft = m_conditionalTaken ? conditionalCycleCounts[opcode] : standardCycleCounts[opcode];
+                m_conditionalTaken = false;
+            }
         }
-        else
-            standardInstruction(opcode);
     }
 
-    if (m_state.InterruptEnabled)
-    {
-        u8 
-        (load8(0xFFFF) & load8(0xFF0F)))
+    u8 IE = load8(0xFFFF);
+    u8 IF = load8(0xFF0F);
+    if (IE & IF) {
+        m_state.IsHalted = false;
 
+        if (m_state.InterruptEnabled) {
+            m_state.InterruptEnabled = false;
+
+            // V-Blank
+            if ((IE & 1) & (IF & 1)) {
+                push16(m_state.PC);
+                m_state.PC = 0x40;
+                store8(0xFF0F, IF & ~1);
+            }
+
+            // LCD STAT
+            if ((IE & 2) & (IF & 2)) {
+                push16(m_state.PC);
+                m_state.PC = 0x48;
+                store8(0xFF0F, IF & ~2);
+            }
+
+            // Timer
+            if ((IE & 4) & (IF & 4)) {
+                push16(m_state.PC);
+                m_state.PC = 0x50;
+                store8(0xFF0F, IF & ~4);
+            }
+
+            // Serial
+            if ((IE & 8) & (IF & 8)) {
+                push16(m_state.PC);
+                m_state.PC = 0x58;
+                store8(0xFF0F, IF & ~8);
+            }
+
+            // Joypad
+            if ((IE & 0x10) & (IF & 0x10)) {
+                push16(m_state.PC);
+                m_state.PC = 0x60;
+                store8(0xFF0F, IF & ~0x10);
+            }
+        }
     }
+
+    if (m_cyclesLeft > 0)
+        m_cyclesLeft--;
 }
 
 void CPU8080::interrupt(u8 vector)
@@ -214,7 +323,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x0E: m_state.C = load8(m_state.PC++); break;
     case 0x0F: RRCA(); break;
 
-    case 0x11: m_state.DE = load16(m_state.PC); m_state.PC += 2; break;
+    case 0x11: m_state.DE = load16(m_state.PC); m_state.PC += 2;  break;
     case 0x12: store8(m_state.DE, m_state.A); break;
     case 0x13: m_state.DE++; break;
     case 0x14: INCR(m_state.D); break;
@@ -232,7 +341,13 @@ void CPU8080::standardInstruction(u8 opcode)
             assert(false && "Unhandled standard instruction");
         }
     } break;
-
+    case 0x19: ADDHL(m_state.DE); break;
+    case 0x1A: m_state.A = load8(m_state.DE); break;
+    case 0x1B: m_state.DE--; break;
+    case 0x1C: INCR(m_state.E); break;
+    case 0x1D: DECR(m_state.E); break;
+    case 0x1E: m_state.E = load8(m_state.PC++); break;
+    case 0x1F: RAR(); break;
     case 0x20: {
         switch (m_mode)
         {
@@ -244,14 +359,6 @@ void CPU8080::standardInstruction(u8 opcode)
             assert(false && "Unhandled standard instruction");
         }
     } break;
-    case 0x19: ADDHL(m_state.DE); break;
-    case 0x1A: m_state.A = load8(m_state.DE); break;
-    case 0x1B: m_state.DE--; break;
-    case 0x1C: INCR(m_state.E); break;
-    case 0x1D: DECR(m_state.E); break;
-    case 0x1E: m_state.E = load8(m_state.PC++); break;
-    case 0x1F: RAR(); break;
-
     case 0x21: m_state.HL = load16(m_state.PC); m_state.PC += 2; break;
     case 0x22: {
         switch (m_mode)
@@ -269,7 +376,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x23: m_state.HL++; break;
     case 0x24: INCR(m_state.H); break;
     case 0x25: DECR(m_state.H); break;
-    case 0x26: m_state.H = load8(m_state.PC++); break;
+    case 0x26: m_state.H = load8(m_state.PC++);  break;
     case 0x27: DAA(); break;
     case 0x28: {
         switch (m_mode)
@@ -374,6 +481,7 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x3E: m_state.A = load8(m_state.PC++); break;
     case 0x3F: {
         setCarryFlag(~getCarryFlag());
+        m_cyclesLeft = 1;
         switch (m_mode)
         {
         case Mode::GameBoy:
@@ -543,7 +651,18 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0xD0: RET(!getCarryFlag()); break;
     case 0xD1: m_state.DE = pop16(); break;
     case 0xD2: JMP(!getCarryFlag()); break;
-    case 0xD3: load8(m_state.PC++); /* to be implemented */ break;
+    case 0xD3: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            assert(false && "Unhandled standard instruction");
+            break;
+        default:
+        case Mode::Intel8080:
+            load8(m_state.PC++); /* to be implemented */
+            break;
+        }
+    } break;
     case 0xD4: CALL(!getCarryFlag()); break;
     case 0xD5: push16(m_state.DE); break;
     case 0xD6: SUB(load8(m_state.PC++)); break;
@@ -562,7 +681,18 @@ void CPU8080::standardInstruction(u8 opcode)
         }
     } break;
     case 0xDA: JMP(getCarryFlag()); break;
-    case 0xDB: load8(m_state.PC++); /* to be implemented */ break;
+    case 0xDB: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            assert(false && "Unhandled standard instruction");
+            break;
+        default:
+        case Mode::Intel8080:
+            load8(m_state.PC++); /* to be implemented */
+            break;
+        }
+    } break;
     case 0xDC: CALL(getCarryFlag()); break;
 
     case 0xDE: SBB(load8(m_state.PC++)); break;
@@ -592,7 +722,18 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break;
-    case 0xE3: XTHL(); break;
+    case 0xE3: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            assert(false && "Unhandled standard instruction");
+            break;
+        default:
+        case Mode::Intel8080:
+            XTHL();
+            break;
+        }
+    } break;
     case 0xE4: CALL(!getParityFlag()); break;
     case 0xE5: push16(m_state.HL); break;
     case 0xE6: AND(load8(m_state.PC++)); break;
@@ -630,8 +771,30 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break;
-    case 0xEB: XCHG(); break;
-    case 0xEC: CALL(getParityFlag()); break;
+    case 0xEB: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            assert(false && "Unhandled standard instruction");
+            break;
+        default:
+        case Mode::Intel8080:
+            XCHG();
+            break;
+        }
+    } break;
+    case 0xEC: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            assert(false && "Unhandled standard instruction");
+            break;
+        default:
+        case Mode::Intel8080:
+            CALL(getParityFlag());
+            break;
+        }
+    } break;
 
     case 0xEE: XOR(load8(m_state.PC++)); break;
     case 0xEF: RST(5); break;
@@ -660,7 +823,7 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break;
-    case 0xF3: m_state.InterruptEnabled = false; break;
+    case 0xF3: m_state.InterruptEnabled = false;  break;
     case 0xF4: CALL(!getSignFlag()); break;
     case 0xF5: push16(m_state.AF); break;
     case 0xF6: OR(load8(m_state.PC++)); break;
@@ -698,8 +861,19 @@ void CPU8080::standardInstruction(u8 opcode)
             break;
         }
     } break;
-    case 0xFB: m_state.InterruptEnabled = true; break;
-    case 0xFC: CALL(getSignFlag()); break;
+    case 0xFB: m_EIRequested = true; break;
+    case 0xFC: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            assert(false && "Unhandled standard instruction");
+            break;
+        default:
+        case Mode::Intel8080:
+            CALL(getSignFlag());
+            break;
+        }
+    } break;
 
     case 0xFE: CMP(load8(m_state.PC++)); break;
     case 0xFF: RST(7); break;
@@ -710,6 +884,10 @@ void CPU8080::standardInstruction(u8 opcode)
 
 void CPU8080::prefixInstruction(u8 opcode)
 {
+    m_cyclesLeft = 2;
+    if ((opcode & 0xF) == 0x6 || (opcode & 0xF) == 0xE)
+        m_cyclesLeft += 2;
+
     switch (opcode)
     {
     case 0x00: RLC(m_state.B); break;
@@ -1326,7 +1504,7 @@ void CPU8080::DECM()
 
 void CPU8080::INCR(u8& reg)
 {
-    u8 tempBit = reg & 0x10;
+   u8 tempBit = reg & 0x10;
     reg++;
     setHalfCarryFlag((~(reg & 0x10) & tempBit) >> 4);
     setZeroFlag(reg == 0);
@@ -1369,6 +1547,13 @@ void CPU8080::RRCA()
     setCarryFlag(m_state.A & 1);
     m_state.A >>= 1;
     m_state.A |= getCarryFlag() << 7;
+
+    if (m_mode == Mode::GameBoy)
+    {
+        setZeroFlag(0);
+        setSubtractFlag(0);
+        setHalfCarryFlag(0);
+    }
 }
 
 void CPU8080::RLCA()
@@ -1376,6 +1561,13 @@ void CPU8080::RLCA()
     setCarryFlag(m_state.A >> 7);
     m_state.A <<= 1;
     m_state.A |= getCarryFlag();
+
+    if (m_mode == Mode::GameBoy)
+    {
+        setZeroFlag(0);
+        setSubtractFlag(0);
+        setHalfCarryFlag(0);
+    }
 }
 
 void CPU8080::RAR()
@@ -1384,6 +1576,13 @@ void CPU8080::RAR()
     setCarryFlag(m_state.A & 1);
     m_state.A >>= 1;
     m_state.A |= temp;
+
+    if (m_mode == Mode::GameBoy)
+    {
+        setZeroFlag(0);
+        setSubtractFlag(0);
+        setHalfCarryFlag(0);
+    }
 }
 
 void CPU8080::RAL()
@@ -1392,6 +1591,13 @@ void CPU8080::RAL()
     setCarryFlag(m_state.A >> 7);
     m_state.A <<= 1;
     m_state.A |= temp;
+
+    if (m_mode == Mode::GameBoy)
+    {
+        setZeroFlag(0);
+        setSubtractFlag(0);
+        setHalfCarryFlag(0);
+    }
 }
 
 void CPU8080::DAA()
@@ -1493,6 +1699,7 @@ void CPU8080::JMP(bool flag)
     u16 address = load16(m_state.PC);
     m_state.PC += 2;
     if (flag) {
+        m_conditionalTaken = true;
         m_state.PC = address;
     }
 }
@@ -1501,6 +1708,7 @@ void CPU8080::JR(bool flag)
 {
     s8 offset = load8(m_state.PC++);
     if (flag) {
+        m_conditionalTaken = true;
         m_state.PC += offset;
     }
 }
@@ -1510,6 +1718,7 @@ void CPU8080::CALL(bool flag)
     u16 address = load16(m_state.PC);
     m_state.PC += 2;
     if (flag) {
+        m_conditionalTaken = true;
         push16(m_state.PC);
         m_state.PC = address;
     }
@@ -1518,6 +1727,7 @@ void CPU8080::CALL(bool flag)
 void CPU8080::RET(bool flag)
 {
     if (flag) {
+        m_conditionalTaken = true;
         m_state.PC = pop16();
     }
 }

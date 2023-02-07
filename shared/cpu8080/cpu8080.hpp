@@ -176,4 +176,7 @@ PRIVATE:
 
     const Mode m_mode;
     bool m_prefixMode;
+    bool m_conditionalTaken;
+    bool m_EIRequested;
+    u8 m_cyclesLeft;
 };

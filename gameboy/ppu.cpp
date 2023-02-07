@@ -71,7 +71,7 @@ void PPU::clock()
 
     switch (m_LCDStatus.Mode)
     {
-    case 0: // H Blank
+    case 0: // H-Blank
         if (lineTicks >= 456)
         {
             lineTicks = 0;
@@ -79,7 +79,7 @@ void PPU::clock()
             m_LCDStatus.Mode = (m_LY == 144) ? 1 : 2;
         }
         break;
-    case 1: // V Blank
+    case 1: // V-Blank
         if (lineTicks >= 456)
         {
             lineTicks = 0;

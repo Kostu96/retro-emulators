@@ -3,6 +3,7 @@
 #include "ppu.hpp"
 #include "../shared/memory_map.hpp"
 #include "gui.hpp"
+#include "timer.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -47,9 +48,6 @@ int main(int /*argc*/, char* argv[])
 
     GUI::init(window);
 
-    CPU8080 cpu{ CPU8080::Mode::GameBoy };
-    PPU ppu;
-
     u8 bootloader[256];
     std::ifstream file{ argv[1], std::ios_base::binary};
     if (!file.is_open()) {
@@ -62,11 +60,11 @@ int main(int /*argc*/, char* argv[])
     bootloader[0x0004] = 0x07;
 
     Cartridge cart;
-    //std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
-    std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
+    std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
+    //std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
     //path += "Blargg_tests/cpu_instrs.gb";
     //path += "Blargg_tests/01-special.gb";            // +
-    //path += "Blargg_tests/02-interrupts.gb";
+    path += "Blargg_tests/02-interrupts.gb";
     //path += "Blargg_tests/03-op sp,hl.gb";
     //path += "Blargg_tests/04-op r,imm.gb";
     //path += "Blargg_tests/05-op rp.gb";
@@ -76,6 +74,7 @@ int main(int /*argc*/, char* argv[])
     //path += "Blargg_tests/09-op r,r.gb";
     //path += "Blargg_tests/10-bit ops.gb";            // +
     //path += "Blargg_tests/11-op a,(hl).gb";
+    //path += "Blargg_tests/instr_timing.gb";
     //path += "dmg-acid2.gb";
     //path += "tetris.gb";
     cart.loadFromFile(path.c_str());
@@ -89,14 +88,17 @@ int main(int /*argc*/, char* argv[])
     u8 unmapBootloader = 0;
     u8 InterruptEnable = 0;
 
+    CPU8080 cpu{ CPU8080::Mode::GameBoy };
+    Timer timer{ InterruptFlag };
+    PPU ppu;
+
     const AddressRange CART_RANGE{   0x0000, 0x7FFF };
     const AddressRange VRAM_RANGE{   0x8000, 0x9FFF };
     const AddressRange WRAM_RANGE{   0xC000, 0xDFFF };
     const AddressRange OAM_RANGE{    0xFE00, 0xFE9F };
     const AddressRange SERIAL_RANGE{ 0xFF01, 0xFF02 };
     const AddressRange TIMERS_RANGE{ 0xFF04, 0xFF07 };
-    const AddressRange APU1_RANGE{   0xFF10, 0xFF14 };
-    const AddressRange APU2_RANGE{   0xFF24, 0xFF26 };
+    const AddressRange APU_RANGE{    0xFF10, 0xFF26 };
     const AddressRange PPU_RANGE{    0xFF40, 0xFF4B };
     const AddressRange HRAM_RANGE{   0xFF80, 0xFFFF };
 
@@ -162,16 +164,11 @@ int main(int /*argc*/, char* argv[])
             }
 
             if (TIMERS_RANGE.contains(address, offset)) {
-                // TODO: timers
+                timer.store8(offset, data);
                 return;
             }
 
-            if (APU1_RANGE.contains(address, offset)) {
-                // TODO: sound
-                return;
-            }
-
-            if (APU2_RANGE.contains(address, offset)) {
+            if (APU_RANGE.contains(address, offset)) {
                 // TODO: sound
                 return;
             }
@@ -204,6 +201,7 @@ int main(int /*argc*/, char* argv[])
         });
 
     cpu.reset();
+    timer.reset();
     ppu.reset();
 
     glClearColor(0.f, 0.f, 0.f, 0.f);
@@ -216,6 +214,7 @@ int main(int /*argc*/, char* argv[])
             if (mapBootloader && cpu.getPC() == 0x0003) ppu.clearVRAM();
 
             cpu.clock();
+            timer.clock();
             //ppu.clock();
         }
 
