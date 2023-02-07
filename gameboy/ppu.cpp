@@ -167,7 +167,7 @@ void PPU::redrawTileData()
                 u8 b2 = m_VRAM[address + tileY + 1];
                 for (s8 bit = 7; bit >= 0; bit--) {
                     u8 color = (((b2 >> bit) & 1) << 1) | ((b1 >> bit) & 1);
-                    glw::Renderer::renderPoint(x * 8 + 7 - bit + (x + 1), y * 8 + tileY / 2 + 1 + (y + 1), s_colors[s_bgColorMap[color]]);
+                    glw::Renderer::renderPoint(x * 8 + 7 - bit + (x + 1), y * 8 + tileY / 2 + (y + 1), s_colors[s_bgColorMap[color]]);
                 }
             }
 

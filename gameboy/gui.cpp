@@ -38,7 +38,7 @@ namespace GUI {
         ImVec2 imageSize = { fbo->getProperties().width * 2.f, fbo->getProperties().height * 2.f };
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
-        ImGui::SetNextWindowSize(imageSize, ImGuiCond_Always);
+        ImGui::SetNextWindowSize({ imageSize.x, imageSize.y + 8 }, ImGuiCond_Always);
         if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
             ImGui::Image((ImTextureID)fbo->getAttachments()[0].getRendererID(), imageSize, { 0, 1 }, { 1, 0 });
         ImGui::End();

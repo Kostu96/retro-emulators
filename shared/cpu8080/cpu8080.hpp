@@ -130,8 +130,6 @@ PRIVATE:
     void SETHL(u8 bit);
     void RES(u8& reg, u8 bit);
     void RESHL(u8 bit);
-    void LDM(u16 address, u8 value);
-    void LDMM(u16 address, u16 value);
     void XCHG();
     void XTHL();
     void ADD(u8 value);
@@ -153,9 +151,6 @@ PRIVATE:
     void AND(u8 value);
     void OR(u8 value);
     void XOR(u8 value);
-    void STC();
-    void CMC();
-    void CMA();
     void JMP(bool flag);
     void JR(bool flag);
     void CALL(bool flag);

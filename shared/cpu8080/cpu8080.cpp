@@ -191,7 +191,7 @@ void CPU8080::standardInstruction(u8 opcode)
         switch (m_mode)
         {
         case Mode::GameBoy:
-            LDMM(load16(m_state.PC), m_state.SP);
+            store16(load16(m_state.PC), m_state.SP);
             m_state.PC += 2;
             break;
         default:
@@ -250,7 +250,7 @@ void CPU8080::standardInstruction(u8 opcode)
         switch (m_mode)
         {
         case Mode::GameBoy:
-            LDM(m_state.HL++, m_state.A);
+            store8(m_state.HL++, m_state.A);
             break;
         default:
         case Mode::Intel8080:
@@ -293,7 +293,19 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x2C: INCR(m_state.L); break;
     case 0x2D: DECR(m_state.L); break;
     case 0x2E: m_state.L = load8(m_state.PC++); break;
-    case 0x2F: CMA(); break;
+    case 0x2F: {
+        m_state.A = ~m_state.A;
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            setHalfCarryFlag(1);
+            setSubtractFlag(1);
+            break;
+        default:
+        case Mode::Intel8080:
+            break;
+        }
+    } break;
     case 0x30: {
         switch (m_mode)
         {
@@ -310,11 +322,11 @@ void CPU8080::standardInstruction(u8 opcode)
         switch (m_mode)
         {
         case Mode::GameBoy:
-            LDM(m_state.HL--, m_state.A);
+            store8(m_state.HL--, m_state.A);
             break;
         default:
         case Mode::Intel8080:
-            LDM(load16(m_state.PC), m_state.A);
+            store8(load16(m_state.PC), m_state.A);
             m_state.PC += 2;
             break;
         }
@@ -322,8 +334,8 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x33: m_state.SP++; break;
     case 0x34: INCM(); break;
     case 0x35: DECM(); break;
-    case 0x36: LDM(m_state.HL, load8(m_state.PC++)); break;
-    case 0x37: STC(); break;
+    case 0x36: store8(m_state.HL, load8(m_state.PC++)); break;
+    case 0x37: setCarryFlag(1); break;
 
     case 0x39: ADDHL(m_state.SP); break;
     case 0x3A: {
@@ -343,7 +355,19 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x3C: INCR(m_state.A); break;
     case 0x3D: DECR(m_state.A); break;
     case 0x3E: m_state.A = load8(m_state.PC++); break;
-    case 0x3F: CMC(); break;
+    case 0x3F: {
+        setCarryFlag(~getCarryFlag());
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            setHalfCarryFlag(0);
+            setSubtractFlag(0);
+            break;
+        default:
+        case Mode::Intel8080:
+            break;
+        }
+    } break;
     case 0x40: m_state.B = m_state.B; break;
     case 0x41: m_state.B = m_state.C; break;
     case 0x42: m_state.B = m_state.D; break;
@@ -392,14 +416,14 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x6D: m_state.L = m_state.L; break;
     case 0x6E: m_state.L = load8(m_state.HL); break;
     case 0x6F: m_state.L = m_state.A; break;
-    case 0x70: LDM(m_state.HL, m_state.B); break;
-    case 0x71: LDM(m_state.HL, m_state.C); break;
-    case 0x72: LDM(m_state.HL, m_state.D); break;
-    case 0x73: LDM(m_state.HL, m_state.E); break;
-    case 0x74: LDM(m_state.HL, m_state.H); break;
-    case 0x75: LDM(m_state.HL, m_state.L); break;
+    case 0x70: store8(m_state.HL, m_state.B); break;
+    case 0x71: store8(m_state.HL, m_state.C); break;
+    case 0x72: store8(m_state.HL, m_state.D); break;
+    case 0x73: store8(m_state.HL, m_state.E); break;
+    case 0x74: store8(m_state.HL, m_state.H); break;
+    case 0x75: store8(m_state.HL, m_state.L); break;
     case 0x76: m_state.IsHalted = true; break;
-    case 0x77: LDM(m_state.HL, m_state.A); break;
+    case 0x77: store8(m_state.HL, m_state.A); break;
     case 0x78: m_state.A = m_state.B; break;
     case 0x79: m_state.A = m_state.C; break;
     case 0x7A: m_state.A = m_state.D; break;
@@ -519,7 +543,7 @@ void CPU8080::standardInstruction(u8 opcode)
         switch (m_mode)
         {
         case Mode::GameBoy:
-            LDM(0xFF00 | load8(m_state.PC++), m_state.A);
+            store8(0xFF00 | load8(m_state.PC++), m_state.A);
             break;
         default:
         case Mode::Intel8080:
@@ -532,7 +556,7 @@ void CPU8080::standardInstruction(u8 opcode)
         switch (m_mode)
         {
         case Mode::GameBoy:
-            LDM(0xFF00 | m_state.C, m_state.A);
+            store8(0xFF00 | m_state.C, m_state.A);
             break;
         default:
         case Mode::Intel8080:
@@ -569,7 +593,7 @@ void CPU8080::standardInstruction(u8 opcode)
         switch (m_mode)
         {
         case Mode::GameBoy:
-            LDM(load16(m_state.PC), m_state.A);
+            store8(load16(m_state.PC), m_state.A);
             m_state.PC += 2;
             break;
         default:
@@ -745,16 +769,6 @@ void CPU8080::RESHL(u8 bit)
     u8 mask = ~(1 << bit);
     value &= mask;
     store8(m_state.HL, value);
-}
-
-void CPU8080::LDM(u16 address, u8 value)
-{
-    store8(address, value);
-}
-
-void CPU8080::LDMM(u16 address, u16 value)
-{
-    store16(address, value);
 }
 
 void CPU8080::XCHG()
@@ -1066,21 +1080,6 @@ void CPU8080::XOR(u8 value)
         setSubtractFlag(0);
         break;
     }
-}
-
-void CPU8080::STC()
-{
-    setCarryFlag(1);
-}
-
-void CPU8080::CMC()
-{
-    setCarryFlag(~getCarryFlag());
-}
-
-void CPU8080::CMA()
-{
-    m_state.A = ~m_state.A;
 }
 
 void CPU8080::JMP(bool flag)
