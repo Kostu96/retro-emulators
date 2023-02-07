@@ -64,14 +64,14 @@ int main(int /*argc*/, char* argv[])
     Cartridge cart;
     //std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
     std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
-    //path += "01-special.gb";
-    //path += "04-op r,imm.gb";
-    //path += "07-jr,jp,call,ret,rst.gb";
-    //path += "dmg-acid2.gb";
-    path += "tetris.gb";
-    cart.loadFromFile(path.c_str());
+    path += "Blargg_tests/cpu_instrs.gb";
+    //path += "Blargg_tests/01-special.gb";
+    //path += "Blargg_tests/04-op r,imm.gb";
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/06-ld r,r.gb");
-    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/blargg_test.gb");
+    //path += "Blargg_tests/07-jr,jp,call,ret,rst.gb";
+    //path += "dmg-acid2.gb";
+    //path += "tetris.gb";
+    cart.loadFromFile(path.c_str());
 
     u8 wram[0x2000];
     u8 hram[0x80];
