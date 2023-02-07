@@ -60,7 +60,7 @@ void PPU::reset()
 {
     m_SCY = 0;
     m_SCX = 0;
-    m_LY = 0;
+    m_LY = 0x90;
 
     m_isTileDataDirty = true;
 }

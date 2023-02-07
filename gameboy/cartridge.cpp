@@ -83,10 +83,10 @@ u8 Cartridge::load8(u16 address) const
 	{
 	case 0: return m_data[address];
 	case 1:
-		if (address < 0x2000)
+		if (address < 0x4000)
 			return m_data[address];
 
-		return m_data[MBC1RomBank * 0x2000 + address];
+		return m_data[(MBC1RomBank - 1) * 0x4000 + address];
 	}
 	
 	assert(false);

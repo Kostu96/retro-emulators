@@ -336,7 +336,17 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x35: DECM(); break;
     case 0x36: store8(m_state.HL, load8(m_state.PC++)); break;
     case 0x37: setCarryFlag(1); break;
-
+    case 0x38: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            JR(getCarryFlag());
+            break;
+        default:
+        case Mode::Intel8080:
+            assert(false && "Unhandled standard instruction");
+        }
+    } break;
     case 0x39: ADDHL(m_state.SP); break;
     case 0x3A: {
         switch (m_mode)
@@ -532,7 +542,18 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0xD6: SUB(load8(m_state.PC++)); break;
     case 0xD7: RST(2); break;
     case 0xD8: RET(getCarryFlag()); break;
-
+    case 0xD9: {
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            RET(true);
+            m_state.InterruptEnabled = true;
+            break;
+        default:
+        case Mode::Intel8080:
+            assert(false && "Unhandled standard instruction");
+        }
+    } break;
     case 0xDA: JMP(getCarryFlag()); break;
     case 0xDB: load8(m_state.PC++); /* to be implemented */ break;
     case 0xDC: CALL(getCarryFlag()); break;
@@ -688,6 +709,7 @@ void CPU8080::prefixInstruction(u8 opcode)
 
     case 0x19: RR(m_state.C); break;
     case 0x1A: RR(m_state.D); break;
+    case 0x1B: RR(m_state.E); break;
 
     case 0x37: SWAP(m_state.A); break;
     case 0x38: SRL(m_state.B); break;

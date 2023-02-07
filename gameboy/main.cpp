@@ -64,11 +64,12 @@ int main(int /*argc*/, char* argv[])
     Cartridge cart;
     //std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
     std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
-    path += "dmg-acid2.gb";
+    //path += "01-special.gb";
+    //path += "04-op r,imm.gb";
+    //path += "07-jr,jp,call,ret,rst.gb";
+    //path += "dmg-acid2.gb";
+    path += "tetris.gb";
     cart.loadFromFile(path.c_str());
-    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/tetris.gb");
-    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/01-special.gb");
-    //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/04-op r,imm.gb");
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/06-ld r,r.gb");
     //cart.loadFromFile("C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/blargg_test.gb");
 
@@ -135,7 +136,10 @@ int main(int /*argc*/, char* argv[])
 
             if (SERIAL_RANGE.contains(address, offset)) {
                 if (offset == 0x0)
+                {
                     std::cout << data;
+
+                }
                 return;
             }
 
@@ -156,8 +160,6 @@ int main(int /*argc*/, char* argv[])
 
             if (PPU_RANGE.contains(address, offset)) {
                 ppu.store8(offset, data);
-                //redrawTileMap0 = (offset == 0 && data & 0x10);
-                //redrawTileMap1 = (offset == 0 && data & 0x10);
                 return;
             }
 
@@ -193,8 +195,14 @@ int main(int /*argc*/, char* argv[])
             // bootloader routine to clear the VRAM
             if (mapBootloader && cpu.getPC() == 0x0003) ppu.clearVRAM();
 
+            if (cpu.getPC() == 0x0100)
+                std::cout << "Bootloader handout 0x0100\n";
+
+            if (cpu.getPC() == 0xC000)
+                std::cout << "Test entry 0xC000\n";
+
             cpu.clock();
-            ppu.clock();
+            //ppu.clock();
         }
 
         glClear(GL_COLOR_BUFFER_BIT);
@@ -213,7 +221,7 @@ int main(int /*argc*/, char* argv[])
         glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
         glw::Renderer::endFrame();*/
 
-        GUI::update(ppu);
+        //GUI::update(ppu);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
