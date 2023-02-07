@@ -48,7 +48,10 @@ private:
 
 	union {
 		struct {
-			u8 asdf;
+			u8 unsued : 1;     // 7
+			u8 STATSource : 3; // 3-6
+			u8 LYCEqLY : 1;    // 2
+			u8 Mode : 2;       // 0-1
 		};
 		u8 byte;
 	} m_LCDStatus;

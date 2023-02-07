@@ -60,29 +60,66 @@ void PPU::reset()
 {
     m_SCY = 0;
     m_SCX = 0;
-
-    m_LY = 0x90; // TODO: temp
+    m_LY = 0;
 
     m_isTileDataDirty = true;
 }
 
 void PPU::clock()
 {
+    static u16 lineTicks = 0;
+
+    switch (m_LCDStatus.Mode)
+    {
+    case 0: // H Blank
+        if (lineTicks >= 456)
+        {
+            lineTicks = 0;
+            m_LCDStatus.LYCEqLY = (++m_LY == m_LYC);
+            m_LCDStatus.Mode = (m_LY == 144) ? 1 : 2;
+        }
+        break;
+    case 1: // V Blank
+        if (lineTicks >= 456)
+        {
+            lineTicks = 0;
+            m_LCDStatus.LYCEqLY = (++m_LY == m_LYC);
+
+            if (m_LY >= 153)
+            {
+                m_LCDStatus.Mode = 2;
+                m_LY = 0;
+            }
+        }
+        break;
+    case 2: // OAM Search
+        if (lineTicks >= 80)
+            m_LCDStatus.Mode = 3;
+        break;
+    case 3: // Data Transfer
+        if (lineTicks >= 80 + 168)
+            m_LCDStatus.Mode = 0;
+        break;
+    }
+
+    lineTicks++;
+
     if (m_isTileDataDirty) { m_isTileDataDirty = false; redrawTileData(); }
-    
 
-    glw::Renderer::beginFrame(m_tileMap0FBO);
-    redrawTileMap(0x1800);
-    glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX, m_SCY + 144, 0xFF002255);
-    glw::Renderer::renderLine(m_SCX + 160, m_SCY, m_SCX + 160, m_SCY + 144, 0xFF002255);
-    glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX + 160, m_SCY, 0xFF002255);
-    glw::Renderer::renderLine(m_SCX, m_SCY + 144, m_SCX + 160, m_SCY + 144, 0xFF002255);
-    glw::Renderer::endFrame();
+    if (m_LY == 144)
+    {
+        glw::Renderer::beginFrame(m_tileMap0FBO);
+        redrawTileMap(0x1800);
+        glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX, m_SCY + 144, 0xFF002255);
+        glw::Renderer::renderLine(m_SCX + 160, m_SCY, m_SCX + 160, m_SCY + 144, 0xFF002255);
+        glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX + 160, m_SCY, 0xFF002255);
+        glw::Renderer::renderLine(m_SCX, m_SCY + 144, m_SCX + 160, m_SCY + 144, 0xFF002255);
+        glw::Renderer::endFrame();
 
-    glw::Renderer::beginFrame(m_tileMap1FBO);
-    redrawTileMap(0x1C00);
-    //glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX, m_SCY + 144, 0xFF002255);
-    glw::Renderer::endFrame();
+        glw::Renderer::beginFrame(m_tileMap1FBO);
+        redrawTileMap(0x1C00);
+        glw::Renderer::endFrame();
+    }
 }
 
 u8 PPU::load8(u16 address) const

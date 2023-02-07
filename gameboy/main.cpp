@@ -187,7 +187,7 @@ int main(int /*argc*/, char* argv[])
     glClearColor(0.f, 0.f, 0.f, 0.f);
     while (!glfwWindowShouldClose(window))
     {
-        int repeats = 16;
+        int repeats = 128;
         while (repeats--)
         {
             // bootloader routine to clear the VRAM
