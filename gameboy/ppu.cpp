@@ -1,6 +1,6 @@
 #include "ppu.hpp"
 
-#include <glw/glw.hpp>
+#include <glw/texture.hpp>
 
 #include <cassert>
 #include <cstring>
@@ -18,33 +18,7 @@ static u8 s_bgColorMap[4]{
 
 PPU::PPU() :
     m_VRAM{ new u8[VRAM_SIZE] },
-    m_tileDataFBO{ new glw::Framebuffer{
-        glw::Framebuffer::Properties{ TILE_DATA_FRAME_WIDTH + 15 + 2, TILE_DATA_FRAME_HEIGHT + 23 + 2, 1, {
-                glw::TextureSpecification{
-                    glw::TextureFormat::RGBA8,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Clamp
-                }
-            } } } },
-    m_tileMap0FBO{ new glw::Framebuffer{
-        glw::Framebuffer::Properties{ TILEMAP_FRAME_SIZE, TILEMAP_FRAME_SIZE, 1, {
-                glw::TextureSpecification{
-                    glw::TextureFormat::RGBA8,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Repeat
-                }
-            } } } },
-    m_tileMap1FBO{ new glw::Framebuffer{
-        glw::Framebuffer::Properties{ TILEMAP_FRAME_SIZE, TILEMAP_FRAME_SIZE, 1, {
-                glw::TextureSpecification{
-                    glw::TextureFormat::RGBA8,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Repeat
-                }
-            } } } },
+    m_screenPixels{ new u32[LCD_WIDTH * LCD_HEIGHT] },
     m_screenTexture{ new glw::Texture{
             glw::Texture::Properties{
                 glw::TextureSpecification{
@@ -53,7 +27,18 @@ PPU::PPU() :
                     glw::TextureFilter::Nearest,
                     glw::TextureWrapMode::Clamp
                 },
-                160, 144
+                LCD_WIDTH, LCD_HEIGHT
+        } } },
+    m_tileDataPixels{ new u32[16 * 8 * 24 * 8] },
+    m_tileDataTexture{ new glw::Texture{
+            glw::Texture::Properties{
+                glw::TextureSpecification{
+                    glw::TextureFormat::RGBA8,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureWrapMode::Clamp
+                },
+                16 * 8, 24 * 8
         } } }
 {}
 
@@ -61,11 +46,11 @@ PPU::~PPU()
 {
     delete[] m_VRAM;
 
-    delete m_tileDataFBO;
-    delete m_tileMap0FBO;
-    delete m_tileMap1FBO;
-
+    delete[] m_screenPixels;
     delete m_screenTexture;
+
+    delete[] m_tileDataPixels;
+    delete m_tileDataTexture;
 }
 
 void PPU::reset()
@@ -80,11 +65,13 @@ void PPU::reset()
     m_fetcherTileY = 0;
     m_pixelFIFOEmpty = true;
     m_pixelFIFONeedFetch = true;
+
     m_pixelFIFOColorIndexL = 0;
     m_pixelFIFOColorIndexH = 0;
-    m_currentPixelX = 0;
+    m_pixelFIFOPaletteL = 0;
+    m_pixelFIFOPaletteH = 0;
 
-    m_isTileDataDirty = true;
+    m_currentPixelX = 0;
 }
 
 void PPU::clock()
@@ -98,7 +85,7 @@ void PPU::clock()
         if (lineTicks >= 114)
         {
             lineTicks = 0;
-            m_LCDStatus.Mode = (m_LY >= 144) ? 1 : 2;
+            m_LCDStatus.Mode = (m_LY >= LCD_HEIGHT) ? 1 : 2;
             m_LCDStatus.LYCEqLY = (m_LY++ == m_LYC);
         }
         break;
@@ -107,7 +94,7 @@ void PPU::clock()
         {
             if (m_LY >= 153)
             {
-                m_screenTexture->setData(m_pixels, size_t(160) * 144 * sizeof(u32));
+                m_screenTexture->setData(m_screenPixels, LCD_WIDTH * LCD_HEIGHT * sizeof(u32));
                 m_LCDStatus.Mode = 2;
                 m_LY = 0;
             }
@@ -117,7 +104,6 @@ void PPU::clock()
         }
         break;
     case 2: // OAM Search
-        
         if (lineTicks >= 20)
             m_LCDStatus.Mode = 3;
         break;
@@ -125,68 +111,94 @@ void PPU::clock()
         if (!m_pixelFIFONeedFetch) {
             u8 pixelsPerCycle = 4;
             while (pixelsPerCycle--) {
-                u8 bitL = m_pixelFIFOColorIndexL >> 15;
-                u8 bitH = m_pixelFIFOColorIndexH >> 15;
+                u8 colorL = m_pixelFIFOColorIndexL >> 15;
+                u8 colorH = m_pixelFIFOColorIndexH >> 15;
                 m_pixelFIFOColorIndexL <<= 1;
                 m_pixelFIFOColorIndexH <<= 1;
-                u8 color = (bitH << 1) | bitL;
-                m_pixels[m_LY - 1][m_currentPixelX++] = s_colors[s_bgColorMap[color]];
+                u8 paletteL = m_pixelFIFOPaletteL >> 15;
+                //u8 paletteH = m_pixelFIFOPaletteH >> 15;
+                m_pixelFIFOPaletteL <<= 1;
+                m_pixelFIFOPaletteH <<= 1;
+
+                u8 color = (colorH << 1) | colorL;
+                //u8 palette = (paletteH << 1) | paletteL;
+                m_screenPixels[(m_LY - 1) * LCD_WIDTH + m_currentPixelX++] = paletteL ? s_colors[s_bgColorMap[color]] : s_colors[0];
             }
         }
 
-        static u8 fetchedL = 0;
+        static u8 fetchedColorL = 0;
+        static u8 fetchedPaletteL = 0;
         switch (m_fetcherMode)
         {
         case 0: {
             u16 tileIndex = ((m_SCY + m_LY - 1) / 8) * 32 + m_SCX / 8 + m_fetcherTileX++;
             u16 tileAddressBase = !m_LCDControl.BGTileMap ? 0x1C00 : 0x1800;
             u8 tile = m_VRAM[tileAddressBase + tileIndex];
-            m_tileDataAddress = (m_LCDControl.WinBGTileData ? tile : 0x01000 + (s8)tile) * 16;
-            fetchedL = m_VRAM[m_tileDataAddress + ((m_SCY + m_LY - 1) % 8) * 2];
+            m_tileDataAddress = (m_LCDControl.WinBGTileData ? tile : 0x1000 + (s8)tile) * 16;
+            fetchedColorL = m_VRAM[m_tileDataAddress + ((m_SCY + m_LY - 1) % 8) * 2];
+            fetchedPaletteL = m_LCDControl.WinBGEnable ? 0xFF : 0x00; // temp cause only one palette
             m_fetcherMode = 1;
         } break;
         case 1: {
-            m_pixelFIFOColorIndexL |= fetchedL << (m_pixelFIFOEmpty ? 8 : 0);
+            m_pixelFIFOColorIndexL |= fetchedColorL << (m_pixelFIFOEmpty ? 8 : 0);
             m_pixelFIFOColorIndexH |= m_VRAM[m_tileDataAddress + 1 + ((m_SCY + m_LY - 1) % 8) * 2] << (m_pixelFIFOEmpty ? 8 : 0);
+            m_pixelFIFOPaletteL |= fetchedPaletteL << (m_pixelFIFOEmpty ? 8 : 0);
+            m_pixelFIFOPaletteH |= 0; // temp cause only one palette
+
             if (!m_pixelFIFOEmpty) m_pixelFIFONeedFetch = false;
-            if (m_pixelFIFOEmpty) { m_pixelFIFOEmpty = false; }
+            if (m_pixelFIFOEmpty) m_pixelFIFOEmpty = false;
             
-            m_fetcherMode = 0;
-        } break;
-        case 2: {
             m_fetcherMode = 0;
         } break;
         }
 
-        if (m_currentPixelX >= 160) {
+        if (m_currentPixelX >= LCD_WIDTH) {
             m_fetcherMode = 0;
             m_fetcherTileX = 0;
             m_currentPixelX = 0;
             m_pixelFIFOEmpty = true;
             m_pixelFIFONeedFetch = true;
+
             m_pixelFIFOColorIndexL = 0;
             m_pixelFIFOColorIndexH = 0;
+            m_pixelFIFOPaletteL = 0;
+            m_pixelFIFOPaletteH = 0;
+
             m_LCDStatus.Mode = 0;
         }
         break;
     }
+}
 
-    /*if (m_isTileDataDirty) { m_isTileDataDirty = false; redrawTileData(); }
+void PPU::clearVRAM()
+{
+    std::memset(m_VRAM, 0, VRAM_SIZE);
 
-    if (m_LY == 144)
-    {
-        glw::Renderer::beginFrame(m_tileMap0FBO);
-        redrawTileMap(0x1800);
-        glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX, m_SCY + 144, 0xFF002255);
-        glw::Renderer::renderLine(m_SCX + 160, m_SCY, m_SCX + 160, m_SCY + 144, 0xFF002255);
-        glw::Renderer::renderLine(m_SCX, m_SCY, m_SCX + 160, m_SCY, 0xFF002255);
-        glw::Renderer::renderLine(m_SCX, m_SCY + 144, m_SCX + 160, m_SCY + 144, 0xFF002255);
-        glw::Renderer::endFrame();
+    // debug:
+    redrawTileDataTexture();
+}
 
-        glw::Renderer::beginFrame(m_tileMap1FBO);
-        redrawTileMap(0x1C00);
-        glw::Renderer::endFrame();
-    }*/
+u8 PPU::loadVRAM8(u16 address) const
+{
+    return m_VRAM[address];
+}
+
+void PPU::storeVRAM8(u16 address, u8 data)
+{
+    m_VRAM[address] = data;
+
+    // debug:
+    redrawTileDataTexture();
+}
+
+u8 PPU::loadOAM8(u16 address) const
+{
+    return m_OAM.bytes[address];
+}
+
+void PPU::storeOAM8(u16 address, u8 data)
+{
+    m_OAM.bytes[address] = data;
 }
 
 u8 PPU::load8(u16 address) const
@@ -231,6 +243,7 @@ void PPU::store8(u16 address, u8 data)
         s_bgColorMap[1] = (m_BGpaletteData >> 2) & 0b11;
         s_bgColorMap[2] = (m_BGpaletteData >> 4) & 0b11;
         s_bgColorMap[3] = (m_BGpaletteData >> 6) & 0b11;
+        redrawTileDataTexture();
         return;
     case 0x8: m_OBJpalette0Data = data; return;
     case 0x9: m_OBJpalette1Data = data; return;
@@ -241,65 +254,27 @@ void PPU::store8(u16 address, u8 data)
     assert(false && "Unhandled");
 }
 
-u8 PPU::loadVRAM8(u16 address) const
+void PPU::redrawTileDataTexture()
 {
-    return m_VRAM[address];
-}
-
-void PPU::storeVRAM8(u16 address, u8 data)
-{
-    m_VRAM[address] = data;
-
-    m_isTileDataDirty = address < 0x1800;
-}
-
-void PPU::clearVRAM()
-{
-    std::memset(m_VRAM, 0, VRAM_SIZE);
-
-    m_isTileDataDirty = true;
-}
-
-void PPU::redrawTileData()
-{
-    glw::Renderer::beginFrame(m_tileDataFBO);
     u16 address = 0;
-    for (u16 y = 0; y < 24; y++) {
-        for (u16 x = 0; x < 16; x++) {
+    for (u8 y = 0; y < 24; y++)
+    {
+        for (u8 x = 0; x < 16; x++)
+        {
             for (u8 tileY = 0; tileY < 16; tileY += 2) {
                 u8 b1 = m_VRAM[address + tileY];
                 u8 b2 = m_VRAM[address + tileY + 1];
                 for (s8 bit = 7; bit >= 0; bit--) {
                     u8 color = (((b2 >> bit) & 1) << 1) | ((b1 >> bit) & 1);
-                    glw::Renderer::renderPoint(x * 8 + 7 - bit + (x + 1), y * 8 + tileY / 2 + (y + 1), s_colors[s_bgColorMap[color]]);
+                    u16 x_coord = x * 8 + 7 - bit;
+                    u16 y_coord = y * 8 + tileY / 2;
+                    u16 width = 16 * 8;
+                    m_tileDataPixels[y_coord * width + x_coord] = s_colors[s_bgColorMap[color]];
                 }
             }
-
             address += 16;
         }
     }
-    glw::Renderer::endFrame();
-}
 
-void PPU::redrawTileMap(u16 address)
-{
-    m_tileDataFBO->getAttachments()[0].bind(0);
-    for (u16 y = 0; y < 32; y++) {
-        for (u16 x = 0; x < 32; x++) {
-            u16 index = m_VRAM[address];
-            //if (m_LCDControl.WinBGTileData == 0 && index < 128) index += 256;
-            u16 ypos = index / 16;
-            u16 xpos = index % 16;
-            float left = (float)(x * 8) / (256.f * 0.5f) - 1.f;
-            float right = (float)(x * 8 + 8) / (256.f * 0.5f) - 1.f;
-            float top = -((float)(y * 8) / (256.f * 0.5f) - 1.f);
-            float bottom = -((float)(y * 8 + 8) / (256.f * 0.5f) - 1.f);
-            float u0 = (float)(xpos * 8 + (xpos + 1)) / (TILE_DATA_FRAME_WIDTH + 15.f + 2.f);
-            float v0 = 1.f - (float)(ypos * 8 + (ypos + 1)) / (TILE_DATA_FRAME_HEIGHT + 23.f + 2.f);
-            float u1 = (float)(xpos * 8 + 8 + (xpos + 1)) / (TILE_DATA_FRAME_WIDTH + 15.f + 2.f);
-            float v1 = 1.f - (float)(ypos * 8 + 8 + (ypos + 1)) / (TILE_DATA_FRAME_HEIGHT + 23.f + 2.f);
-            glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
-            address++;
-        }
-    }
+    m_tileDataTexture->setData(m_tileDataPixels, 16 * 8 * 24 * 8 * sizeof(u32));
 }

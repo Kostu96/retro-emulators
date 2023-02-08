@@ -61,8 +61,8 @@ int main(int /*argc*/, char* argv[])
     bootloader[0x0004] = 0x07;
 
     Cartridge cart;
-    //std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
-    std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
+    std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
+    //std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
     //path += "Blargg_tests/01-special.gb";            // +
     //path += "Blargg_tests/02-interrupts.gb";         // +
     //path += "Blargg_tests/03-op sp,hl.gb";           // +
@@ -162,7 +162,7 @@ int main(int /*argc*/, char* argv[])
             }
 
             if (OAM_RANGE.contains(address, offset)) {
-                // TODO: sprites
+                ppu.storeOAM8(offset, data);
                 return;
             }
 
@@ -174,8 +174,7 @@ int main(int /*argc*/, char* argv[])
 
             if (SERIAL_RANGE.contains(address, offset)) {
                 serial[offset] = data;
-                if (offset == 1 && data == 0x81)
-                {
+                if (offset == 1 && data == 0x81) {
                     std::cout << serial[0];
                     serial[1] = 0;
                 }
@@ -230,17 +229,11 @@ int main(int /*argc*/, char* argv[])
     glClearColor(0.9f, 0.9f, 0.9f, 1.f);
     while (!glfwWindowShouldClose(window))
     {
-        int repeats = 64;
+        int repeats = 256;
         while (repeats--)
         {
             // bootloader routine to clear the VRAM
             if (mapBootloader && cpu.getPC() == 0x0003) ppu.clearVRAM();
-
-            /*if (cpu.getPC() == 0x100 && cpu.getCyclesLeft() == 0)
-                std::cout << "Bootloader handoff\n";*/
-
-            /*if (cpu.getPC() == 0x206 && cpu.getCyclesLeft() == 0 && cpu.getHL() == 0x4244)
-                std::cout << "Breakpoint\n";*/
 
             cpu.clock();
 

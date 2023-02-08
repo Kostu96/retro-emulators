@@ -4,7 +4,6 @@
 #include <ccl/non_copyable.h>
 
 namespace glw {
-	class Framebuffer;
 	class Texture;
 }
 
@@ -18,22 +17,46 @@ public:
 	void reset();
 	void clock();
 
-	u8 load8(u16 address) const;
-	void store8(u16 address, u8 data);
+	void clearVRAM();
 	u8 loadVRAM8(u16 address) const;
 	void storeVRAM8(u16 address, u8 data);
-
-	void clearVRAM();
-
-	const glw::Framebuffer* getTileDataFBO() const { return m_tileDataFBO; }
-	const glw::Framebuffer* getTileMap0FBO() const { return m_tileMap0FBO; }
-	const glw::Framebuffer* getTileMap1FBO() const { return m_tileMap1FBO; }
+	u8 loadOAM8(u16 address) const;
+	void storeOAM8(u16 address, u8 data);
+	u8 load8(u16 address) const;
+	void store8(u16 address, u8 data);
 
 	const glw::Texture* getScreenTexture() const { return m_screenTexture; }
+
+	// debug:
+	const glw::Texture* getTileDataTexture() const { return m_tileDataTexture; }
 private:
 	static constexpr u16 VRAM_SIZE = 0x2000;
+	static constexpr u16 LCD_WIDTH = 160;
+	static constexpr u16 LCD_HEIGHT = 144;
+
+	struct OAMEntry {
+		u8 YPosition;
+		u8 XPosition;
+		u8 TileIndex;
+		union {
+			struct {
+				u8 cgb_only : 4; // 0-3
+				u8 paletteNumber : 1; // 4
+				u8 xFlip : 1; // 5
+				u8 yFlip : 1; // 6
+				u8 OBJPriority : 1; // 7
+			};
+			u8 byte;
+		} Flags;
+	};
+	static_assert(sizeof(OAMEntry) == 4);
 
 	u8* m_VRAM;
+	union {
+		OAMEntry entries[40];
+		u8 bytes[160];
+	} m_OAM;
+	static_assert(sizeof(m_OAM) == 160);
 
 	union {
 		struct {
@@ -68,19 +91,6 @@ private:
 
 	u8 m_WY, m_WX;
 
-	// debug:
-	static constexpr u16 TILE_DATA_FRAME_WIDTH = 16 * 8;
-	static constexpr u16 TILE_DATA_FRAME_HEIGHT = 24 * 8;
-	static constexpr u16 TILEMAP_FRAME_SIZE = 256;
-
-	void redrawTileData();
-	void redrawTileMap(u16 address);
-
-	glw::Framebuffer* m_tileDataFBO;
-	bool m_isTileDataDirty;
-	glw::Framebuffer* m_tileMap0FBO;
-	glw::Framebuffer* m_tileMap1FBO;
-
 	u8 m_fetcherMode;
 	u8 m_fetcherTileX;
 	u8 m_fetcherTileY;
@@ -89,8 +99,16 @@ private:
 	bool m_pixelFIFONeedFetch;
 	u16 m_pixelFIFOColorIndexL;
 	u16 m_pixelFIFOColorIndexH;
-	//u8 m_pixelFIFOPalette[16];
+	u16 m_pixelFIFOPaletteL;
+	u16 m_pixelFIFOPaletteH;
 	u8 m_currentPixelX;
-	u32 m_pixels[144][160];
+
+	u32* m_screenPixels;
 	glw::Texture* m_screenTexture;
+
+	// debug:
+	void redrawTileDataTexture();
+
+	u32* m_tileDataPixels;
+	glw::Texture* m_tileDataTexture;
 };

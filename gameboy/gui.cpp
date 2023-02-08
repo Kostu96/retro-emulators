@@ -1,7 +1,7 @@
 #include "gui.hpp"
 #include "ppu.hpp"
 
-#include <glw/framebuffer.hpp>
+#include <glw/texture.hpp>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -33,19 +33,19 @@ namespace GUI {
         ImGui::DestroyContext();
     }
 
-    /*static void drawFBWindow(const glw::Framebuffer* fbo, const char* title)
+    static void drawTextureWindow(const glw::Texture* texture, const char* title)
     {
-        ImVec2 imageSize = { fbo->getProperties().width * 2.f, fbo->getProperties().height * 2.f };
+        ImVec2 imageSize = { texture->getProperties().width * 2.f, texture->getProperties().height * 2.f };
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::SetNextWindowSize({ imageSize.x, imageSize.y + 8 }, ImGuiCond_Always);
         if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
-            ImGui::Image((ImTextureID)fbo->getAttachments()[0].getRendererID(), imageSize, { 0, 1 }, { 1, 0 });
+            ImGui::Image((ImTextureID)texture->getRendererID(), imageSize/*, { 0, 1 }, { 1, 0 }*/);
         ImGui::End();
         ImGui::PopStyleVar(2);
-    }*/
+    }
 
-    void update(const PPU& /*ppu*/)
+    void update(const PPU& ppu)
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -60,9 +60,7 @@ namespace GUI {
         }
         ImGui::EndMainMenuBar();
 
-        /*drawFBWindow(ppu.getTileDataFBO(), "Tile Data");
-        drawFBWindow(ppu.getTileMap0FBO(), "Tile Map 0");
-        drawFBWindow(ppu.getTileMap1FBO(), "Tile Map 1");*/
+        drawTextureWindow(ppu.getTileDataTexture(), "Tile Data");
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
