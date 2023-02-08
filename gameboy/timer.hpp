@@ -21,9 +21,9 @@ private:
 
 	union {
 		struct {
-			u8 unused      : 5; // 3-7
-			u8 enable      : 1; // 2
 			u8 clockSelect : 2; // 0-1
+			u8 enable      : 1; // 2
+			u8 unused      : 5; // 3-7
 		};
 		u8 byte;
 	} m_control;

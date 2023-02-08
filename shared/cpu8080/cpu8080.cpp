@@ -211,13 +211,18 @@ void CPU8080::reset()
 
 void CPU8080::clock()
 {
-    if (m_EIRequested) {
-        m_EIRequested = false;
-        m_state.InterruptEnabled = true;
-    }
+    while (m_cyclesLeft == 0) // This regular if but while used to be able to break.
+    {
+        if (!m_prefixMode) {
+            if (handleInterrupts()) break;
 
-    if (!m_state.IsHalted) {
-        if (m_cyclesLeft == 0) {
+            if (m_EIRequested) {
+                m_EIRequested = false;
+                m_state.InterruptEnabled = true;
+            }
+        }
+
+        if (!m_state.IsHalted) {
             u8 opcode = load8(m_state.PC++);
 
             if (m_prefixMode) {
@@ -231,51 +236,7 @@ void CPU8080::clock()
                 m_conditionalTaken = false;
             }
         }
-    }
-
-    u8 IE = load8(0xFFFF);
-    u8 IF = load8(0xFF0F);
-    if (IE & IF) {
-        m_state.IsHalted = false;
-
-        if (m_state.InterruptEnabled) {
-            m_state.InterruptEnabled = false;
-
-            // V-Blank
-            if ((IE & 1) & (IF & 1)) {
-                push16(m_state.PC);
-                m_state.PC = 0x40;
-                store8(0xFF0F, IF & ~1);
-            }
-
-            // LCD STAT
-            if ((IE & 2) & (IF & 2)) {
-                push16(m_state.PC);
-                m_state.PC = 0x48;
-                store8(0xFF0F, IF & ~2);
-            }
-
-            // Timer
-            if ((IE & 4) & (IF & 4)) {
-                push16(m_state.PC);
-                m_state.PC = 0x50;
-                store8(0xFF0F, IF & ~4);
-            }
-
-            // Serial
-            if ((IE & 8) & (IF & 8)) {
-                push16(m_state.PC);
-                m_state.PC = 0x58;
-                store8(0xFF0F, IF & ~8);
-            }
-
-            // Joypad
-            if ((IE & 0x10) & (IF & 0x10)) {
-                push16(m_state.PC);
-                m_state.PC = 0x60;
-                store8(0xFF0F, IF & ~0x10);
-            }
-        }
+        else break;
     }
 
     if (m_cyclesLeft > 0)
@@ -289,6 +250,51 @@ void CPU8080::interrupt(u8 vector)
         m_state.InterruptEnabled = false;
         RST(vector);
     }
+}
+
+bool CPU8080::handleInterrupts()
+{
+    bool hasInterrupt = false;
+    u8 IE = load8(0xFFFF);
+    u8 IF = load8(0xFF0F);
+    if ((IE & IF) & 0x1F) {
+        if (m_state.InterruptEnabled) {
+            m_state.InterruptEnabled = false;
+
+            if ((IE & 1) & (IF & 1)) { // V-Blank
+                push16(m_state.PC);
+                m_state.PC = 0x40;
+                store8(0xFF0F, IF & ~1);
+            }
+            else if ((IE & 2) & (IF & 2)) { // LCD STAT
+                push16(m_state.PC);
+                m_state.PC = 0x48;
+                store8(0xFF0F, IF & ~2);
+            }
+            else if ((IE & 4) & (IF & 4)) { // Timer
+                push16(m_state.PC);
+                m_state.PC = 0x50;
+                store8(0xFF0F, IF & ~4);
+            }
+            else if ((IE & 8) & (IF & 8)) { // Serial
+                push16(m_state.PC);
+                m_state.PC = 0x58;
+                store8(0xFF0F, IF & ~8);
+            }
+            else if ((IE & 0x10) & (IF & 0x10)) { // Joypad
+                push16(m_state.PC);
+                m_state.PC = 0x60;
+                store8(0xFF0F, IF & ~0x10);
+            }
+
+            m_cyclesLeft = m_state.IsHalted ? 6 : 5;
+            hasInterrupt = true;
+        }
+
+        m_state.IsHalted = false;
+    }
+
+    return hasInterrupt;
 }
 
 void CPU8080::standardInstruction(u8 opcode)
@@ -449,7 +455,19 @@ void CPU8080::standardInstruction(u8 opcode)
     case 0x34: INCM(); break;
     case 0x35: DECM(); break;
     case 0x36: store8(m_state.HL, load8(m_state.PC++)); break;
-    case 0x37: setCarryFlag(1); break;
+    case 0x37: {
+        setCarryFlag(1);
+        switch (m_mode)
+        {
+        case Mode::GameBoy:
+            setSubtractFlag(0);
+            setHalfCarryFlag(0);
+            break;
+        default:
+        case Mode::Intel8080:
+            break;
+        }
+    } break;
     case 0x38: {
         switch (m_mode)
         {
@@ -743,13 +761,13 @@ void CPU8080::standardInstruction(u8 opcode)
         {
         case Mode::GameBoy: {
             s8 imm = load8(m_state.PC++);
-            u32 result = m_state.SP + imm;
-            u8 halfResult = (m_state.SP & 0xF) + (imm & 0xF);
-            m_state.SP = result;
+            u16 result8bit = (m_state.SP & 0xFF) + (u8)imm;
+            u8 result4bit = (m_state.SP & 0xF) + (imm & 0xF);
+            m_state.SP = m_state.SP + imm;
             setZeroFlag(0);
             setSubtractFlag(0);
-            setCarryFlag(result >> 16);
-            setHalfCarryFlag(halfResult >> 4);
+            setCarryFlag(result8bit >> 8);
+            setHalfCarryFlag(result4bit >> 4);
         } break;
         default:
         case Mode::Intel8080:
@@ -833,13 +851,13 @@ void CPU8080::standardInstruction(u8 opcode)
         {
         case Mode::GameBoy: {
             s8 imm = load8(m_state.PC++);
-            u32 result = m_state.SP + imm;
-            u8 halfResult = (m_state.SP & 0xF) + (imm & 0xF);
-            m_state.HL = result;
+            u16 result8bit = (m_state.SP & 0xFF) + (u8)imm;
+            u8 result4bit = (m_state.SP & 0xF) + (imm & 0xF);
+            m_state.HL = m_state.SP + imm;
             setZeroFlag(0);
             setSubtractFlag(0);
-            setCarryFlag(result >> 16);
-            setHalfCarryFlag(halfResult >> 4);
+            setCarryFlag(result8bit >> 8);
+            setHalfCarryFlag(result4bit >> 4);
         } break;
         default:
         case Mode::Intel8080:
@@ -1263,7 +1281,7 @@ void CPU8080::SWAP(u8& reg)
 {
     u8 l = reg & 0x0F;
     u8 h = reg & 0xF0;
-    reg = (l << 4) | h;
+    reg = (l << 4) | (h >> 4);
     setZeroFlag(reg == 0);
     setSubtractFlag(0);
     setHalfCarryFlag(0);
@@ -1368,7 +1386,7 @@ void CPU8080::ADD(u8 value)
 void CPU8080::ADC(u8 value)
 {
     u16 result = m_state.A + value + getCarryFlag();
-    u8 result4bit = (m_state.A & 0xF) + (value & 0xF);
+    u8 result4bit = (m_state.A & 0xF) + (value & 0xF) + getCarryFlag();
     m_state.A = result;
     setZeroFlag(m_state.A == 0);
     setHalfCarryFlag(result4bit >> 4);
@@ -1389,7 +1407,7 @@ void CPU8080::ADC(u8 value)
 void CPU8080::SUB(u8 value)
 {
     u16 result = (s16)m_state.A - (s16)value;
-    u8 result4bit = (s8)m_state.A - (s8)value;
+    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
     m_state.A = result;
     setZeroFlag(m_state.A == 0);
     setHalfCarryFlag(result4bit >> 4);
@@ -1410,7 +1428,7 @@ void CPU8080::SUB(u8 value)
 void CPU8080::SBB(u8 value)
 {
     u16 result = (s16)m_state.A - (s16)value - getCarryFlag();
-    u8 result4bit = (s8)m_state.A - (s8)value;
+    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF) - getCarryFlag();
     m_state.A = result;
     setZeroFlag(m_state.A == 0);
     setHalfCarryFlag(result4bit >> 4);
@@ -1431,13 +1449,13 @@ void CPU8080::SBB(u8 value)
 void CPU8080::ADDHL(u16 value)
 {
     u32 result = m_state.HL + value;
-    u8 result4bit = ((m_state.HL >> 8) & 0xF) + ((value >> 8) & 0xF);
+    u16 result12bit = (m_state.HL & 0xFFF) + (value & 0xFFF);
     m_state.HL = result;
     setCarryFlag(result >> 16);
 
     if (m_mode == Mode::GameBoy)
     {
-        setHalfCarryFlag(result4bit >> 4);
+        setHalfCarryFlag(result12bit >> 12);
         setSubtractFlag(0);
     }
 }
@@ -1445,7 +1463,7 @@ void CPU8080::ADDHL(u16 value)
 void CPU8080::CMP(u8 value)
 {
     u16 result = (s16)m_state.A - (s16)value;
-    u8 result4bit = (s8)m_state.A - (s8)value;
+    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
     setZeroFlag(result == 0);
     setHalfCarryFlag(result4bit >> 4);
     setCarryFlag(result >> 8);
@@ -1464,9 +1482,9 @@ void CPU8080::CMP(u8 value)
 
 void CPU8080::DECR(u8& reg)
 {
-    u8 tempBit = ~reg & 0x10;
+    u8 halfResult = (s8)(reg & 0xF) - 1;
     reg--;
-    setHalfCarryFlag(((reg & 0x10) & tempBit) >> 4);
+    setHalfCarryFlag(halfResult >> 4);
     setZeroFlag(reg == 0);
 
     switch (m_mode)
@@ -1484,29 +1502,15 @@ void CPU8080::DECR(u8& reg)
 void CPU8080::DECM()
 {
     u8 value = load8(m_state.HL);
-    u8 tempBit = ~value & 0x10;
-    value--;
-    setHalfCarryFlag(((value & 0x10) & tempBit) >> 4);
-    setZeroFlag(value == 0);
+    DECR(value);
     store8(m_state.HL, value);
-
-    switch (m_mode)
-    {
-    case Mode::GameBoy:
-        setSubtractFlag(1);
-        break;
-    case Mode::Intel8080:
-        setSignFlag(value >> 7);
-        setParityFlag((std::bitset<8>(value).count() % 2) == 0);
-        break;
-    }
 }
 
 void CPU8080::INCR(u8& reg)
 {
-   u8 tempBit = reg & 0x10;
+    u8 halfResult = (reg & 0xF) + 1;
     reg++;
-    setHalfCarryFlag((~(reg & 0x10) & tempBit) >> 4);
+    setHalfCarryFlag(halfResult >> 4);
     setZeroFlag(reg == 0);
 
     switch (m_mode)
@@ -1524,22 +1528,8 @@ void CPU8080::INCR(u8& reg)
 void CPU8080::INCM()
 {
     u8 value = load8(m_state.HL);
-    u8 tempBit = value & 0x10;
-    value++;
-    setHalfCarryFlag((~(value & 0x10) & tempBit) >> 4);
-    setZeroFlag(value == 0);
+    INCR(value);
     store8(m_state.HL, value);
-
-    switch (m_mode)
-    {
-    case Mode::GameBoy:
-        setSubtractFlag(0);
-        break;
-    case Mode::Intel8080:
-        setSignFlag(value >> 7);
-        setParityFlag((std::bitset<8>(value).count() % 2) == 0);
-        break;
-    }
 }
 
 void CPU8080::RRCA()
@@ -1652,8 +1642,8 @@ void CPU8080::AND(u8 value)
         break;
     case Mode::GameBoy:
         setCarryFlag(0);
-        setHalfCarryFlag(0);
-        setSubtractFlag(1);
+        setHalfCarryFlag(1);
+        setSubtractFlag(0);
         break;
     }
 }

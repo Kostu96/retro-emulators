@@ -100,20 +100,12 @@ void Cartridge::store8(u16 address, u8 data)
 	{
 	case 1:
 		if (address >= 0x2000 && address < 0x4000) {
-			MBC1RomBank = data & 0x1F ? data & 0x1F : 1;
+			MBC1RomBank = (data & 0x1F) ? (data & 0x1F) : 1;
 			return;
 		}
 	}
 	
 	assert(false);
-}
-
-void Cartridge::loadFromMemory(u8* data, size_t size)
-{
-	m_size = size;
-	delete[] m_data;
-	m_data = new u8[m_size];
-	memcpy_s(m_data, m_size, data, size);
 }
 
 bool Cartridge::loadFromFile(const char* filename)

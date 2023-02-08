@@ -7,6 +7,7 @@ void Timer::reset()
 	m_divider = 0;
 	m_counter = 0;
 	m_modulo = 0;
+	m_control.byte = 0;
 }
 
 void Timer::clock()
@@ -45,6 +46,7 @@ u8 Timer::load8(u16 address) const
 	switch (address)
 	{
 	case 0: return m_divider >> 8;
+	case 1: return m_counter;
 	}
 
 	assert(false);

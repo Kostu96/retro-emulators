@@ -12,7 +12,6 @@ public:
     u8 load8(u16 address) const;
     void store8(u16 address, u8 data);
 
-    void loadFromMemory(u8* data, size_t size);
     bool loadFromFile(const char* filename);
 private:
     struct Header {

@@ -12,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 constexpr u16 FRAME_WIDTH = 160;
 constexpr u16 FRAME_HEIGHT = 144;
@@ -60,28 +61,30 @@ int main(int /*argc*/, char* argv[])
     bootloader[0x0004] = 0x07;
 
     Cartridge cart;
-    std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
-    //std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
-    //path += "Blargg_tests/cpu_instrs.gb";
+    //std::string path{ "C:/Users/Konstanty/Desktop/retro-extras/programs/gameboy/" };
+    std::string path{ "C:/Users/kmisiak/myplace/retro-extras/programs/gameboy/" };
     //path += "Blargg_tests/01-special.gb";            // +
-    path += "Blargg_tests/02-interrupts.gb";
-    //path += "Blargg_tests/03-op sp,hl.gb";
-    //path += "Blargg_tests/04-op r,imm.gb";
-    //path += "Blargg_tests/05-op rp.gb";
+    //path += "Blargg_tests/02-interrupts.gb";         // +
+    //path += "Blargg_tests/03-op sp,hl.gb";           // +
+    //path += "Blargg_tests/04-op r,imm.gb";           // +
+    //path += "Blargg_tests/05-op rp.gb";              // +
     //path += "Blargg_tests/06-ld r,r.gb";             // +
     //path += "Blargg_tests/07-jr,jp,call,ret,rst.gb"; // +
     //path += "Blargg_tests/08-misc instrs.gb";        // +
-    //path += "Blargg_tests/09-op r,r.gb";
+    //path += "Blargg_tests/09-op r,r.gb";             // +
     //path += "Blargg_tests/10-bit ops.gb";            // +
-    //path += "Blargg_tests/11-op a,(hl).gb";
-    //path += "Blargg_tests/instr_timing.gb";
+    //path += "Blargg_tests/11-op a,(hl).gb";          // +
+    //path += "Blargg_tests/cpu_instrs.gb";
+    //path += "Blargg_tests/instr_timing.gb";          // +
+    path += "Blargg_tests/mem_timing.gb";
     //path += "dmg-acid2.gb";
     //path += "tetris.gb";
     cart.loadFromFile(path.c_str());
 
-    u8 wram[0x2000];
-    u8 hram[0x80];
+    u8 wram[0x2000]{};
+    u8 hram[0x80]{};
 
+    u8 joypad = 0xFF;
     u8 serial[2];
 
     u8 InterruptFlag = 0;
@@ -97,38 +100,48 @@ int main(int /*argc*/, char* argv[])
     const AddressRange WRAM_RANGE{   0xC000, 0xDFFF };
     const AddressRange OAM_RANGE{    0xFE00, 0xFE9F };
     const AddressRange SERIAL_RANGE{ 0xFF01, 0xFF02 };
-    const AddressRange TIMERS_RANGE{ 0xFF04, 0xFF07 };
+    const AddressRange TIMER_RANGE{  0xFF04, 0xFF07 };
     const AddressRange APU_RANGE{    0xFF10, 0xFF26 };
     const AddressRange PPU_RANGE{    0xFF40, 0xFF4B };
     const AddressRange HRAM_RANGE{   0xFF80, 0xFFFF };
 
     bool mapBootloader = true;
 
-    cpu.mapReadMemoryCallback([&](u16 address)
+    auto readCallback = [&](u16 address)
+    {
+        u16 offset;
+        if (CART_RANGE.contains(address, offset))
         {
-            u16 offset;
-            if (CART_RANGE.contains(address, offset))
-            {
-                if (mapBootloader && offset < 0x100) return bootloader[offset];
-                return cart.load8(offset);
-            }
+            if (mapBootloader && offset < 0x100) return bootloader[offset];
+            return cart.load8(offset);
+        }
 
-            if (WRAM_RANGE.contains(address, offset))
-                return wram[offset];
+        if (WRAM_RANGE.contains(address, offset))
+            return wram[offset];
 
-            if (PPU_RANGE.contains(address, offset))
-                return ppu.load8(offset);
-            
-            if (HRAM_RANGE.contains(address, offset))
-                return hram[offset];
+        if (address == 0xFF00)
+            return joypad;
 
-            if (address == 0xFF0F) return InterruptFlag;
-            if (address == 0xFF50) return unmapBootloader;
-            if (address == 0xFFFF) return InterruptEnable;
+        if (TIMER_RANGE.contains(address, offset))
+            return timer.load8(offset);
 
-            assert(false && "Unhandled read");
-            return u8{};
-        });
+        if (APU_RANGE.contains(address, offset))
+            return u8{}; // TODO: sound
+
+        if (PPU_RANGE.contains(address, offset))
+            return ppu.load8(offset);
+
+        if (HRAM_RANGE.contains(address, offset))
+            return hram[offset];
+
+        if (address == 0xFF0F) return InterruptFlag;
+        if (address == 0xFF50) return unmapBootloader;
+        if (address == 0xFFFF) return InterruptEnable;
+
+        assert(false && "Unhandled read");
+        return u8{};
+    };
+    cpu.mapReadMemoryCallback(readCallback);
 
     cpu.mapWriteMemoryCallback([&](u16 address, u8 data)
         {
@@ -153,6 +166,11 @@ int main(int /*argc*/, char* argv[])
                 return;
             }
 
+            if (address == 0xFF00) {
+                joypad |= data & 0x30;
+                return;
+            }
+
             if (SERIAL_RANGE.contains(address, offset)) {
                 serial[offset] = data;
                 if (offset == 1 && data == 0x81)
@@ -163,7 +181,7 @@ int main(int /*argc*/, char* argv[])
                 return;
             }
 
-            if (TIMERS_RANGE.contains(address, offset)) {
+            if (TIMER_RANGE.contains(address, offset)) {
                 timer.store8(offset, data);
                 return;
             }
@@ -184,12 +202,12 @@ int main(int /*argc*/, char* argv[])
             }
 
             if (address == 0xFF0F) {
-                InterruptFlag = data & 0xE;
+                InterruptFlag = data & 0x1F;
                 return;
             }
 
             if (address == 0xFFFF) {
-                InterruptEnable = data & 0xE;
+                InterruptEnable = data;
             }
 
             if (address == 0xFF50) {
@@ -204,6 +222,10 @@ int main(int /*argc*/, char* argv[])
     timer.reset();
     ppu.reset();
 
+    std::ofstream log{ "dr_log.txt " };
+    assert(log.is_open());
+    log << std::setfill('0') << std::uppercase;
+
     glClearColor(0.f, 0.f, 0.f, 0.f);
     while (!glfwWindowShouldClose(window))
     {
@@ -213,12 +235,38 @@ int main(int /*argc*/, char* argv[])
             // bootloader routine to clear the VRAM
             if (mapBootloader && cpu.getPC() == 0x0003) ppu.clearVRAM();
 
+            if (cpu.getPC() == 0x100 && cpu.getCyclesLeft() == 0)
+                std::cout << "Bootloader handoff\n";
+
+            if (cpu.getPC() == 0x206 && cpu.getCyclesLeft() == 0 && cpu.getHL() == 0x4244)
+                std::cout << "Breakpoint\n";
+
             cpu.clock();
+
+            if (!mapBootloader && cpu.getCyclesLeft() == 0 && false) {
+                u16 PC = cpu.getPC();
+                log << "A:" << std::setw(2) << std::hex << (cpu.getAF() >> 8);
+                log << " F:" << std::setw(2) << std::hex << (cpu.getAF() & 0xFF);
+                log << " B:" << std::setw(2) << std::hex << (cpu.getBC() >> 8);
+                log << " C:" << std::setw(2) << std::hex << (cpu.getBC() & 0xFF);
+                log << " D:" << std::setw(2) << std::hex << (cpu.getDE() >> 8);
+                log << " E:" << std::setw(2) << std::hex << (cpu.getDE() & 0xFF);
+                log << " H:" << std::setw(2) << std::hex << (cpu.getHL() >> 8);
+                log << " L:" << std::setw(2) << std::hex << (cpu.getHL() & 0xFF);
+                log << " SP:" << std::setw(4) << std::hex << cpu.getSP();
+                log << " PC:" << std::setw(4) << std::hex << PC;
+                log << " PCMEM:" << std::setw(2) << std::hex << (u16)readCallback(PC) << ',';
+                log << std::setw(2) << std::hex << (u16)readCallback(PC + 1) << ',';
+                log << std::setw(2) << std::hex << (u16)readCallback(PC + 2) << ',';
+                log << std::setw(2) << std::hex << (u16)readCallback(PC + 3);
+                log << '\n';
+            }
+
             timer.clock();
             //ppu.clock();
         }
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT);
 
         /*glw::Renderer::beginFrame();
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -236,9 +284,11 @@ int main(int /*argc*/, char* argv[])
 
         //GUI::update(ppu);
 
-        glfwSwapBuffers(window);
+        //glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    file.close();
 
     GUI::shutdown();
     glw::Renderer::shutdown();

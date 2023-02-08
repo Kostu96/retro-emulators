@@ -36,6 +36,7 @@ public:
     u16 getHL() const { return m_state.HL; }
     u16 getSP() const { return m_state.SP; }
     u16 getPC() const { return m_state.PC; }
+    u8 getCyclesLeft() const { return m_cyclesLeft; }
 
     explicit CPU8080(Mode mode) : m_mode{ mode } {}
     CPU8080(const CPU8080&) = delete;
@@ -111,6 +112,7 @@ PRIVATE:
     u8 getParityFlag();
     void setParityFlag(u8 value);
 
+    bool handleInterrupts();
     void standardInstruction(u8 opcode);
     void prefixInstruction(u8 opcode);
 
