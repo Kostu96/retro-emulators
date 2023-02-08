@@ -17,8 +17,8 @@
 constexpr u16 FRAME_WIDTH = 160;
 constexpr u16 FRAME_HEIGHT = 144;
 constexpr u16 SCALE = 3;
-constexpr u16 BORDER_SIZE = 12;
-constexpr u16 IMGUI_MENU_BAR_HEIGHT = 6;
+constexpr u16 BORDER_SIZE = 10;
+constexpr u16 IMGUI_MENU_BAR_HEIGHT = 16;
 constexpr u16 WINDOW_WIDTH = FRAME_WIDTH * SCALE + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE + 2 * BORDER_SIZE;
 
@@ -76,8 +76,8 @@ int main(int /*argc*/, char* argv[])
     //path += "Blargg_tests/11-op a,(hl).gb";          // +
     //path += "Blargg_tests/cpu_instrs.gb";
     //path += "Blargg_tests/instr_timing.gb";          // +
-    path += "Blargg_tests/mem_timing.gb";
-    //path += "dmg-acid2.gb";
+    //path += "Blargg_tests/mem_timing.gb";
+    path += "dmg-acid2.gb";
     //path += "tetris.gb";
     cart.loadFromFile(path.c_str());
 
@@ -167,6 +167,7 @@ int main(int /*argc*/, char* argv[])
             }
 
             if (address == 0xFF00) {
+                joypad &= ~0x30;
                 joypad |= data & 0x30;
                 return;
             }
@@ -226,20 +227,20 @@ int main(int /*argc*/, char* argv[])
     assert(log.is_open());
     log << std::setfill('0') << std::uppercase;
 
-    glClearColor(0.f, 0.f, 0.f, 0.f);
+    glClearColor(0.9f, 0.9f, 0.9f, 1.f);
     while (!glfwWindowShouldClose(window))
     {
-        int repeats = 128;
+        int repeats = 64;
         while (repeats--)
         {
             // bootloader routine to clear the VRAM
             if (mapBootloader && cpu.getPC() == 0x0003) ppu.clearVRAM();
 
-            if (cpu.getPC() == 0x100 && cpu.getCyclesLeft() == 0)
-                std::cout << "Bootloader handoff\n";
+            /*if (cpu.getPC() == 0x100 && cpu.getCyclesLeft() == 0)
+                std::cout << "Bootloader handoff\n";*/
 
-            if (cpu.getPC() == 0x206 && cpu.getCyclesLeft() == 0 && cpu.getHL() == 0x4244)
-                std::cout << "Breakpoint\n";
+            /*if (cpu.getPC() == 0x206 && cpu.getCyclesLeft() == 0 && cpu.getHL() == 0x4244)
+                std::cout << "Breakpoint\n";*/
 
             cpu.clock();
 
@@ -263,28 +264,24 @@ int main(int /*argc*/, char* argv[])
             }
 
             timer.clock();
-            //ppu.clock();
+            ppu.clock();
         }
 
-        //glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        /*glw::Renderer::beginFrame();
-        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-        tileMap0FBO->getAttachments()[0].bind(0);
-        float left = (float)BORDER_SIZE / (WINDOW_WIDTH * 0.5f) - 1.f;
-        float right = (float)(BORDER_SIZE + FRAME_WIDTH * SCALE) / (WINDOW_WIDTH * 0.5f) - 1.f;
-        float top = -((float)BORDER_SIZE / (WINDOW_HEIGHT * 0.5f) - 1.f);
-        float bottom = -((float)(BORDER_SIZE + FRAME_HEIGHT * SCALE) / (WINDOW_HEIGHT * 0.5f) - 1.f);
-        float u0 = (float)ppu.getSCX() / 256.f;
-        float v0 = 1.f - (float)ppu.getSCY() / 256.f;
-        float u1 = (float)(ppu.getSCX() + 160) / 256.f;
-        float v1 = 1.f - (float)(ppu.getSCY() + 144) / 256.f;
-        glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
-        glw::Renderer::endFrame();*/
+        glw::Renderer::beginFrame();
+        glViewport(BORDER_SIZE, BORDER_SIZE, WINDOW_WIDTH - 2 * BORDER_SIZE, WINDOW_HEIGHT - 2 * BORDER_SIZE);
+        ppu.getScreenTexture()->bind(0);
+        float left = -1.f;
+        float right = 1.f;
+        float top = 1.f;
+        float bottom = -1.f;
+        glw::Renderer::renderTexture(left, top, right, bottom, 0.f, 0.f, 1.f, 1.f);
+        glw::Renderer::endFrame();
 
-        //GUI::update(ppu);
+        GUI::update(ppu);
 
-        //glfwSwapBuffers(window);
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
 

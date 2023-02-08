@@ -5,6 +5,7 @@
 
 namespace glw {
 	class Framebuffer;
+	class Texture;
 }
 
 class PPU :
@@ -27,6 +28,8 @@ public:
 	const glw::Framebuffer* getTileDataFBO() const { return m_tileDataFBO; }
 	const glw::Framebuffer* getTileMap0FBO() const { return m_tileMap0FBO; }
 	const glw::Framebuffer* getTileMap1FBO() const { return m_tileMap1FBO; }
+
+	const glw::Texture* getScreenTexture() const { return m_screenTexture; }
 private:
 	static constexpr u16 VRAM_SIZE = 0x2000;
 
@@ -77,4 +80,17 @@ private:
 	bool m_isTileDataDirty;
 	glw::Framebuffer* m_tileMap0FBO;
 	glw::Framebuffer* m_tileMap1FBO;
+
+	u8 m_fetcherMode;
+	u8 m_fetcherTileX;
+	u8 m_fetcherTileY;
+	u16 m_tileDataAddress;
+	bool m_pixelFIFOEmpty;
+	bool m_pixelFIFONeedFetch;
+	u16 m_pixelFIFOColorIndexL;
+	u16 m_pixelFIFOColorIndexH;
+	//u8 m_pixelFIFOPalette[16];
+	u8 m_currentPixelX;
+	u32 m_pixels[144][160];
+	glw::Texture* m_screenTexture;
 };

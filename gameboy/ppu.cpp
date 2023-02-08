@@ -6,10 +6,10 @@
 #include <cstring>
 
 static u32 s_colors[4]{
-    0xFFDDDDDD,
-    0xFF999999,
-    0xFF444444,
-    0xFF000000,
+    0xFFDDEEDD,
+    0xFF889988,
+    0xFF445544,
+    0xFF001100,
 };
 
 static u8 s_bgColorMap[4]{
@@ -44,7 +44,17 @@ PPU::PPU() :
                     glw::TextureFilter::Nearest,
                     glw::TextureWrapMode::Repeat
                 }
-            } } } }
+            } } } },
+    m_screenTexture{ new glw::Texture{
+            glw::Texture::Properties{
+                glw::TextureSpecification{
+                    glw::TextureFormat::RGBA8,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureWrapMode::Clamp
+                },
+                160, 144
+        } } }
 {}
 
 PPU::~PPU()
@@ -54,13 +64,25 @@ PPU::~PPU()
     delete m_tileDataFBO;
     delete m_tileMap0FBO;
     delete m_tileMap1FBO;
+
+    delete m_screenTexture;
 }
 
 void PPU::reset()
 {
     m_SCY = 0;
     m_SCX = 0;
-    m_LY = 0x90;
+    m_LY = 1;
+    m_LCDStatus.Mode = 2;
+
+    m_fetcherMode = 0;
+    m_fetcherTileX = 0;
+    m_fetcherTileY = 0;
+    m_pixelFIFOEmpty = true;
+    m_pixelFIFONeedFetch = true;
+    m_pixelFIFOColorIndexL = 0;
+    m_pixelFIFOColorIndexH = 0;
+    m_currentPixelX = 0;
 
     m_isTileDataDirty = true;
 }
@@ -68,43 +90,88 @@ void PPU::reset()
 void PPU::clock()
 {
     static u16 lineTicks = 0;
+    lineTicks++;
 
     switch (m_LCDStatus.Mode)
     {
     case 0: // H-Blank
-        if (lineTicks >= 456)
+        if (lineTicks >= 114)
         {
             lineTicks = 0;
-            m_LCDStatus.LYCEqLY = (++m_LY == m_LYC);
-            m_LCDStatus.Mode = (m_LY == 144) ? 1 : 2;
+            m_LCDStatus.Mode = (m_LY >= 144) ? 1 : 2;
+            m_LCDStatus.LYCEqLY = (m_LY++ == m_LYC);
         }
         break;
     case 1: // V-Blank
-        if (lineTicks >= 456)
+        if (lineTicks >= 114)
         {
-            lineTicks = 0;
-            m_LCDStatus.LYCEqLY = (++m_LY == m_LYC);
-
             if (m_LY >= 153)
             {
+                m_screenTexture->setData(m_pixels, size_t(160) * 144 * sizeof(u32));
                 m_LCDStatus.Mode = 2;
                 m_LY = 0;
             }
+
+            lineTicks = 0;
+            m_LCDStatus.LYCEqLY = (m_LY++ == m_LYC);
         }
         break;
     case 2: // OAM Search
-        if (lineTicks >= 80)
+        
+        if (lineTicks >= 20)
             m_LCDStatus.Mode = 3;
         break;
     case 3: // Data Transfer
-        if (lineTicks >= 80 + 168)
+        if (!m_pixelFIFONeedFetch) {
+            u8 pixelsPerCycle = 4;
+            while (pixelsPerCycle--) {
+                u8 bitL = m_pixelFIFOColorIndexL >> 15;
+                u8 bitH = m_pixelFIFOColorIndexH >> 15;
+                m_pixelFIFOColorIndexL <<= 1;
+                m_pixelFIFOColorIndexH <<= 1;
+                u8 color = (bitH << 1) | bitL;
+                m_pixels[m_LY - 1][m_currentPixelX++] = s_colors[s_bgColorMap[color]];
+            }
+        }
+
+        static u8 fetchedL = 0;
+        switch (m_fetcherMode)
+        {
+        case 0: {
+            u16 tileIndex = ((m_SCY + m_LY - 1) / 8) * 32 + m_SCX / 8 + m_fetcherTileX++;
+            u16 tileAddressBase = !m_LCDControl.BGTileMap ? 0x1C00 : 0x1800;
+            u8 tile = m_VRAM[tileAddressBase + tileIndex];
+            m_tileDataAddress = (m_LCDControl.WinBGTileData ? tile : 0x01000 + (s8)tile) * 16;
+            fetchedL = m_VRAM[m_tileDataAddress + ((m_SCY + m_LY - 1) % 8) * 2];
+            m_fetcherMode = 1;
+        } break;
+        case 1: {
+            m_pixelFIFOColorIndexL |= fetchedL << (m_pixelFIFOEmpty ? 8 : 0);
+            m_pixelFIFOColorIndexH |= m_VRAM[m_tileDataAddress + 1 + ((m_SCY + m_LY - 1) % 8) * 2] << (m_pixelFIFOEmpty ? 8 : 0);
+            if (!m_pixelFIFOEmpty) m_pixelFIFONeedFetch = false;
+            if (m_pixelFIFOEmpty) { m_pixelFIFOEmpty = false; }
+            
+            m_fetcherMode = 0;
+        } break;
+        case 2: {
+            m_fetcherMode = 0;
+        } break;
+        }
+
+        if (m_currentPixelX >= 160) {
+            m_fetcherMode = 0;
+            m_fetcherTileX = 0;
+            m_currentPixelX = 0;
+            m_pixelFIFOEmpty = true;
+            m_pixelFIFONeedFetch = true;
+            m_pixelFIFOColorIndexL = 0;
+            m_pixelFIFOColorIndexH = 0;
             m_LCDStatus.Mode = 0;
+        }
         break;
     }
 
-    lineTicks++;
-
-    if (m_isTileDataDirty) { m_isTileDataDirty = false; redrawTileData(); }
+    /*if (m_isTileDataDirty) { m_isTileDataDirty = false; redrawTileData(); }
 
     if (m_LY == 144)
     {
@@ -119,7 +186,7 @@ void PPU::clock()
         glw::Renderer::beginFrame(m_tileMap1FBO);
         redrawTileMap(0x1C00);
         glw::Renderer::endFrame();
-    }
+    }*/
 }
 
 u8 PPU::load8(u16 address) const

@@ -33,7 +33,7 @@ namespace GUI {
         ImGui::DestroyContext();
     }
 
-    static void drawFBWindow(const glw::Framebuffer* fbo, const char* title)
+    /*static void drawFBWindow(const glw::Framebuffer* fbo, const char* title)
     {
         ImVec2 imageSize = { fbo->getProperties().width * 2.f, fbo->getProperties().height * 2.f };
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
@@ -43,9 +43,9 @@ namespace GUI {
             ImGui::Image((ImTextureID)fbo->getAttachments()[0].getRendererID(), imageSize, { 0, 1 }, { 1, 0 });
         ImGui::End();
         ImGui::PopStyleVar(2);
-    }
+    }*/
 
-    void update(const PPU& ppu)
+    void update(const PPU& /*ppu*/)
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -60,9 +60,9 @@ namespace GUI {
         }
         ImGui::EndMainMenuBar();
 
-        drawFBWindow(ppu.getTileDataFBO(), "Tile Data");
+        /*drawFBWindow(ppu.getTileDataFBO(), "Tile Data");
         drawFBWindow(ppu.getTileMap0FBO(), "Tile Map 0");
-        drawFBWindow(ppu.getTileMap1FBO(), "Tile Map 1");
+        drawFBWindow(ppu.getTileMap1FBO(), "Tile Map 1");*/
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
