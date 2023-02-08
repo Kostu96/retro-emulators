@@ -188,7 +188,11 @@ void PPU::storeVRAM8(u16 address, u8 data)
     m_VRAM[address] = data;
 
     // debug:
-    redrawTileDataTexture();
+    if (address < 0x1800) {
+        u16 x = (address / 16u) % 16;
+        u16 y = (address / 16u) / 16;
+        redrawTileDataTexture((u8)x, (u8)y, 1, 1);
+    }
 }
 
 u8 PPU::loadOAM8(u16 address) const
@@ -254,13 +258,15 @@ void PPU::store8(u16 address, u8 data)
     assert(false && "Unhandled");
 }
 
-void PPU::redrawTileDataTexture()
+void PPU::redrawTileDataTexture(u8 xOffset, u8 yOffset, u8 width, u8 height)
 {
-    u16 address = 0;
-    for (u8 y = 0; y < 24; y++)
-    {
-        for (u8 x = 0; x < 16; x++)
+    assert(xOffset + width <= 16);
+    assert(yOffset + height <= 24);
+
+    for (u8 y = yOffset; y < height + yOffset; y++)
+        for (u8 x = xOffset; x < width + xOffset; x++)
         {
+            u16 address = y * 256 + x * 16;
             for (u8 tileY = 0; tileY < 16; tileY += 2) {
                 u8 b1 = m_VRAM[address + tileY];
                 u8 b2 = m_VRAM[address + tileY + 1];
@@ -268,13 +274,11 @@ void PPU::redrawTileDataTexture()
                     u8 color = (((b2 >> bit) & 1) << 1) | ((b1 >> bit) & 1);
                     u16 x_coord = x * 8 + 7 - bit;
                     u16 y_coord = y * 8 + tileY / 2;
-                    u16 width = 16 * 8;
-                    m_tileDataPixels[y_coord * width + x_coord] = s_colors[s_bgColorMap[color]];
+                    u16 line_width = 16 * 8;
+                    m_tileDataPixels[y_coord * line_width + x_coord] = s_colors[s_bgColorMap[color]];
                 }
             }
-            address += 16;
         }
-    }
 
     m_tileDataTexture->setData(m_tileDataPixels, 16 * 8 * 24 * 8 * sizeof(u32));
 }

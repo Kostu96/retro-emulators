@@ -107,7 +107,7 @@ private:
 	glw::Texture* m_screenTexture;
 
 	// debug:
-	void redrawTileDataTexture();
+	void redrawTileDataTexture(u8 xOffset = 0, u8 yOffset = 0, u8 width = 16, u8 height = 24);
 
 	u32* m_tileDataPixels;
 	glw::Texture* m_tileDataTexture;
