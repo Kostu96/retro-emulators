@@ -3,6 +3,8 @@
 
 #include <ccl/non_copyable.h>
 
+#include <span>
+
 namespace glw {
 	class Texture;
 }
@@ -11,6 +13,9 @@ class PPU :
 	public ccl::NonCopyable
 {
 public:
+	static constexpr u16 LCD_WIDTH = 160;
+	static constexpr u16 LCD_HEIGHT = 144;
+
 	PPU();
 	~PPU();
 
@@ -25,14 +30,15 @@ public:
 	u8 load8(u16 address) const;
 	void store8(u16 address, u8 data);
 
-	const glw::Texture* getScreenTexture() const { return m_screenTexture; }
+	std::span<u32> getScreenPixels() const { return { m_screenPixels, LCD_WIDTH * LCD_HEIGHT }; }
 
 	// debug:
-	const glw::Texture* getTileDataTexture() const { return m_tileDataTexture; }
+	static constexpr u16 TILE_DATA_WIDTH = 16 * 8;
+	static constexpr u16 TILE_DATA_HEIGHT = 24 * 8;
+
+	std::span<u32> getTileDataPixels() const { return { m_tileDataPixels, TILE_DATA_WIDTH * TILE_DATA_HEIGHT }; }
 private:
 	static constexpr u16 VRAM_SIZE = 0x2000;
-	static constexpr u16 LCD_WIDTH = 160;
-	static constexpr u16 LCD_HEIGHT = 144;
 
 	struct OAMEntry {
 		u8 YPosition;
@@ -104,11 +110,8 @@ private:
 	u8 m_currentPixelX;
 
 	u32* m_screenPixels;
-	glw::Texture* m_screenTexture;
 
 	// debug:
-	void redrawTileDataTexture(u8 xOffset = 0, u8 yOffset = 0, u8 width = 16, u8 height = 24);
-
+	void redrawTileData(u8 xOffset = 0, u8 yOffset = 0, u8 width = 16, u8 height = 24);
 	u32* m_tileDataPixels;
-	glw::Texture* m_tileDataTexture;
 };

@@ -8,6 +8,6 @@ namespace GUI {
 
     void init(GLFWwindow* window);
     void shutdown();
-    void update(const Gameboy& gb);
+    void update(Gameboy& gb);
 
 } // namespace GUI

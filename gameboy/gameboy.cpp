@@ -4,7 +4,10 @@
 
 #include <cassert>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+
+#define GB_DOCTOR_LOG 0
 
 static const AddressRange CART_RANGE{ 0x0000, 0x7FFF };
 static const AddressRange VRAM_RANGE{ 0x8000, 0x9FFF };
@@ -16,14 +19,16 @@ static const AddressRange APU_RANGE{ 0xFF10, 0xFF26 };
 static const AddressRange PPU_RANGE{ 0xFF40, 0xFF4B };
 static const AddressRange HRAM_RANGE{ 0xFF80, 0xFFFE };
 
+#if GB_DOCTOR_LOG == 1
+static std::ofstream s_log;
+#endif
+
 Gameboy::Gameboy() :
     m_CPU{ CPU8080::Mode::GameBoy },
     m_WRAM{ new u8[0x2000] },
     m_joypad{ 0xFF },
     m_timer{ m_interruptFlags },
-    m_interruptFlags{ 0 },
-    m_unmapBootloader{ 0 },
-    m_interruptEnables{ 0 }
+    m_hasCartridge{ false }
 {
     m_CPU.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
     m_CPU.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });
@@ -35,24 +40,68 @@ Gameboy::Gameboy() :
     m_bootloader[0x0003] = 0x18;
     m_bootloader[0x0004] = 0x07; // Insert jump over VRAM clear routine
 
+    reset();
+
+#if GB_DOCTOR_LOG == 1
+    s_log.open("gbdoctor.log");
+    assert(s_log.is_open());
+    s_log << std::setfill('0') << std::uppercase;
+#endif
+}
+
+Gameboy::~Gameboy()
+{
+#if GB_DOCTOR_LOG == 1
+    s_log.close();
+#endif
+
+    delete[] m_WRAM;
+}
+
+void Gameboy::reset()
+{
+    m_interruptFlags = 0;
+    m_unmapBootloader = 0;
+    m_interruptEnables = 0;
+
+    m_isRunning = true;
+
     m_CPU.reset();
     m_PPU.reset();
     m_timer.reset();
 }
 
-Gameboy::~Gameboy()
-{
-    delete[] m_WRAM;
-}
-
 void Gameboy::update()
 {
-    // bootloader routine to clear the VRAM
-    if (m_unmapBootloader == 0 && m_CPU.getPC() == 0x0003) m_PPU.clearVRAM();
+    if (m_hasCartridge && m_isRunning) {
+        // bootloader routine to clear the VRAM
+        if (m_unmapBootloader == 0 && m_CPU.getPC() == 0x0003) m_PPU.clearVRAM();
 
-    m_CPU.clock();
-    m_PPU.clock();
-    m_timer.clock();
+        m_CPU.clock();
+        m_PPU.clock();
+        m_timer.clock();
+
+#if GB_DOCTOR_LOG == 1
+        if (m_unmapBootloader == 1 && m_CPU.getCyclesLeft() == 0) {
+            u16 PC = m_CPU.getPC();
+            s_log << "A:" << std::setw(2) << std::hex << (m_CPU.getAF() >> 8);
+            s_log << " F:" << std::setw(2) << std::hex << (m_CPU.getAF() & 0xFF);
+            s_log << " B:" << std::setw(2) << std::hex << (m_CPU.getBC() >> 8);
+            s_log << " C:" << std::setw(2) << std::hex << (m_CPU.getBC() & 0xFF);
+            s_log << " D:" << std::setw(2) << std::hex << (m_CPU.getDE() >> 8);
+            s_log << " E:" << std::setw(2) << std::hex << (m_CPU.getDE() & 0xFF);
+            s_log << " H:" << std::setw(2) << std::hex << (m_CPU.getHL() >> 8);
+            s_log << " L:" << std::setw(2) << std::hex << (m_CPU.getHL() & 0xFF);
+            s_log << " SP:" << std::setw(4) << std::hex << m_CPU.getSP();
+            s_log << " PC:" << std::setw(4) << std::hex << PC;
+            s_log << " PCMEM:" << std::setw(2) << std::hex << (u16)memoryRead(PC) << ',';
+            s_log << std::setw(2) << std::hex << (u16)memoryRead(PC + 1) << ',';
+            s_log << std::setw(2) << std::hex << (u16)memoryRead(PC + 2) << ',';
+            s_log << std::setw(2) << std::hex << (u16)memoryRead(PC + 3);
+            s_log << '\n';
+        }
+#endif
+    }
 }
 
 u8 Gameboy::memoryRead(u16 address)

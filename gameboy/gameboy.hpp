@@ -10,14 +10,19 @@ public:
     Gameboy();
     ~Gameboy();
 
+    void reset();
     void update();
 
-    void loadCartridge(const char* filename) { m_cartridge.loadFromFile(filename); }
+    void loadCartridge(const char* filename) { m_cartridge.loadFromFile(filename); m_hasCartridge = true; }
 
-    const glw::Texture* getScreenTexture() const { return m_PPU.getScreenTexture(); }
+    static u16 getScreenWidth() { return PPU::LCD_WIDTH; }
+    static u16 getScreenHeight() { return PPU::LCD_HEIGHT; }
+    std::span<u32> getScreenPixels() const { return m_PPU.getScreenPixels(); }
 
     // debug:
-    const glw::Texture* getTileDataTexture() const { return m_PPU.getTileDataTexture(); }
+    static u16 getTileDataWidth() { return PPU::TILE_DATA_WIDTH; }
+    static u16 getTileDataHeight() { return PPU::TILE_DATA_HEIGHT; }
+    std::span<u32> getTileDataPixels() const { return m_PPU.getTileDataPixels(); }
 private:
     u8 memoryRead(u16 address);
     void memoryWrite(u16 address, u8 data);
@@ -34,4 +39,7 @@ private:
     u8 m_HRAM[0x7F];
     u8 m_interruptEnables;
     u8 m_bootloader[256];
+    
+    bool m_isRunning;
+    bool m_hasCartridge;
 };

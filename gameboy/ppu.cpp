@@ -19,27 +19,7 @@ static u8 s_bgColorMap[4]{
 PPU::PPU() :
     m_VRAM{ new u8[VRAM_SIZE] },
     m_screenPixels{ new u32[LCD_WIDTH * LCD_HEIGHT] },
-    m_screenTexture{ new glw::Texture{
-            glw::Texture::Properties{
-                glw::TextureSpecification{
-                    glw::TextureFormat::RGBA8,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Clamp
-                },
-                LCD_WIDTH, LCD_HEIGHT
-        } } },
-    m_tileDataPixels{ new u32[16 * 8 * 24 * 8] },
-    m_tileDataTexture{ new glw::Texture{
-            glw::Texture::Properties{
-                glw::TextureSpecification{
-                    glw::TextureFormat::RGBA8,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Clamp
-                },
-                16 * 8, 24 * 8
-        } } }
+    m_tileDataPixels{ new u32[TILE_DATA_WIDTH * TILE_DATA_HEIGHT] }
 {}
 
 PPU::~PPU()
@@ -47,10 +27,8 @@ PPU::~PPU()
     delete[] m_VRAM;
 
     delete[] m_screenPixels;
-    delete m_screenTexture;
 
     delete[] m_tileDataPixels;
-    delete m_tileDataTexture;
 }
 
 void PPU::reset()
@@ -92,9 +70,7 @@ void PPU::clock()
     case 1: // V-Blank
         if (lineTicks >= 114)
         {
-            if (m_LY >= 153)
-            {
-                m_screenTexture->setData(m_screenPixels, LCD_WIDTH * LCD_HEIGHT * sizeof(u32));
+            if (m_LY >= 153) {
                 m_LCDStatus.Mode = 2;
                 m_LY = 0;
             }
@@ -175,7 +151,7 @@ void PPU::clearVRAM()
     std::memset(m_VRAM, 0, VRAM_SIZE);
 
     // debug:
-    redrawTileDataTexture();
+    redrawTileData();
 }
 
 u8 PPU::loadVRAM8(u16 address) const
@@ -191,7 +167,7 @@ void PPU::storeVRAM8(u16 address, u8 data)
     if (address < 0x1800) {
         u16 x = (address / 16u) % 16;
         u16 y = (address / 16u) / 16;
-        redrawTileDataTexture((u8)x, (u8)y, 1, 1);
+        redrawTileData((u8)x, (u8)y, 1, 1);
     }
 }
 
@@ -247,7 +223,9 @@ void PPU::store8(u16 address, u8 data)
         s_bgColorMap[1] = (m_BGpaletteData >> 2) & 0b11;
         s_bgColorMap[2] = (m_BGpaletteData >> 4) & 0b11;
         s_bgColorMap[3] = (m_BGpaletteData >> 6) & 0b11;
-        redrawTileDataTexture();
+
+        // debug:
+        redrawTileData();
         return;
     case 0x8: m_OBJpalette0Data = data; return;
     case 0x9: m_OBJpalette1Data = data; return;
@@ -258,7 +236,7 @@ void PPU::store8(u16 address, u8 data)
     assert(false && "Unhandled");
 }
 
-void PPU::redrawTileDataTexture(u8 xOffset, u8 yOffset, u8 width, u8 height)
+void PPU::redrawTileData(u8 xOffset, u8 yOffset, u8 width, u8 height)
 {
     assert(xOffset + width <= 16);
     assert(yOffset + height <= 24);
@@ -279,6 +257,4 @@ void PPU::redrawTileDataTexture(u8 xOffset, u8 yOffset, u8 width, u8 height)
                 }
             }
         }
-
-    m_tileDataTexture->setData(m_tileDataPixels, 16 * 8 * 24 * 8 * sizeof(u32));
 }

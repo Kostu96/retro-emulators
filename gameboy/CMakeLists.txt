@@ -15,13 +15,21 @@ set(GAMEBOY_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/timer.hpp
 )
 
-add_executable(${GAMEBOY_TAGET_NAME} ${GAMEBOY_SOURCES})
+add_executable(${GAMEBOY_TAGET_NAME}
+    ${GAMEBOY_SOURCES}
+    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c
+    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.h
+)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${GAMEBOY_SOURCES})
 
 set_target_warnings(${GAMEBOY_TAGET_NAME})
 target_compile_options(${GAMEBOY_TAGET_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/MP /fp:fast /external:anglebrackets /external:W1>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>
+)
+
+target_include_directories(${GAMEBOY_TAGET_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs
 )
 
 target_link_libraries(${GAMEBOY_TAGET_NAME} PRIVATE
