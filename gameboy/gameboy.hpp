@@ -13,7 +13,7 @@ public:
     void reset();
     void update();
 
-    void loadCartridge(const char* filename) { m_cartridge.loadFromFile(filename); m_hasCartridge = true; }
+    void loadCartridge(const char* filename);
 
     static u16 getScreenWidth() { return PPU::LCD_WIDTH; }
     static u16 getScreenHeight() { return PPU::LCD_HEIGHT; }

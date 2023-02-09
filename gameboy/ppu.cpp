@@ -216,7 +216,7 @@ void PPU::store8(u16 address, u8 data)
     case 0x3: m_SCX = data; return;
 
     case 0x5: m_LYC = data; return;
-
+    case 0x6: return; // TODO: OAM transfer
     case 0x7:
         m_BGpaletteData = data;
         s_bgColorMap[0] = (m_BGpaletteData >> 0) & 0b11;

@@ -13,26 +13,34 @@ static const char* CartridgeTypeCodeToStr(u8 code) {
 	case 0x01: return "MBC1";
 	case 0x02: return "MBC1 + RAM";
 	case 0x03: return "MBC1 + RAM + BATTERY";
+
 	case 0x05: return "MBC2";
 	case 0x06: return "MBC2 + BATTERY";
+
 	case 0x08: return "ROM + RAM 1";
 	case 0x09: return "ROM + RAM + BATTERY 1";
+
 	case 0x0B: return "MMM01";
 	case 0x0C: return "MMM01 + RAM";
 	case 0x0D: return "MMM01 + RAM + BATTERY";
+
 	case 0x0F: return "MBC3 + TIMER + BATTERY";
 	case 0x10: return "MBC3 + TIMER + RAM + BATTERY 2";
 	case 0x11: return "MBC3";
 	case 0x12: return "MBC3 + RAM 2";
 	case 0x13: return "MBC3 + RAM + BATTERY 2";
+
 	case 0x19: return "MBC5";
 	case 0x1A: return "MBC5 + RAM";
 	case 0x1B: return "MBC5 + RAM + BATTERY";
 	case 0x1C: return "MBC5 + RUMBLE";
 	case 0x1D: return "MBC5 + RUMBLE + RAM";
 	case 0x1E: return "MBC5 + RUMBLE + RAM + BATTERY";
+
 	case 0x20: return "MBC6";
+
 	case 0x22: return "MBC7 + SENSOR + RUMBLE + RAM + BATTERY";
+
 	case 0xFC: return "POCKET CAMERA";
 	case 0xFD: return "BANDAI TAMA5";
 	case 0xFE: return "HuC3";
@@ -82,13 +90,17 @@ u8 Cartridge::load8(u16 address) const
 {
 	switch (m_header->cartridgeTypeCode)
 	{
-	case 0: return m_data[address];
+	case 0:
+		if (address < 0x8000)
+			return m_data[address];
+		break;
 	case 1:
 		if (address < 0x4000)
 			return m_data[address];
 
 		if (address < 0x8000)
 			return m_data[MBC1RomBank * 0x4000 + (address - 0x4000)];
+		break;
 	}
 	
 	assert(false);

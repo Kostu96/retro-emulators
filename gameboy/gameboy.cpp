@@ -9,15 +9,17 @@
 
 #define GB_DOCTOR_LOG 0
 
-static const AddressRange CART_RANGE{ 0x0000, 0x7FFF };
-static const AddressRange VRAM_RANGE{ 0x8000, 0x9FFF };
-static const AddressRange WRAM_RANGE{ 0xC000, 0xDFFF };
-static const AddressRange OAM_RANGE{ 0xFE00, 0xFE9F };
-static const AddressRange SERIAL_RANGE{ 0xFF01, 0xFF02 };
-static const AddressRange TIMER_RANGE{ 0xFF04, 0xFF07 };
-static const AddressRange APU_RANGE{ 0xFF10, 0xFF26 };
-static const AddressRange PPU_RANGE{ 0xFF40, 0xFF4B };
-static const AddressRange HRAM_RANGE{ 0xFF80, 0xFFFE };
+static const AddressRange CART_RANGE{    0x0000, 0x7FFF };
+static const AddressRange VRAM_RANGE{    0x8000, 0x9FFF };
+static const AddressRange WRAM_RANGE{    0xC000, 0xDFFF };
+static const AddressRange OAM_RANGE{     0xFE00, 0xFE9F };
+static const AddressRange UNUSED1_RANGE{ 0xFEA0, 0xFEFF };
+static const AddressRange SERIAL_RANGE{  0xFF01, 0xFF02 };
+static const AddressRange TIMER_RANGE{   0xFF04, 0xFF07 };
+static const AddressRange APU_RANGE{     0xFF10, 0xFF26 };
+static const AddressRange PPU_RANGE{     0xFF40, 0xFF4B };
+static const AddressRange UNUSED2_RANGE{ 0xFF7F, 0xFF7F };
+static const AddressRange HRAM_RANGE{    0xFF80, 0xFFFE };
 
 #if GB_DOCTOR_LOG == 1
 static std::ofstream s_log;
@@ -104,6 +106,14 @@ void Gameboy::update()
     }
 }
 
+void Gameboy::loadCartridge(const char* filename)
+{
+    m_isRunning = false;
+    m_cartridge.loadFromFile(filename);
+    m_hasCartridge = true;
+    m_isRunning = true;
+}
+
 u8 Gameboy::memoryRead(u16 address)
 {
     u16 offset;
@@ -133,6 +143,7 @@ void Gameboy::memoryWrite(u16 address, u8 data)
     if (VRAM_RANGE.contains(address, offset)) { m_PPU.storeVRAM8(offset, data); return; }
     if (WRAM_RANGE.contains(address, offset)) { m_WRAM[offset] = data; return; }
     if (OAM_RANGE.contains(address, offset)) { m_PPU.storeOAM8(offset, data); return; }
+    if (UNUSED1_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
 
     if (address == 0xFF00) {
         m_joypad &= ~0x30;
@@ -154,6 +165,7 @@ void Gameboy::memoryWrite(u16 address, u8 data)
     if (PPU_RANGE.contains(address, offset)) { m_PPU.store8(offset, data); return; }
     if (address == 0xFF0F) { m_interruptFlags = data & 0x1F; return; }
     if (address == 0xFF50 && m_unmapBootloader == 0) { m_unmapBootloader = data; return; }
+    if (UNUSED2_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
     if (HRAM_RANGE.contains(address, offset)) { m_HRAM[offset] = data; return; }
     if (address == 0xFFFF) { m_interruptEnables = data & 0x1F; return; }
 
