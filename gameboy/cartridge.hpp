@@ -35,5 +35,5 @@ private:
     Header* m_header = nullptr;
     u8* m_data = nullptr;
     size_t m_size = 0;
-    u8 MBC1RomBank = 1;
+    u8 MBC1RomBank = 0;
 };

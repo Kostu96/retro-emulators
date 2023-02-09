@@ -68,6 +68,15 @@ static size_t ROMSizeCodeToKB(u8 code) {
 	return 0xDEADBEEF;
 }
 
+static u8 ROMSizeCodeToBankMask(u8 code) {
+	switch (code) {
+	case 0x01: return 0b11;
+	}
+
+	assert(false && "Unhandled code");
+	return 0xDE;
+}
+
 static size_t RAMSizeCodeToKB(u8 code) {
 	switch (code) {
 	case 0x00: return 0;
@@ -98,8 +107,11 @@ u8 Cartridge::load8(u16 address) const
 		if (address < 0x4000)
 			return m_data[address];
 
-		if (address < 0x8000)
-			return m_data[MBC1RomBank * 0x4000 + (address - 0x4000)];
+		if (address < 0x8000) {
+			u8 bankNumber = MBC1RomBank ? MBC1RomBank : 1;
+			bankNumber &= ROMSizeCodeToBankMask(m_header->ROMSizeCode);
+			return m_data[bankNumber * 0x4000 + (address - 0x4000)];
+		}
 		break;
 	}
 	

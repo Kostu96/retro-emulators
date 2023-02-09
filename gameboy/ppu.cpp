@@ -96,9 +96,12 @@ void PPU::clock()
                 m_pixelFIFOPaletteL <<= 1;
                 m_pixelFIFOPaletteH <<= 1;
 
+                if (m_LY - 1 == 19)
+                    printf("");
+
                 u8 color = (colorH << 1) | colorL;
                 //u8 palette = (paletteH << 1) | paletteL;
-                m_screenPixels[(m_LY - 1) * LCD_WIDTH + m_currentPixelX++] = paletteL ? s_colors[s_bgColorMap[color]] : s_colors[0];
+                m_screenPixels[(m_LY - 1) * LCD_WIDTH + m_currentPixelX++] = paletteL ? s_colors[s_bgColorMap[color]] : s_colors[s_bgColorMap[0]];
             }
         }
 
@@ -108,9 +111,9 @@ void PPU::clock()
         {
         case 0: {
             u16 tileIndex = ((m_SCY + m_LY - 1) / 8) * 32 + m_SCX / 8 + m_fetcherTileX++;
-            u16 tileAddressBase = !m_LCDControl.BGTileMap ? 0x1C00 : 0x1800;
+            u16 tileAddressBase = m_LCDControl.BGTileMap ? 0x1C00 : 0x1800;
             u8 tile = m_VRAM[tileAddressBase + tileIndex];
-            m_tileDataAddress = (m_LCDControl.WinBGTileData ? tile : 0x1000 + (s8)tile) * 16;
+            m_tileDataAddress = (m_LCDControl.WinBGTileData ? tile : 0x100 + (s8)tile) * 16;
             fetchedColorL = m_VRAM[m_tileDataAddress + ((m_SCY + m_LY - 1) % 8) * 2];
             fetchedPaletteL = m_LCDControl.WinBGEnable ? 0xFF : 0x00; // temp cause only one palette
             m_fetcherMode = 1;

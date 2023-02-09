@@ -35,8 +35,10 @@ public:
 	// debug:
 	static constexpr u16 TILE_DATA_WIDTH = 16 * 8;
 	static constexpr u16 TILE_DATA_HEIGHT = 24 * 8;
-
 	std::span<u32> getTileDataPixels() const { return { m_tileDataPixels, TILE_DATA_WIDTH * TILE_DATA_HEIGHT }; }
+	std::span<u8> getTileMap0() const { return { m_VRAM + 0x1800, 0x400 }; }
+	std::span<u8> getTileMap1() const { return { m_VRAM + 0x1C00, 0x400 }; }
+	bool getTileDataAddressingMode() const { return m_LCDControl.WinBGTileData; }
 private:
 	static constexpr u16 VRAM_SIZE = 0x2000;
 
@@ -66,24 +68,24 @@ private:
 
 	union {
 		struct {
-			u8 LCDEnable     : 1; // 7
-			u8 WinTileMap    : 1; // 6
-			u8 WinEnable     : 1; // 5
-			u8 WinBGTileData : 1; // 4
-			u8 BGTileMap     : 1; // 3
-			u8 OBJSize       : 1; // 2
-			u8 OBJEnable     : 1; // 1
 			u8 WinBGEnable   : 1; // 0
+			u8 OBJEnable     : 1; // 1
+			u8 OBJSize       : 1; // 2
+			u8 BGTileMap     : 1; // 3
+			u8 WinBGTileData : 1; // 4
+			u8 WinEnable     : 1; // 5
+			u8 WinTileMap    : 1; // 6
+			u8 LCDEnable     : 1; // 7
 		};
 		u8 byte;
 	} m_LCDControl;
 
 	union {
 		struct {
-			u8 unsued : 1;     // 7
-			u8 STATSource : 3; // 3-6
-			u8 LYCEqLY : 1;    // 2
 			u8 Mode : 2;       // 0-1
+			u8 LYCEqLY : 1;    // 2
+			u8 STATSource : 3; // 3-6
+			u8 unsued : 1;     // 7
 		};
 		u8 byte;
 	} m_LCDStatus;

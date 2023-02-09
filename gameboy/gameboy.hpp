@@ -14,15 +14,7 @@ public:
     void update();
 
     void loadCartridge(const char* filename);
-
-    static u16 getScreenWidth() { return PPU::LCD_WIDTH; }
-    static u16 getScreenHeight() { return PPU::LCD_HEIGHT; }
-    std::span<u32> getScreenPixels() const { return m_PPU.getScreenPixels(); }
-
-    // debug:
-    static u16 getTileDataWidth() { return PPU::TILE_DATA_WIDTH; }
-    static u16 getTileDataHeight() { return PPU::TILE_DATA_HEIGHT; }
-    std::span<u32> getTileDataPixels() const { return m_PPU.getTileDataPixels(); }
+    const PPU& getPPU() const { return m_PPU; }
 private:
     u8 memoryRead(u16 address);
     void memoryWrite(u16 address, u8 data);

@@ -55,7 +55,7 @@ int main(int /*argc*/, char* /*argv*/[])
                     glw::TextureFilter::Nearest,
                     glw::TextureWrapMode::Clamp
                 },
-                Gameboy::getScreenWidth(), Gameboy::getScreenHeight()
+                PPU::LCD_WIDTH, PPU::LCD_HEIGHT
         }
     };
 
@@ -64,7 +64,7 @@ int main(int /*argc*/, char* /*argv*/[])
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
-                std::this_thread::sleep_for(std::chrono::nanoseconds{ 16 }); // TODO: temp
+                //std::this_thread::sleep_for(std::chrono::nanoseconds{ 8 }); // TODO: temp
                 gameboy.update();
             }
         }
@@ -75,7 +75,7 @@ int main(int /*argc*/, char* /*argv*/[])
         glClear(GL_COLOR_BUFFER_BIT);
         glw::Renderer::beginFrame();
         glViewport(BORDER_SIZE, BORDER_SIZE, WINDOW_WIDTH - 2 * BORDER_SIZE, WINDOW_HEIGHT - 2 * BORDER_SIZE);
-        auto pixels = gameboy.getScreenPixels();
+        auto pixels = gameboy.getPPU().getScreenPixels();
         screenTexture.setData(pixels.data(), pixels.size() * sizeof(u32));
         screenTexture.bind(0);
         float left = -1.f;

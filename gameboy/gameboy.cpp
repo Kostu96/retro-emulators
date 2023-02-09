@@ -62,6 +62,8 @@ Gameboy::~Gameboy()
 
 void Gameboy::reset()
 {
+    std::memset(m_WRAM, 0, 0x2000);
+
     m_interruptFlags = 0;
     m_unmapBootloader = 0;
     m_interruptEnables = 0;
@@ -132,8 +134,8 @@ u8 Gameboy::memoryRead(u16 address)
     if (HRAM_RANGE.contains(address, offset)) return m_HRAM[offset];
     if (address == 0xFFFF) return m_interruptEnables;
 
-    assert(false && "Unhandled memory read.");
-    return u8{};
+    std::cerr << "Unexpected memory read - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address << '\n';
+    return 0xFF;
 }
 
 void Gameboy::memoryWrite(u16 address, u8 data)
