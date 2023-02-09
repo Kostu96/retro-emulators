@@ -2,12 +2,12 @@
 
 struct GLFWwindow;
 
-class PPU;
+class Gameboy;
 
 namespace GUI {
 
     void init(GLFWwindow* window);
     void shutdown();
-    void update(const PPU& ppu);
+    void update(const Gameboy& gb);
 
 } // namespace GUI

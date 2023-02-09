@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 
 static const char* CartridgeTypeCodeToStr(u8 code) {
@@ -105,7 +106,8 @@ void Cartridge::store8(u16 address, u8 data)
 		}
 	}
 	
-	assert(false);
+	std::cerr << "Unexpected write to cartridge - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address;
+	std::cerr << ':' << std::hex << std::setw(2) << (u16)data << '\n';
 }
 
 bool Cartridge::loadFromFile(const char* filename)

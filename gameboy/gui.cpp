@@ -1,5 +1,5 @@
 #include "gui.hpp"
-#include "ppu.hpp"
+#include "gameboy.hpp"
 
 #include <glw/texture.hpp>
 #include <GLFW/glfw3.h>
@@ -45,7 +45,7 @@ namespace GUI {
         ImGui::PopStyleVar(2);
     }
 
-    void update(const PPU& ppu)
+    void update(const Gameboy& gb)
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -60,7 +60,7 @@ namespace GUI {
         }
         ImGui::EndMainMenuBar();
 
-        drawTextureWindow(ppu.getTileDataTexture(), "Tile Data");
+        drawTextureWindow(gb.getTileDataTexture(), "Tile Data");
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
