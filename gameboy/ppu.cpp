@@ -4,6 +4,8 @@
 
 #include <cassert>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
 
 static u32 s_colors[4]{
     0xFFDDEEDD,
@@ -16,10 +18,11 @@ static u8 s_bgColorMap[4]{
     0, 1, 2, 3
 };
 
-PPU::PPU() :
+PPU::PPU(u8& interruptFlagsRef) :
     m_VRAM{ new u8[VRAM_SIZE] },
     m_screenPixels{ new u32[LCD_WIDTH * LCD_HEIGHT] },
-    m_tileDataPixels{ new u32[TILE_DATA_WIDTH * TILE_DATA_HEIGHT] }
+    m_tileDataPixels{ new u32[TILE_DATA_WIDTH * TILE_DATA_HEIGHT] },
+    m_interruptFlagsRef{ interruptFlagsRef }
 {}
 
 PPU::~PPU()
@@ -36,6 +39,7 @@ void PPU::reset()
     m_SCY = 0;
     m_SCX = 0;
     m_LY = 1;
+    m_LCDStatus.byte = 0;
     m_LCDStatus.Mode = 2;
 
     m_fetcherMode = 0;
@@ -54,36 +58,50 @@ void PPU::reset()
 
 void PPU::clock()
 {
-    static u16 lineTicks = 0;
-    lineTicks++;
+    constexpr u16 TICKS_PER_LINE = 114;
+    constexpr u16 LINES_PER_FRAME = 154;
+    static u16 ticks = 0;
+    ticks++;
 
-    switch (m_LCDStatus.Mode)
+    auto checkForLYC = [&]() {
+        if (m_LY++ == m_LYC) {
+            m_LCDStatus.LYCEqLY = 1;
+            if (m_LCDStatus.STATSource & 0b1000)
+                m_interruptFlagsRef |= 2;
+        }
+    };
+
+    switch ((Mode)m_LCDStatus.Mode)
     {
-    case 0: // H-Blank
-        if (lineTicks >= 114)
+    case Mode::HBlank:
+        if (ticks >= TICKS_PER_LINE)
         {
-            lineTicks = 0;
-            m_LCDStatus.Mode = (m_LY >= LCD_HEIGHT) ? 1 : 2;
-            m_LCDStatus.LYCEqLY = (m_LY++ == m_LYC);
+            ticks = 0;
+            m_LCDStatus.Mode = (u8)((m_LY >= LCD_HEIGHT) ? Mode::VBlank : Mode::OAMSearch);
+
+            checkForLYC();
         }
         break;
-    case 1: // V-Blank
-        if (lineTicks >= 114)
+    case Mode::VBlank:
+        if (m_LY == LCD_HEIGHT + 1 && ticks == 1) {
+            m_interruptFlagsRef |= 1;
+        }
+        if (ticks >= TICKS_PER_LINE)
         {
-            if (m_LY >= 153) {
-                m_LCDStatus.Mode = 2;
+            ticks = 0;
+            if (m_LY >= LINES_PER_FRAME) {
+                m_LCDStatus.Mode = (u8)Mode::OAMSearch;
                 m_LY = 0;
             }
 
-            lineTicks = 0;
-            m_LCDStatus.LYCEqLY = (m_LY++ == m_LYC);
+            checkForLYC();
         }
         break;
-    case 2: // OAM Search
-        if (lineTicks >= 20)
-            m_LCDStatus.Mode = 3;
+    case Mode::OAMSearch:
+        if (ticks >= 20)
+            m_LCDStatus.Mode = (u8)Mode::PixelTransfer;
         break;
-    case 3: // Data Transfer
+    case Mode::PixelTransfer:
         if (!m_pixelFIFONeedFetch) {
             u8 pixelsPerCycle = 4;
             while (pixelsPerCycle--) {
@@ -95,9 +113,6 @@ void PPU::clock()
                 //u8 paletteH = m_pixelFIFOPaletteH >> 15;
                 m_pixelFIFOPaletteL <<= 1;
                 m_pixelFIFOPaletteH <<= 1;
-
-                if (m_LY - 1 == 19)
-                    printf("");
 
                 u8 color = (colorH << 1) | colorL;
                 //u8 palette = (paletteH << 1) | paletteL;
@@ -212,8 +227,8 @@ void PPU::store8(u16 address, u8 data)
     {
     case 0x0: m_LCDControl.byte = data; return;
     case 0x1:
-        m_LCDStatus.byte &= 0x0F;
-        m_LCDStatus.byte |= data & 0xF0;
+        m_LCDStatus.byte &= 0x07;
+        m_LCDStatus.byte |= data & 0xF8;
         return;
     case 0x2: m_SCY = data; return;
     case 0x3: m_SCX = data; return;
@@ -236,7 +251,8 @@ void PPU::store8(u16 address, u8 data)
     case 0xB: m_WX = data; return;
     }
 
-    assert(false && "Unhandled");
+    std::cerr << "Unexpected write to PPU - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address;
+    std::cerr << ':' << std::hex << std::setw(2) << (u16)data << '\n';
 }
 
 void PPU::redrawTileData(u8 xOffset, u8 yOffset, u8 width, u8 height)

@@ -17,8 +17,9 @@ static const AddressRange UNUSED1_RANGE{ 0xFEA0, 0xFEFF };
 static const AddressRange SERIAL_RANGE{  0xFF01, 0xFF02 };
 static const AddressRange TIMER_RANGE{   0xFF04, 0xFF07 };
 static const AddressRange APU_RANGE{     0xFF10, 0xFF26 };
+static const AddressRange UNUSED2_RANGE{ 0xFF27, 0xFF3F };
 static const AddressRange PPU_RANGE{     0xFF40, 0xFF4B };
-static const AddressRange UNUSED2_RANGE{ 0xFF7F, 0xFF7F };
+static const AddressRange UNUSED3_RANGE{ 0xFF7F, 0xFF7F };
 static const AddressRange HRAM_RANGE{    0xFF80, 0xFFFE };
 
 #if GB_DOCTOR_LOG == 1
@@ -27,6 +28,7 @@ static std::ofstream s_log;
 
 Gameboy::Gameboy() :
     m_CPU{ CPU8080::Mode::GameBoy },
+    m_PPU{ m_interruptFlags },
     m_WRAM{ new u8[0x2000] },
     m_joypad{ 0xFF },
     m_timer{ m_interruptFlags },
@@ -164,10 +166,11 @@ void Gameboy::memoryWrite(u16 address, u8 data)
 
     if (TIMER_RANGE.contains(address, offset)) { m_timer.store8(offset, data); return; }
     if (APU_RANGE.contains(address, offset)) { return; } // TODO: sound
+    if (UNUSED2_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
     if (PPU_RANGE.contains(address, offset)) { m_PPU.store8(offset, data); return; }
     if (address == 0xFF0F) { m_interruptFlags = data & 0x1F; return; }
     if (address == 0xFF50 && m_unmapBootloader == 0) { m_unmapBootloader = data; return; }
-    if (UNUSED2_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
+    if (UNUSED3_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
     if (HRAM_RANGE.contains(address, offset)) { m_HRAM[offset] = data; return; }
     if (address == 0xFFFF) { m_interruptEnables = data & 0x1F; return; }
 

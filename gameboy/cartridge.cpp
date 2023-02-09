@@ -70,7 +70,11 @@ static size_t ROMSizeCodeToKB(u8 code) {
 
 static u8 ROMSizeCodeToBankMask(u8 code) {
 	switch (code) {
+	case 0x00: return 0b1;
 	case 0x01: return 0b11;
+	case 0x02: return 0b111;
+	case 0x03: return 0b1111;
+	case 0x04: return 0b11111;
 	}
 
 	assert(false && "Unhandled code");
@@ -104,6 +108,8 @@ u8 Cartridge::load8(u16 address) const
 			return m_data[address];
 		break;
 	case 1:
+	case 2:
+	case 3:
 		if (address < 0x4000)
 			return m_data[address];
 
@@ -124,6 +130,8 @@ void Cartridge::store8(u16 address, u8 data)
 	switch (m_header->cartridgeTypeCode)
 	{
 	case 1:
+	case 2:
+	case 3:
 		if (address >= 0x2000 && address < 0x4000) {
 			MBC1RomBank = (data & 0x1F) ? (data & 0x1F) : 1;
 			return;

@@ -32,6 +32,7 @@ int main(int /*argc*/, char* /*argv*/[])
         std::terminate();
     }
 
+    glfwWindowHint(GLFW_RESIZABLE, 0);
     GLFWwindow* window =
         glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT + IMGUI_MENU_BAR_HEIGHT, "Game Boy Emulator by Kostu96", nullptr, nullptr);
     if (!window) {
@@ -64,7 +65,7 @@ int main(int /*argc*/, char* /*argv*/[])
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
-                //std::this_thread::sleep_for(std::chrono::nanoseconds{ 8 }); // TODO: temp
+                std::this_thread::sleep_for(std::chrono::nanoseconds{ 24 }); // TODO: temp
                 gameboy.update();
             }
         }

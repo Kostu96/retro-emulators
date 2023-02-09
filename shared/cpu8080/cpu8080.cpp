@@ -228,11 +228,11 @@ void CPU8080::clock()
             if (m_prefixMode) {
                 m_prefixMode = false;
                 prefixInstruction(opcode);
-                m_cyclesLeft = prefixCycleCounts[opcode];
+                m_cyclesLeft += prefixCycleCounts[opcode];
             }
             else {
                 standardInstruction(opcode);
-                m_cyclesLeft = m_conditionalTaken ? conditionalCycleCounts[opcode] : standardCycleCounts[opcode];
+                m_cyclesLeft += m_conditionalTaken ? conditionalCycleCounts[opcode] : standardCycleCounts[opcode];
                 m_conditionalTaken = false;
             }
         }
@@ -287,7 +287,7 @@ bool CPU8080::handleInterrupts()
                 store8(0xFF0F, IF & ~0x10);
             }
 
-            m_cyclesLeft = m_state.IsHalted ? 6 : 5;
+            m_cyclesLeft += m_state.IsHalted ? 6 : 5;
             hasInterrupt = true;
         }
 

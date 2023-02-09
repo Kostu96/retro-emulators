@@ -33,7 +33,7 @@ void Timer::clock()
 			m_counter++;
 			if (m_counter == 0)
 			{
-				m_InterruptFlagsRef |= 4;
+				m_interruptFlagsRef |= 4;
 				m_counter = m_modulo;
 			}
 			counterAcc -= clock;

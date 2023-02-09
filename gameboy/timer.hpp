@@ -7,7 +7,7 @@ class Timer :
 	public ccl::NonCopyable
 {
 public:
-	Timer(u8& interruptFlagsRef) : m_InterruptFlagsRef{ interruptFlagsRef } {}
+	explicit Timer(u8& interruptFlagsRef) : m_interruptFlagsRef{ interruptFlagsRef } {}
 
 	void reset();
 	void clock();
@@ -28,5 +28,5 @@ private:
 		u8 byte;
 	} m_control;
 
-	u8& m_InterruptFlagsRef;
+	u8& m_interruptFlagsRef;
 };

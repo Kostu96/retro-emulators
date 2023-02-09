@@ -16,7 +16,7 @@ public:
 	static constexpr u16 LCD_WIDTH = 160;
 	static constexpr u16 LCD_HEIGHT = 144;
 
-	PPU();
+	explicit PPU(u8& interruptFlagsRef);
 	~PPU();
 
 	void reset();
@@ -48,11 +48,11 @@ private:
 		u8 TileIndex;
 		union {
 			struct {
-				u8 cgb_only : 4; // 0-3
+				u8 cgb_only      : 4; // 0-3
 				u8 paletteNumber : 1; // 4
-				u8 xFlip : 1; // 5
-				u8 yFlip : 1; // 6
-				u8 OBJPriority : 1; // 7
+				u8 xFlip         : 1; // 5
+				u8 yFlip         : 1; // 6
+				u8 OBJPriority   : 1; // 7
 			};
 			u8 byte;
 		} Flags;
@@ -80,12 +80,16 @@ private:
 		u8 byte;
 	} m_LCDControl;
 
+	enum class Mode {
+		HBlank, VBlank, OAMSearch, PixelTransfer
+	};
+
 	union {
 		struct {
-			u8 Mode : 2;       // 0-1
-			u8 LYCEqLY : 1;    // 2
-			u8 STATSource : 3; // 3-6
-			u8 unsued : 1;     // 7
+			u8 Mode       : 2; // 0-1
+			u8 LYCEqLY    : 1; // 2
+			u8 STATSource : 4; // 3-6
+			u8 Unsued     : 1; // 7
 		};
 		u8 byte;
 	} m_LCDStatus;
@@ -112,6 +116,7 @@ private:
 	u8 m_currentPixelX;
 
 	u32* m_screenPixels;
+	u8& m_interruptFlagsRef;
 
 	// debug:
 	void redrawTileData(u8 xOffset = 0, u8 yOffset = 0, u8 width = 16, u8 height = 24);

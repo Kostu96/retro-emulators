@@ -158,11 +158,12 @@ namespace GUI {
         ImGui::EndMainMenuBar();
 
         auto& ppu = gb.getPPU();
-        if (s_showTileData) {
+        if (s_showTileData || s_showMap0 || s_showMap1) {
             auto pixels = ppu.getTileDataPixels();
             s_tileDataTexture->setData(pixels.data(), pixels.size() * sizeof(u32));
-            drawTextureWindow(*s_tileDataTexture, 3.f, "Tile Data", s_showTileData);
         }
+        if (s_showTileData)
+            drawTextureWindow(*s_tileDataTexture, 3.f, "Tile Data", s_showTileData);
         if (s_showMap0)
             drawTileMapWindow(s_tileMap0FB, ppu.getTileMap0(), ppu.getTileDataAddressingMode(), "Tile Map 0", s_showMap0);
         if (s_showMap1)
