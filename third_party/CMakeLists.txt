@@ -43,8 +43,8 @@ set_target_properties(
     cpp-common-lib
     glfw
     glw
-    gtest
-    gtest_main
+#    gtest
+#    gtest_main
     imgui
     update_mappings
     PROPERTIES

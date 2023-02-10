@@ -48,8 +48,7 @@ void PPU::reset()
     m_pixelFIFOEmpty = true;
     m_pixelFIFONeedFetch = true;
 
-    m_pixelFIFOColorIndexL = 0;
-    m_pixelFIFOColorIndexH = 0;
+    m_colorFIFO.clear();
     m_pixelFIFOPaletteL = 0;
     m_pixelFIFOPaletteH = 0;
 
