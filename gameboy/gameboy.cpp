@@ -41,8 +41,8 @@ Gameboy::Gameboy() :
     assert(file.is_open() && "Cannot open bootloader file");
     file.read((char*)m_bootloader, 256);
     file.close();
-    m_bootloader[0x0003] = 0x18;
-    m_bootloader[0x0004] = 0x07; // Insert jump over VRAM clear routine
+    //m_bootloader[0x0003] = 0x18;
+    //m_bootloader[0x0004] = 0x07; // Insert jump over VRAM clear routine
 
     reset();
 
@@ -81,7 +81,7 @@ void Gameboy::update()
 {
     if (m_hasCartridge && m_isRunning) {
         // bootloader routine to clear the VRAM
-        if (m_unmapBootloader == 0 && m_CPU.getPC() == 0x0003) m_PPU.clearVRAM();
+        //if (m_unmapBootloader == 0 && m_CPU.getPC() == 0x0003) m_PPU.clearVRAM();
 
         m_CPU.clock();
         m_PPU.clock();

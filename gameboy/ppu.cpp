@@ -105,16 +105,11 @@ void PPU::clock()
         if (!m_pixelFIFONeedFetch) {
             u8 pixelsPerCycle = 4;
             while (pixelsPerCycle--) {
-                u8 colorL = m_pixelFIFOColorIndexL >> 15;
-                u8 colorH = m_pixelFIFOColorIndexH >> 15;
-                m_pixelFIFOColorIndexL <<= 1;
-                m_pixelFIFOColorIndexH <<= 1;
                 u8 paletteL = m_pixelFIFOPaletteL >> 15;
                 //u8 paletteH = m_pixelFIFOPaletteH >> 15;
                 m_pixelFIFOPaletteL <<= 1;
                 m_pixelFIFOPaletteH <<= 1;
-
-                u8 color = (colorH << 1) | colorL;
+                u8 color = m_colorFIFO.pop();
                 //u8 palette = (paletteH << 1) | paletteL;
                 m_screenPixels[(m_LY - 1) * LCD_WIDTH + m_currentPixelX++] = paletteL ? s_colors[s_bgColorMap[color]] : s_colors[s_bgColorMap[0]];
             }
@@ -134,8 +129,7 @@ void PPU::clock()
             m_fetcherMode = 1;
         } break;
         case 1: {
-            m_pixelFIFOColorIndexL |= fetchedColorL << (m_pixelFIFOEmpty ? 8 : 0);
-            m_pixelFIFOColorIndexH |= m_VRAM[m_tileDataAddress + 1 + ((m_SCY + m_LY - 1) % 8) * 2] << (m_pixelFIFOEmpty ? 8 : 0);
+            m_colorFIFO.push(fetchedColorL, m_VRAM[m_tileDataAddress + 1 + ((m_SCY + m_LY - 1) % 8) * 2]);
             m_pixelFIFOPaletteL |= fetchedPaletteL << (m_pixelFIFOEmpty ? 8 : 0);
             m_pixelFIFOPaletteH |= 0; // temp cause only one palette
 
@@ -153,8 +147,8 @@ void PPU::clock()
             m_pixelFIFOEmpty = true;
             m_pixelFIFONeedFetch = true;
 
-            m_pixelFIFOColorIndexL = 0;
-            m_pixelFIFOColorIndexH = 0;
+            m_colorFIFO.clear();
+
             m_pixelFIFOPaletteL = 0;
             m_pixelFIFOPaletteH = 0;
 

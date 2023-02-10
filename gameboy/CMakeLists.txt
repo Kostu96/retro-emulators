@@ -2,6 +2,8 @@ set(GAMEBOY_TAGET_NAME gameboy)
 
 set(GAMEBOY_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/bit_fifo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bit_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameboy.cpp

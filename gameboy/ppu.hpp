@@ -1,5 +1,6 @@
 #pragma once
 #include "../shared/type_aliases.hpp"
+#include "bit_fifo.hpp"
 
 #include <ccl/non_copyable.h>
 
@@ -109,8 +110,7 @@ private:
 	u16 m_tileDataAddress;
 	bool m_pixelFIFOEmpty;
 	bool m_pixelFIFONeedFetch;
-	u16 m_pixelFIFOColorIndexL;
-	u16 m_pixelFIFOColorIndexH;
+	BitFIFO m_colorFIFO;
 	u16 m_pixelFIFOPaletteL;
 	u16 m_pixelFIFOPaletteH;
 	u8 m_currentPixelX;
