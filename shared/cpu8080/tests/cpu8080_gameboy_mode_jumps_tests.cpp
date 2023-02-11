@@ -10,7 +10,9 @@ TEST_F(CPU8080GameBoyModeJumpsTests, JR_Imm8Test)
 	rom[0x3] = 0xFD; // JR 0xFD (-3)
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 3;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0044;
@@ -19,7 +21,9 @@ TEST_F(CPU8080GameBoyModeJumpsTests, JR_Imm8Test)
 	CPU.m_state.PC = 0x0002;
 
 	preExecutionState = captureCPUState();
-	CPU.clock();
+	cycles = 3;
+	while (cycles--)
+		CPU.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -36,7 +40,9 @@ TEST_F(CPU8080GameBoyModeJumpsTests, RETTest)
 	CPU.m_state.SP = 0x8000;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 4;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -51,7 +57,9 @@ TEST_F(CPU8080GameBoyModeJumpsTests, JPTest)
 	rom[0x2] = 0xDE; // JP 0xDEAD
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 4;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -65,7 +73,9 @@ TEST_F(CPU8080GameBoyModeJumpsTests, JP_HLTest)
 	CPU.m_state.HL = 0xDEAD;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 1;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -82,7 +92,9 @@ TEST_F(CPU8080GameBoyModeJumpsTests, RETITest)
 	CPU.m_state.SP = 0x8000;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 4;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -100,7 +112,9 @@ TEST_F(CPU8080GameBoyModeJumpsTests, CALLTest)
 	CPU.m_state.SP = 0x8002;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 6;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -145,7 +159,9 @@ TEST_P(CPU8080GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 	}
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 2;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0002;
@@ -161,14 +177,18 @@ TEST_P(CPU8080GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 	}
 
 	preExecutionState = captureCPUState();
-	CPU.clock();
+	cycles = 3;
+	while (cycles--)
+		CPU.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0000;
 	compareCPUStates(preExecutionState, postExecutionState);
 
 	preExecutionState = captureCPUState();
-	CPU.clock();
+	cycles = 3;
+	while (cycles--)
+		CPU.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0044;
@@ -209,7 +229,9 @@ TEST_P(CPU8080GameBoyModeRetConTests, RET_CONTest)
 	}
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 2;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -225,7 +247,9 @@ TEST_P(CPU8080GameBoyModeRetConTests, RET_CONTest)
 	}
 
 	preExecutionState = captureCPUState();
-	CPU.clock();
+	cycles = 4;
+	while (cycles--)
+		CPU.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -263,7 +287,9 @@ TEST_P(CPU8080GameBoyModeJumpConTests, JP_CONTest)
 	}
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 3;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0003;
@@ -281,7 +307,9 @@ TEST_P(CPU8080GameBoyModeJumpConTests, JP_CONTest)
 	CPU.m_state.PC = 0x0000;
 
 	preExecutionState = captureCPUState();
-	CPU.clock();
+	cycles = 4;
+	while (cycles--)
+		CPU.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -320,7 +348,9 @@ TEST_P(CPU8080GameBoyModeCallConTests, CALL_CONTest)
 	}
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 3;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0003;
@@ -338,7 +368,9 @@ TEST_P(CPU8080GameBoyModeCallConTests, CALL_CONTest)
 	CPU.m_state.PC = 0x0000;
 
 	preExecutionState = captureCPUState();
-	CPU.clock();
+	cycles = 6;
+	while (cycles--)
+		CPU.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;

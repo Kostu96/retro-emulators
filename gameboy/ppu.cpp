@@ -1,17 +1,15 @@
 #include "ppu.hpp"
 
-#include <glw/texture.hpp>
-
 #include <cassert>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
 
 static u32 s_colors[4]{
-    0xFFDDEEDD,
-    0xFF889988,
-    0xFF445544,
-    0xFF001100,
+    0xFFBBDDBB,
+    0xFF668866,
+    0xFF335533,
+    0xFF002200,
 };
 
 static u8 s_bgColorMap[4]{

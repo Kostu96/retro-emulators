@@ -52,7 +52,9 @@ TEST_F(CPU8080ModeI8080Tests, NOPTest)
 {
 	rom[0x0] = 0x00; // NOP
 
-	CPU.clock();
+	u8 clocks = 1;
+	while (clocks--)
+		CPU.clock();
 
 	referenceCPUState.PC = 0x0001;
 }
@@ -63,7 +65,9 @@ TEST_F(CPU8080ModeI8080Tests, JMPTest)
 	rom[0x1] = 0xAD;
 	rom[0x2] = 0xDE; // JMP 0xDEAD
 
-	CPU.clock(); // TODO: should take 3 cycles
+	u8 clocks = 1;
+	while (clocks--)
+		CPU.clock();
 
 	referenceCPUState.PC = 0xDEAD;
 }
@@ -86,8 +90,8 @@ TEST_F(CPU8080ModeI8080Tests, LXITest)
 	rom[0xA] = 0xEF;
 	rom[0xB] = 0xCD; // LXI SP, 0xCDEF
 
-	int cycles = 4; // TODO: should take 12 cycles
-	while (cycles--)
+	u8 clocks = 4;
+	while (clocks--)
 		CPU.clock();
 
 	referenceCPUState.BC = 0x0123;
@@ -123,8 +127,8 @@ TEST_F(CPU8080ModeI8080Tests, MVITest)
 	rom[0xE] = 0x3E;
 	rom[0xF] = 0xEF; // MVI A, 0xEF
 
-	int cycles = 8; // TODO: should take 14 + 3 cycles
-	while (cycles--)
+	u8 clocks = 8;
+	while (clocks--)
 		CPU.clock();
 
 	referenceCPUState.BC = 0x0123;

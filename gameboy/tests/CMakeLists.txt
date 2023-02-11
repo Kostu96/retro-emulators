@@ -1,0 +1,18 @@
+set(GAMEBOY_TESTS_TARGET_NAME ${GAMEBOY_TARGET_NAME}_tests)
+set(GAMEBOY_TESTS_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/blargg_tests.cpp
+)
+
+add_executable(${GAMEBOY_TESTS_TARGET_NAME} ${GAMEBOY_TESTS_SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${GAMEBOY_TESTS_SOURCES})
+
+target_link_libraries(${GAMEBOY_TESTS_TARGET_NAME} PRIVATE
+    ${GAMEBOY_LIB_TARGET_NAME}
+    gtest
+    gtest_main
+)
+
+set_target_properties(${GAMEBOY_TESTS_TARGET_NAME} PROPERTIES
+    FOLDER gameboy
+)

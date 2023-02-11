@@ -211,9 +211,11 @@ void CPU8080::reset()
 
 void CPU8080::clock()
 {
-    while (m_cyclesLeft == 0) // This regular if but while used to be able to break.
+    if (m_mode == Mode::Intel8080) m_cyclesLeft = 0; // TODO: temp WA until i8080 cycle times are implemented
+
+    while (m_cyclesLeft == 0) // This functions like regular if but while is used to be able to break.
     {
-        if (!m_prefixMode) {
+        if (m_mode != Mode::Intel8080 && !m_prefixMode) {
             if (handleInterrupts()) break;
 
             if (m_EIRequested) {

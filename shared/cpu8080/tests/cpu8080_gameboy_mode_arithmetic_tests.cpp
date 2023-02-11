@@ -14,7 +14,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, INC_RPTest)
 	CPU.m_state.HL = 0x00F0;
 	CPU.m_state.SP = 0x0F00;
 	auto preExecutionState = captureCPUState();
-	int cycles = 4;
+	u8 cycles = 4 * 2;
 	while (cycles--)
 		CPU.clock();
 	auto postExecutionState = captureCPUState();
@@ -39,7 +39,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, DEC_RPTest)
 	CPU.m_state.HL = 0x00F0;
 	CPU.m_state.SP = 0x0F00;
 	auto preExecutionState = captureCPUState();
-	int cycles = 4;
+	u8 cycles = 4 * 2;
 	while (cycles--)
 		CPU.clock();
 	auto postExecutionState = captureCPUState();
@@ -60,7 +60,9 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_BCTest)
 	CPU.m_state.BC = 0x00AD;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 2;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -76,7 +78,9 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_DETest)
 	CPU.m_state.DE = 0x00AD;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 2;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -91,7 +95,9 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_HLTest)
 	CPU.m_state.HL = 0x4269;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 2;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -107,7 +113,9 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_SPTest)
 	CPU.m_state.SP = 0x00AD;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 2;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -125,7 +133,9 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_SP_Imm8Test)
 	CPU.m_state.SP = 0xDE00;
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	u8 cycles = 4;
+	while (cycles--)
+		CPU.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0002;
@@ -133,11 +143,14 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_SP_Imm8Test)
 	compareCPUStates(preExecutionState, postExecutionState);
 
 	preExecutionState = captureCPUState();
-	CPU.clock();
+	cycles = 4;
+	while (cycles--)
+		CPU.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0004;
 	preExecutionState.SP = 0xDE00;
 	preExecutionState.F.gb.HalfCarry = 1;
+	preExecutionState.F.gb.Carry = 1;
 	compareCPUStates(preExecutionState, postExecutionState);
 }
