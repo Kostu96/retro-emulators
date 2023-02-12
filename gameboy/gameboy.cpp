@@ -37,12 +37,10 @@ Gameboy::Gameboy() :
     m_CPU.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
     m_CPU.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });
 
-    std::ifstream file{ "DMG_ROM.bin", std::ios_base::binary };
-    assert(file.is_open() && "Cannot open bootloader file");
-    file.read((char*)m_bootloader, 256);
-    file.close();
-    //m_bootloader[0x0003] = 0x18;
-    //m_bootloader[0x0004] = 0x07; // Insert jump over VRAM clear routine
+    //std::ifstream file{ "DMG_ROM.bin", std::ios_base::binary };
+    //assert(file.is_open() && "Cannot open bootloader file");
+    //file.read((char*)m_bootloader, 256);
+    //file.close();
 
     reset();
 
@@ -67,7 +65,7 @@ void Gameboy::reset()
     std::memset(m_WRAM, 0, 0x2000);
 
     m_interruptFlags = 0;
-    m_unmapBootloader = 0;
+    m_unmapBootloader = 1;
     m_interruptEnables = 0;
 
     m_isRunning = true;
@@ -75,14 +73,16 @@ void Gameboy::reset()
     m_CPU.reset();
     m_PPU.reset();
     m_timer.reset();
+
+    m_CPU.setPC(0x0100);
+
+    m_serialBuffer[0] = '\0';
+    m_serialBufferSize = 0;
 }
 
 void Gameboy::update()
 {
     if (m_hasCartridge && m_isRunning) {
-        // bootloader routine to clear the VRAM
-        //if (m_unmapBootloader == 0 && m_CPU.getPC() == 0x0003) m_PPU.clearVRAM();
-
         m_CPU.clock();
         m_PPU.clock();
         m_timer.clock();
@@ -158,7 +158,10 @@ void Gameboy::memoryWrite(u16 address, u8 data)
     if (SERIAL_RANGE.contains(address, offset)) {
         m_serial[offset] = data;
         if (offset == 1 && data == 0x81) {
-            std::cout << m_serial[0];
+            m_serialBuffer[m_serialBufferSize++] = m_serial[0];
+            m_serialBuffer[m_serialBufferSize] = '\0';
+            m_serialBufferSize %= 64;
+            //std::cout << m_serial[0];
             m_serial[1] = 0;
         }
         return;

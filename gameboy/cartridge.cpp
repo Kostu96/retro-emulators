@@ -145,7 +145,7 @@ void Cartridge::store8(u16 address, u8 data)
 bool Cartridge::loadFromFile(const char* filename)
 {
 	if (!ccl::readFile(filename, nullptr, m_size, true)) {
-		std::cerr << "Failed to read size of cartridge ROM file!\n";
+		std::cerr << "Failed to read size of cartridge ROM file: " << filename << '\n';
 		return false;
 	}
 
@@ -157,7 +157,7 @@ bool Cartridge::loadFromFile(const char* filename)
 	delete[] m_data;
 	m_data = new uint8_t[m_size];
 	if (!ccl::readFile(filename, (char*)m_data, m_size, true)) {
-		std::cerr << "Failed to read cartridge ROM file!\n";
+		std::cerr << "Failed to read cartridge ROM file: " << filename << '\n';
 		return false;
 	}
 

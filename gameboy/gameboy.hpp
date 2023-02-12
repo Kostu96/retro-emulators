@@ -15,6 +15,8 @@ public:
 
     void loadCartridge(const char* filename);
     const PPU& getPPU() const { return m_PPU; }
+
+    const char* getSerialBuffer() const { return m_serialBuffer; }
 private:
     u8 memoryRead(u16 address);
     void memoryWrite(u16 address, u8 data);
@@ -34,4 +36,7 @@ private:
     
     bool m_isRunning;
     bool m_hasCartridge;
+
+    char m_serialBuffer[65];
+    u8 m_serialBufferSize;
 };

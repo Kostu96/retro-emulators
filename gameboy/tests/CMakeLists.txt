@@ -16,3 +16,9 @@ target_link_libraries(${GAMEBOY_TESTS_TARGET_NAME} PRIVATE
 set_target_properties(${GAMEBOY_TESTS_TARGET_NAME} PROPERTIES
     FOLDER gameboy
 )
+
+add_custom_command(
+    TARGET ${GAMEBOY_TESTS_TARGET_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/gb-test-roms/cpu_instrs/individual $<TARGET_FILE_DIR:${GAMEBOY_TESTS_TARGET_NAME}>/test_files/gameboy
+)

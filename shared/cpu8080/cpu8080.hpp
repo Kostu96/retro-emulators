@@ -36,6 +36,7 @@ public:
     u16 getHL() const { return m_state.HL; }
     u16 getSP() const { return m_state.SP; }
     u16 getPC() const { return m_state.PC; }
+    void setPC(u16 value) { m_state.PC = value; }
     u8 getCyclesLeft() const { return m_cyclesLeft; }
 
     explicit CPU8080(Mode mode) : m_mode{ mode } {}
