@@ -1,0 +1,93 @@
+name: GHActions
+
+on:
+  pull_request:
+    branches:    
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: ${{matrix.config.name}}
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Windows MSVC Debug",
+            os: windows-latest,
+            build_type: "Debug",
+            cc: "cl",
+            cxx: "cl",
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+          }
+        - {
+            name: "Windows MSVC Release",
+            os: windows-latest,
+            build_type: "Release",
+            cc: "cl",
+            cxx: "cl",
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+          }
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Configure
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CC} ${{matrix.config.cc}})
+        set(ENV{CXX} ${{matrix.config.cxx}})
+        
+        execute_process(COMMAND "${{matrix.config.environment_script}}" && set OUTPUT_FILE environment_script_output.txt)
+        file(STRINGS environment_script_output.txt output_lines)
+        foreach(line IN LISTS output_lines)
+          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+          endif()
+        endforeach()
+        
+        set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
+        
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
+        execute_process(COMMAND ${CMAKE_COMMAND}
+          -S .
+          -B build
+          -D CMAKE_BUILD_TYPE=${{matrix.config.build_type}}
+          -G Ninja
+          -D CMAKE_MAKE_PROGRAM=ninja
+          -D STATIC_ANALYSIS=ON
+          RESULT_VARIABLE result)
+          
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+    
+    - name: Build
+      shell: cmake -P {0}
+      run: |
+        set(ENV{NINJA_STATUS} "[%f/%t] ")
+        
+        file(STRINGS environment_script_output.txt output_lines)
+        foreach(line IN LISTS output_lines)
+          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+          endif()
+        endforeach()
+        
+        set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
+        
+        execute_process(COMMAND ${CMAKE_COMMAND} --build build RESULT_VARIABLE result)
+        
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+    
+    - name: Run Tests
+      run: ./scripts/run_all_tests.bat
