@@ -161,7 +161,6 @@ void Gameboy::memoryWrite(u16 address, u8 data)
             m_serialBuffer[m_serialBufferSize++] = m_serial[0];
             m_serialBuffer[m_serialBufferSize] = '\0';
             m_serialBufferSize %= 64;
-            //std::cout << m_serial[0];
             m_serial[1] = 0;
         }
         return;
