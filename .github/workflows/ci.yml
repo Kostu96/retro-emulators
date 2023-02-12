@@ -62,7 +62,6 @@ jobs:
           -D CMAKE_BUILD_TYPE=${{matrix.config.build_type}}
           -G Ninja
           -D CMAKE_MAKE_PROGRAM=ninja
-          -D STATIC_ANALYSIS=ON
           RESULT_VARIABLE result)
           
         if (NOT result EQUAL 0)

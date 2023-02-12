@@ -45,6 +45,7 @@ add_executable(${GAMEBOY_APP_TARGET_NAME}
     ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c
     ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.h
 )
+set_source_files_properties(${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE CXX)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${GAMEBOY_APP_SOURCES})
 
 set_target_warnings(${GAMEBOY_APP_TARGET_NAME})
