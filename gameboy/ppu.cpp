@@ -34,11 +34,16 @@ PPU::~PPU()
 
 void PPU::reset()
 {
+    constexpr u8 LCDCONTROL_AFTER_BOOT = 0x91;
+    constexpr u8 LCDSTATUS_AFTER_BOOT = 0x82;
+
+    m_LCDControl.byte = LCDCONTROL_AFTER_BOOT;
+    m_LCDStatus.byte = LCDSTATUS_AFTER_BOOT;
+
     m_SCY = 0;
     m_SCX = 0;
     m_LY = 1;
-    m_LCDStatus.byte = 0;
-    m_LCDStatus.Mode = 2;
+    //m_LCDStatus.Mode = 2;
 
     m_fetcherMode = 0;
     m_fetcherTileX = 0;

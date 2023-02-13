@@ -1,5 +1,6 @@
 #pragma once
 #include "cpu8080.hpp"
+#include "apu.hpp"
 #include "cartridge.hpp"
 #include "ppu.hpp"
 #include "timer.hpp"
@@ -29,6 +30,7 @@ private:
     u8 m_serial[2];
     Timer m_timer;
     u8 m_interruptFlags;
+    APU m_APU;
     u8 m_unmapBootloader;
     u8 m_HRAM[0x7F];
     u8 m_interruptEnables;

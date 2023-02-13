@@ -30,7 +30,6 @@ Gameboy::Gameboy() :
     m_CPU{ CPU8080::Mode::GameBoy },
     m_PPU{ m_interruptFlags },
     m_WRAM{ new u8[0x2000] },
-    m_joypad{ 0xFF },
     m_timer{ m_interruptFlags },
     m_hasCartridge{ false }
 {
@@ -63,18 +62,28 @@ Gameboy::~Gameboy()
 void Gameboy::reset()
 {
     std::memset(m_WRAM, 0, 0x2000);
+    m_PPU.clearVRAM();
 
-    m_interruptFlags = 0;
     m_unmapBootloader = 1;
     m_interruptEnables = 0;
 
     m_isRunning = true;
 
     m_CPU.reset();
-    m_PPU.reset();
-    m_timer.reset();
-
+    m_CPU.setAF(0x01B0);
+    m_CPU.setBC(0x0013);
+    m_CPU.setDE(0x00D8);
+    m_CPU.setHL(0x014D);
+    m_CPU.setSP(0xFFFE);
     m_CPU.setPC(0x0100);
+
+    m_joypad = 0xCF;
+    m_serial[0] = 0;
+    m_serial[1] = 0x7E;
+    m_timer.reset();
+    m_interruptFlags = 0xE1;
+    m_APU.reset();
+    m_PPU.reset();
 
     m_serialBuffer[0] = '\0';
     m_serialBufferSize = 0;
@@ -128,8 +137,9 @@ u8 Gameboy::memoryRead(u16 address)
 
     if (WRAM_RANGE.contains(address, offset)) return m_WRAM[offset];
     if (address == 0xFF00) return m_joypad;
+    if (SERIAL_RANGE.contains(address, offset)) return m_serial[offset];
     if (TIMER_RANGE.contains(address, offset)) return m_timer.load8(offset);
-    if (APU_RANGE.contains(address, offset)) return u8{}; // TODO: sound
+    if (APU_RANGE.contains(address, offset)) return m_APU.load8(offset);
     if (PPU_RANGE.contains(address, offset)) return m_PPU.load8(offset);
     if (address == 0xFF0F) return m_interruptFlags;
     if (address == 0xFF50) return m_unmapBootloader;

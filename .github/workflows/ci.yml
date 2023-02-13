@@ -37,7 +37,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        submodules: recursive
+        submodules: true
     
     - name: Configure
       shell: cmake -P {0}
@@ -53,9 +53,6 @@ jobs:
           endif()
         endforeach()
         
-        #set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
-        
-        #file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
         execute_process(COMMAND ${CMAKE_COMMAND}
           -S .
           -B build
@@ -79,8 +76,6 @@ jobs:
             set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
           endif()
         endforeach()
-        
-        #set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
         
         execute_process(COMMAND ${CMAKE_COMMAND} --build build RESULT_VARIABLE result)
         

@@ -4,15 +4,18 @@
 
 void Timer::reset()
 {
-	m_divider = 0;
+	constexpr u16 DIVIDER_AFTER_BOOT = 0xABD4;
+	constexpr u8 CONTROL_AFTER_BOOT = 0xF8;
+
+	m_divider = DIVIDER_AFTER_BOOT;
 	m_counter = 0;
 	m_modulo = 0;
-	m_control.byte = 0;
+	m_control.byte = CONTROL_AFTER_BOOT;
 }
 
 void Timer::clock()
 {
-	m_divider++;
+	m_divider += 4;
 
 	static u32 counterAcc = 0;
 	if (m_control.enable)
@@ -47,6 +50,8 @@ u8 Timer::load8(u16 address) const
 	{
 	case 0: return m_divider >> 8;
 	case 1: return m_counter;
+	case 2: return m_modulo;
+	case 3: return m_control.byte;
 	}
 
 	assert(false);

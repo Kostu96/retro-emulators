@@ -31,10 +31,15 @@ public:
     void interrupt(u8 vector);
 
     u16 getAF() const { return m_state.AF; }
+    void setAF(u16 value) { m_state.AF = value; }
     u16 getBC() const { return m_state.BC; }
+    void setBC(u16 value) { m_state.BC = value; }
     u16 getDE() const { return m_state.DE; }
+    void setDE(u16 value) { m_state.DE = value; }
     u16 getHL() const { return m_state.HL; }
+    void setHL(u16 value) { m_state.HL = value; }
     u16 getSP() const { return m_state.SP; }
+    void setSP(u16 value) { m_state.SP = value; }
     u16 getPC() const { return m_state.PC; }
     void setPC(u16 value) { m_state.PC = value; }
     u8 getCyclesLeft() const { return m_cyclesLeft; }
