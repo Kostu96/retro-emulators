@@ -25,6 +25,6 @@ add_custom_command(
     TARGET ${GAMEBOY_TESTS_TARGET_NAME}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/gb-test-roms/cpu_instrs/individual $<TARGET_FILE_DIR:${GAMEBOY_TESTS_TARGET_NAME}>/test_files/gameboy/blargg
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/third_party/mooneye-test-roms/boot_div-dmgABCmgb.gb $<TARGET_FILE_DIR:${GAMEBOY_TESTS_TARGET_NAME}>/test_files/gameboy/mooneye/boot_div-dmgABCmgb.gb
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/third_party/mooneye-test-roms/boot_regs-dmgABC.gb $<TARGET_FILE_DIR:${GAMEBOY_TESTS_TARGET_NAME}>/test_files/gameboy/mooneye/boot_regs-dmgABC.gb
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/mooneye-test-roms/boot $<TARGET_FILE_DIR:${GAMEBOY_TESTS_TARGET_NAME}>/test_files/gameboy/mooneye/boot
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/mooneye-test-roms/timer $<TARGET_FILE_DIR:${GAMEBOY_TESTS_TARGET_NAME}>/test_files/gameboy/mooneye/timer
 )

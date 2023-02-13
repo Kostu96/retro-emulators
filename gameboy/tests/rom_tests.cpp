@@ -80,7 +80,8 @@ TEST_P(MooneyeTests, givenTestROMExpectRunSuccess)
 
 INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,
 	testing::Values(
-		MooneyeTestParam{ "boot_div-dmgABCmgb" },
-		MooneyeTestParam{ "boot_regs-dmgABC" }
+		MooneyeTestParam{ "boot/boot_div-dmgABCmgb" },
+		MooneyeTestParam{ "boot/boot_regs-dmgABC" },
+		MooneyeTestParam{ "timer/div_write" }
 	)
 );

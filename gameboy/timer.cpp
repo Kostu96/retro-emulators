@@ -15,23 +15,22 @@ void Timer::reset()
 
 void Timer::clock()
 {
+	u16 prevDivider = m_divider;
 	m_divider += 4;
 
-	static u32 counterAcc = 0;
 	if (m_control.enable)
 	{
-		counterAcc += 4;
-
-		u32 clock = 0;
+		u16 bit = 1;
 		switch (m_control.clockSelect)
 		{
-		case 0: clock = 1024; break;
-		case 1: clock = 16; break;
-		case 2: clock = 64; break;
-		case 3: clock = 256; break;
+		case 0: bit <<= 9; break;
+		case 1: bit <<= 3; break;
+		case 2: bit <<= 5; break;
+		case 3: bit <<= 7; break;
 		}
 
-		while (counterAcc >= clock)
+		bool shouldIncrement = (prevDivider & bit) & ~(m_divider & bit);
+		if (shouldIncrement)
 		{
 			m_counter++;
 			if (m_counter == 0)
@@ -39,7 +38,6 @@ void Timer::clock()
 				m_interruptFlagsRef |= 4;
 				m_counter = m_modulo;
 			}
-			counterAcc -= clock;
 		}
 	}
 }
