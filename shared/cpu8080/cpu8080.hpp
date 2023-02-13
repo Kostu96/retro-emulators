@@ -188,3 +188,5 @@ PRIVATE:
     bool m_EIRequested;
     u8 m_cyclesLeft;
 };
+
+#undef PRIVATE

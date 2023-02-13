@@ -17,12 +17,12 @@ struct BlarggCPUInstrsTests :
 	{
 		gb.reset();
 
-		std::string testPath{ "test_files/gameboy/" };
+		std::string testPath{ "test_files/gameboy/blargg/" };
 		gb.loadCartridge((testPath + GetParam().name + ".gb").c_str());
 	}
 };
 
-TEST_P(BlarggCPUInstrsTests, qwerty)
+TEST_P(BlarggCPUInstrsTests, givenTestROMExpectRunSuccess)
 {
 	u32 updateCounter = GetParam().updateCounter;
 	while (updateCounter--)
@@ -47,5 +47,40 @@ INSTANTIATE_TEST_SUITE_P(Param, BlarggCPUInstrsTests,
 		BlarggCPUInstrsTestParam{ "09-op r,r",              9700000 },
 		BlarggCPUInstrsTestParam{ "10-bit ops",            14700000 },
 		BlarggCPUInstrsTestParam{ "11-op a,(hl)",          18600000 }
+	)
+);
+
+struct MooneyeTestParam
+{
+	const char* name;
+};
+
+struct MooneyeTests :
+	public testing::TestWithParam<MooneyeTestParam>
+{
+	Gameboy gb;
+
+	void SetUp() override
+	{
+		gb.reset();
+
+		std::string testPath{ "test_files/gameboy/mooneye/" };
+		gb.loadCartridge((testPath + GetParam().name + ".gb").c_str());
+	}
+};
+
+TEST_P(MooneyeTests, givenTestROMExpectRunSuccess)
+{
+	gb.runUntilDebugBreak();
+
+	EXPECT_EQ(gb.m_CPU.getBC(), 0x0305); // 3 5
+	EXPECT_EQ(gb.m_CPU.getDE(), 0x080D); // 8 13
+	EXPECT_EQ(gb.m_CPU.getHL(), 0x1522); // 21 34
+}
+
+INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,
+	testing::Values(
+		MooneyeTestParam{ "boot_div-dmgABCmgb" },
+		MooneyeTestParam{ "boot_regs-dmgABC" }
 	)
 );

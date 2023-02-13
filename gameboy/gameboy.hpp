@@ -5,6 +5,12 @@
 #include "ppu.hpp"
 #include "timer.hpp"
 
+#if defined(GAMEBOY_TESTS)
+#define PRIVATE public
+#else
+#define PRIVATE private
+#endif
+
 class Gameboy
 {
 public:
@@ -18,7 +24,10 @@ public:
     const PPU& getPPU() const { return m_PPU; }
 
     const char* getSerialBuffer() const { return m_serialBuffer; }
-private:
+
+    // test only:
+    void runUntilDebugBreak();
+PRIVATE:
     u8 memoryRead(u16 address);
     void memoryWrite(u16 address, u8 data);
 
@@ -42,3 +51,5 @@ private:
     char m_serialBuffer[65];
     u8 m_serialBufferSize;
 };
+
+#undef PRIVATE

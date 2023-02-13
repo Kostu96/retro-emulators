@@ -127,6 +127,16 @@ void Gameboy::loadCartridge(const char* filename)
     m_isRunning = true;
 }
 
+void Gameboy::runUntilDebugBreak()
+{
+    u8 nextInstr = memoryRead(m_CPU.getPC());
+    while (nextInstr != 0x40)
+    {
+        update();
+        nextInstr = memoryRead(m_CPU.getPC());
+    }
+}
+
 u8 Gameboy::memoryRead(u16 address)
 {
     u16 offset;
