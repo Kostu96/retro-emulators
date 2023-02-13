@@ -45,17 +45,17 @@ jobs:
         set(ENV{CC} ${{matrix.config.cc}})
         set(ENV{CXX} ${{matrix.config.cxx}})
         
-        #execute_process(COMMAND "${{matrix.config.environment_script}}" && set OUTPUT_FILE environment_script_output.txt)
-        #file(STRINGS environment_script_output.txt output_lines)
-        #foreach(line IN LISTS output_lines)
-        #  if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-        #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-        #  endif()
-        #endforeach()
+        execute_process(COMMAND "${{matrix.config.environment_script}}" && set OUTPUT_FILE environment_script_output.txt)
+        file(STRINGS environment_script_output.txt output_lines)
+        foreach(line IN LISTS output_lines)
+          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+          endif()
+        endforeach()
         
-        set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
+        #set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
         
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
+        #file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
         execute_process(COMMAND ${CMAKE_COMMAND}
           -S .
           -B build
@@ -73,14 +73,14 @@ jobs:
       run: |
         set(ENV{NINJA_STATUS} "[%f/%t] ")
         
-        #file(STRINGS environment_script_output.txt output_lines)
-        #foreach(line IN LISTS output_lines)
-        #  if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-        #    set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-        #  endif()
-        #endforeach()
+        file(STRINGS environment_script_output.txt output_lines)
+        foreach(line IN LISTS output_lines)
+          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+          endif()
+        endforeach()
         
-        set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
+        #set(ENV{PATH} "$ENV{GITHUB_WORKSPACE};$ENV{PATH}")
         
         execute_process(COMMAND ${CMAKE_COMMAND} --build build RESULT_VARIABLE result)
         
