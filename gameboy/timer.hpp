@@ -15,6 +15,7 @@ public:
 	u8 load8(u16 address) const;
 	void store8(u16 address, u8 data);
 private:
+	u16 m_prevDivider;
 	u16 m_divider;
 	u8 m_counter;
 	u8 m_modulo;

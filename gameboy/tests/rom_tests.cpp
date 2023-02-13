@@ -36,12 +36,12 @@ TEST_P(BlarggCPUInstrsTests, givenTestROMExpectRunSuccess)
 
 INSTANTIATE_TEST_SUITE_P(Param, BlarggCPUInstrsTests,
 	testing::Values(
-		BlarggCPUInstrsTestParam{ "01-special",             3000000 },
+		BlarggCPUInstrsTestParam{ "01-special",             3100000 },
 		BlarggCPUInstrsTestParam{ "02-interrupts",           500000 },
 		BlarggCPUInstrsTestParam{ "03-op sp,hl",            4000000 },
 		BlarggCPUInstrsTestParam{ "04-op r,imm",            3000000 },
 		BlarggCPUInstrsTestParam{ "05-op rp",               4000000 },
-		BlarggCPUInstrsTestParam{ "06-ld r,r",               600000 },
+		BlarggCPUInstrsTestParam{ "06-ld r,r",               700000 },
 		BlarggCPUInstrsTestParam{ "07-jr,jp,call,ret,rst",   800000 },
 		BlarggCPUInstrsTestParam{ "08-misc instrs",          600000 },
 		BlarggCPUInstrsTestParam{ "09-op r,r",              9700000 },
@@ -82,6 +82,8 @@ INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,
 	testing::Values(
 		MooneyeTestParam{ "boot/boot_div-dmgABCmgb" },
 		MooneyeTestParam{ "boot/boot_regs-dmgABC" },
-		MooneyeTestParam{ "timer/div_write" }
+		MooneyeTestParam{ "timer/div_write" },
+		MooneyeTestParam{ "timer/tim00" },
+		MooneyeTestParam{ "timer/tim00_div_trigger" }
 	)
 );

@@ -213,11 +213,14 @@ void CPU8080::clock()
 {
     if (m_mode == Mode::Intel8080) m_cyclesLeft = 0; // TODO: temp WA until i8080 cycle times are implemented
 
-    while (m_cyclesLeft == 0) // This functions like regular if but while is used to be able to break.
+    if (m_cyclesLeft > 0)
+        m_cyclesLeft--;
+
+    if (m_cyclesLeft == 0)
     {
         if (m_mode != Mode::Intel8080 && !m_prefixMode) {
-            if (handleInterrupts()) break;
-
+            if (handleInterrupts()) return;
+            
             if (m_EIRequested) {
                 m_EIRequested = false;
                 m_state.InterruptEnabled = true;
@@ -238,11 +241,7 @@ void CPU8080::clock()
                 m_conditionalTaken = false;
             }
         }
-        else break;
     }
-
-    if (m_cyclesLeft > 0)
-        m_cyclesLeft--;
 }
 
 void CPU8080::interrupt(u8 vector)

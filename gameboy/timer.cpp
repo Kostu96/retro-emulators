@@ -7,6 +7,7 @@ void Timer::reset()
 	constexpr u16 DIVIDER_AFTER_BOOT = 0xABD4;
 	constexpr u8 CONTROL_AFTER_BOOT = 0xF8;
 
+	m_prevDivider = DIVIDER_AFTER_BOOT - 4;
 	m_divider = DIVIDER_AFTER_BOOT;
 	m_counter = 0;
 	m_modulo = 0;
@@ -15,7 +16,6 @@ void Timer::reset()
 
 void Timer::clock()
 {
-	u16 prevDivider = m_divider;
 	m_divider += 4;
 
 	if (m_control.enable)
@@ -29,7 +29,7 @@ void Timer::clock()
 		case 3: bit <<= 7; break;
 		}
 
-		bool shouldIncrement = (prevDivider & bit) & ~(m_divider & bit);
+		bool shouldIncrement = (m_prevDivider & bit) & ~(m_divider & bit);
 		if (shouldIncrement)
 		{
 			m_counter++;
@@ -40,6 +40,8 @@ void Timer::clock()
 			}
 		}
 	}
+
+	m_prevDivider = m_divider;
 }
 
 u8 Timer::load8(u16 address) const
