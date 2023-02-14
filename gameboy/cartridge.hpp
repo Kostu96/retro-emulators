@@ -1,18 +1,21 @@
 #pragma once
 #include "../shared/type_aliases.hpp"
 
-class Cartridge
+#include <ccl/non_copyable.h>
+
+class Cartridge :
+    public ccl::NonCopyable
 {
 public:
     Cartridge() = default;
-    Cartridge(Cartridge&) = delete;
-    Cartridge& operator=(Cartridge&) = delete;
     ~Cartridge();
 
     u8 load8(u16 address) const;
     void store8(u16 address, u8 data);
+    u8 load8ExtRAM(u16 address) const;
+    void store8ExtRAM(u16 address, u8 data);
 
-    bool loadFromFile(const char* filename);
+    bool loadFromFile(const char* filename, bool quiet = false);
 private:
     struct Header {
         u8 entryPoint[4];      // 0x100 - 0x103
@@ -35,5 +38,8 @@ private:
     Header* m_header = nullptr;
     u8* m_data = nullptr;
     size_t m_size = 0;
-    u8 MBC1RomBank = 0;
+    u8 m_MBC1RAMEnable = 0;
+    u8 m_MBC1ROMBank = 0;
+    u8 m_MBC1RAMBank = 0;
+    u8* m_RAM = nullptr;
 };

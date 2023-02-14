@@ -9,18 +9,19 @@
 
 #define GB_DOCTOR_LOG 0
 
-static const AddressRange CART_RANGE{    0x0000, 0x7FFF };
-static const AddressRange VRAM_RANGE{    0x8000, 0x9FFF };
-static const AddressRange WRAM_RANGE{    0xC000, 0xDFFF };
-static const AddressRange OAM_RANGE{     0xFE00, 0xFE9F };
-static const AddressRange UNUSED1_RANGE{ 0xFEA0, 0xFEFF };
-static const AddressRange SERIAL_RANGE{  0xFF01, 0xFF02 };
-static const AddressRange TIMER_RANGE{   0xFF04, 0xFF07 };
-static const AddressRange APU_RANGE{     0xFF10, 0xFF26 };
-static const AddressRange UNUSED2_RANGE{ 0xFF27, 0xFF3F };
-static const AddressRange PPU_RANGE{     0xFF40, 0xFF4B };
-static const AddressRange UNUSED3_RANGE{ 0xFF7F, 0xFF7F };
-static const AddressRange HRAM_RANGE{    0xFF80, 0xFFFE };
+static const AddressRange ROM_RANGE{       0x0000, 0x7FFF };
+static const AddressRange VRAM_RANGE{      0x8000, 0x9FFF };
+static const AddressRange EXTRAM_RANGE{    0xA000, 0xBFFF };
+static const AddressRange WRAM_RANGE{      0xC000, 0xDFFF };
+static const AddressRange OAM_RANGE{       0xFE00, 0xFE9F };
+static const AddressRange UNUSED1_RANGE{   0xFEA0, 0xFEFF };
+static const AddressRange SERIAL_RANGE{    0xFF01, 0xFF02 };
+static const AddressRange TIMER_RANGE{     0xFF04, 0xFF07 };
+static const AddressRange APU_RANGE{       0xFF10, 0xFF26 };
+static const AddressRange UNUSED2_RANGE{   0xFF27, 0xFF3F };
+static const AddressRange PPU_RANGE{       0xFF40, 0xFF4B };
+static const AddressRange UNUSED3_RANGE{   0xFF7F, 0xFF7F };
+static const AddressRange HRAM_RANGE{      0xFF80, 0xFFFE };
 
 #if GB_DOCTOR_LOG == 1
 static std::ofstream s_log;
@@ -67,8 +68,6 @@ void Gameboy::reset()
     m_unmapBootloader = 1;
     m_interruptEnables = 0;
 
-    m_isRunning = true;
-
     m_CPU.reset();
     m_CPU.setAF(0x01B0);
     m_CPU.setBC(0x0013);
@@ -87,6 +86,8 @@ void Gameboy::reset()
 
     m_serialBuffer[0] = '\0';
     m_serialBufferSize = 0;
+
+    m_isRunning = true;
 }
 
 void Gameboy::update()
@@ -119,12 +120,28 @@ void Gameboy::update()
     }
 }
 
-void Gameboy::loadCartridge(const char* filename)
+void Gameboy::loadCartridge(const char* filename, bool quiet)
 {
     m_isRunning = false;
-    m_cartridge.loadFromFile(filename);
+    m_cartridge.loadFromFile(filename, quiet);
     m_hasCartridge = true;
     m_isRunning = true;
+}
+
+void Gameboy::runUntilEndlessLoop()
+{
+    u16 lastPC = m_CPU.getPC();
+    u8 counter = 0;
+    while (counter < 10)
+    {
+        update();
+        if (lastPC == m_CPU.getPC() && !m_CPU.isHalted())
+            counter++;
+        else
+            counter = 0;
+
+        lastPC = m_CPU.getPC();
+    }
 }
 
 void Gameboy::runUntilDebugBreak()
@@ -140,11 +157,12 @@ void Gameboy::runUntilDebugBreak()
 u8 Gameboy::memoryRead(u16 address)
 {
     u16 offset;
-    if (CART_RANGE.contains(address, offset)) {
+    if (ROM_RANGE.contains(address, offset)) {
         if (m_unmapBootloader == 0 && offset < 0x100) return m_bootloader[offset];
         return m_cartridge.load8(offset);
     }
 
+    if (EXTRAM_RANGE.contains(address, offset)) return m_cartridge.load8ExtRAM(offset);
     if (WRAM_RANGE.contains(address, offset)) return m_WRAM[offset];
     if (address == 0xFF00) return m_joypad;
     if (SERIAL_RANGE.contains(address, offset)) return m_serial[offset];
@@ -163,8 +181,9 @@ u8 Gameboy::memoryRead(u16 address)
 void Gameboy::memoryWrite(u16 address, u8 data)
 {
     u16 offset;
-    if (CART_RANGE.contains(address, offset)) { m_cartridge.store8(offset, data); return; }
+    if (ROM_RANGE.contains(address, offset)) { m_cartridge.store8(offset, data); return; }
     if (VRAM_RANGE.contains(address, offset)) { m_PPU.storeVRAM8(offset, data); return; }
+    if (EXTRAM_RANGE.contains(address, offset)) { m_cartridge.store8ExtRAM(offset, data); return; }
     if (WRAM_RANGE.contains(address, offset)) { m_WRAM[offset] = data; return; }
     if (OAM_RANGE.contains(address, offset)) { m_PPU.storeOAM8(offset, data); return; }
     if (UNUSED1_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory

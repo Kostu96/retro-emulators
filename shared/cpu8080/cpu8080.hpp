@@ -43,6 +43,7 @@ public:
     u16 getPC() const { return m_state.PC; }
     void setPC(u16 value) { m_state.PC = value; }
     u8 getCyclesLeft() const { return m_cyclesLeft; }
+    bool isHalted() const { return m_state.IsHalted; }
 
     explicit CPU8080(Mode mode) : m_mode{ mode } {}
     CPU8080(const CPU8080&) = delete;

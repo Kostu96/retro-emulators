@@ -17,15 +17,17 @@ public:
     Gameboy();
     ~Gameboy();
 
+    void stop() { m_isRunning = false; }
     void reset();
     void update();
 
-    void loadCartridge(const char* filename);
+    void loadCartridge(const char* filename, bool quiet = false);
     const PPU& getPPU() const { return m_PPU; }
 
     const char* getSerialBuffer() const { return m_serialBuffer; }
 
     // test only:
+    void runUntilEndlessLoop();
     void runUntilDebugBreak();
 PRIVATE:
     u8 memoryRead(u16 address);

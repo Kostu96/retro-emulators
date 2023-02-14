@@ -2,14 +2,8 @@
 
 #include <gtest/gtest.h>
 
-struct BlarggCPUInstrsTestParam
-{
-	const char* name;
-	u32 updateCounter;
-};
-
 struct BlarggCPUInstrsTests :
-	public testing::TestWithParam<BlarggCPUInstrsTestParam>
+	public testing::TestWithParam<const char*>
 {
 	Gameboy gb;
 
@@ -18,17 +12,15 @@ struct BlarggCPUInstrsTests :
 		gb.reset();
 
 		std::string testPath{ "test_files/gameboy/blargg/" };
-		gb.loadCartridge((testPath + GetParam().name + ".gb").c_str());
+		gb.loadCartridge((testPath + GetParam() + ".gb").c_str(), true);
 	}
 };
 
 TEST_P(BlarggCPUInstrsTests, givenTestROMExpectRunSuccess)
 {
-	u32 updateCounter = GetParam().updateCounter;
-	while (updateCounter--)
-		gb.update();
+	gb.runUntilEndlessLoop();
 
-	std::string expected{ GetParam().name };
+	std::string expected{ GetParam() };
 	expected += "\n\n\nPassed\n";
 
 	EXPECT_STREQ(expected.c_str(), gb.getSerialBuffer());
@@ -36,27 +28,22 @@ TEST_P(BlarggCPUInstrsTests, givenTestROMExpectRunSuccess)
 
 INSTANTIATE_TEST_SUITE_P(Param, BlarggCPUInstrsTests,
 	testing::Values(
-		BlarggCPUInstrsTestParam{ "01-special",             3100000 },
-		BlarggCPUInstrsTestParam{ "02-interrupts",           500000 },
-		BlarggCPUInstrsTestParam{ "03-op sp,hl",            4000000 },
-		BlarggCPUInstrsTestParam{ "04-op r,imm",            3000000 },
-		BlarggCPUInstrsTestParam{ "05-op rp",               4000000 },
-		BlarggCPUInstrsTestParam{ "06-ld r,r",               700000 },
-		BlarggCPUInstrsTestParam{ "07-jr,jp,call,ret,rst",   800000 },
-		BlarggCPUInstrsTestParam{ "08-misc instrs",          600000 },
-		BlarggCPUInstrsTestParam{ "09-op r,r",              9700000 },
-		BlarggCPUInstrsTestParam{ "10-bit ops",            14700000 },
-		BlarggCPUInstrsTestParam{ "11-op a,(hl)",          18600000 }
+		"01-special",
+		"02-interrupts",
+		"03-op sp,hl",
+		"04-op r,imm",
+		"05-op rp",
+		"06-ld r,r",
+		"07-jr,jp,call,ret,rst",
+		"08-misc instrs",
+		"09-op r,r",
+		"10-bit ops",
+		"11-op a,(hl)"
 	)
 );
 
-struct MooneyeTestParam
-{
-	const char* name;
-};
-
 struct MooneyeTests :
-	public testing::TestWithParam<MooneyeTestParam>
+	public testing::TestWithParam<const char*>
 {
 	Gameboy gb;
 
@@ -65,7 +52,7 @@ struct MooneyeTests :
 		gb.reset();
 
 		std::string testPath{ "test_files/gameboy/mooneye/" };
-		gb.loadCartridge((testPath + GetParam().name + ".gb").c_str());
+		gb.loadCartridge((testPath + GetParam() + ".gb").c_str(), true);
 	}
 };
 
@@ -80,10 +67,17 @@ TEST_P(MooneyeTests, givenTestROMExpectRunSuccess)
 
 INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,
 	testing::Values(
-		MooneyeTestParam{ "boot/boot_div-dmgABCmgb" },
-		MooneyeTestParam{ "boot/boot_regs-dmgABC" },
-		MooneyeTestParam{ "timer/div_write" },
-		MooneyeTestParam{ "timer/tim00" },
-		MooneyeTestParam{ "timer/tim00_div_trigger" }
+		"boot/boot_div-dmgABCmgb",
+		"boot/boot_regs-dmgABC",
+		"timer/div_write",
+		"timer/rapid_toggle",
+		"timer/tim00",
+		"timer/tim00_div_trigger",
+		"timer/tim01",
+		"timer/tim01_div_trigger",
+		"timer/tim10",
+		"timer/tim10_div_trigger",
+		"timer/tim11",
+		"timer/tim11_div_trigger"
 	)
 );
