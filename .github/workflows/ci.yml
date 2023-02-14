@@ -77,7 +77,7 @@ jobs:
           endif()
         endforeach()
         
-        execute_process(COMMAND ${CMAKE_COMMAND} --build build RESULT_VARIABLE result)
+        execute_process(COMMAND ${CMAKE_COMMAND} --build build -j RESULT_VARIABLE result)
         
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
