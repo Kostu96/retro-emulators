@@ -17,7 +17,6 @@ public:
     Gameboy();
     ~Gameboy();
 
-    void stop() { m_isRunning = false; }
     void reset();
     void update();
 

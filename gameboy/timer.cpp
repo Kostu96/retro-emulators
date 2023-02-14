@@ -12,11 +12,18 @@ void Timer::reset()
 	m_counter = 0;
 	m_modulo = 0;
 	m_control.byte = CONTROL_AFTER_BOOT;
+
+	m_overflow = false;
 }
 
 void Timer::clock()
 {
 	m_divider += 4;
+	if (m_overflow) {
+		m_overflow = false;
+		m_interruptFlagsRef |= 4;
+		m_counter = m_modulo;
+	}
 
 	u16 bit = 1;
 	switch (m_control.clockSelect)
@@ -34,8 +41,7 @@ void Timer::clock()
 		m_counter++;
 		if (m_counter == 0)
 		{
-			m_interruptFlagsRef |= 4;
-			m_counter = m_modulo;
+			m_overflow = true;
 		}
 	}
 

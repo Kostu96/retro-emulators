@@ -138,7 +138,6 @@ namespace GUI {
                 static const char* filters[1] = { "*.gb" };
                 char* filename = tinyfd_openFileDialog("Load cartridge", nullptr, 1, filters, nullptr, 0);
                 if (filename) {
-                    gb.stop();
                     gb.loadCartridge(filename);
                     gb.reset();
                 }

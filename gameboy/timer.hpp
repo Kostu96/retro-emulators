@@ -30,4 +30,5 @@ private:
 	} m_control;
 
 	u8& m_interruptFlagsRef;
+	bool m_overflow;
 };

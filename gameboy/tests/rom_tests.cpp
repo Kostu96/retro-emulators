@@ -9,10 +9,10 @@ struct BlarggCPUInstrsTests :
 
 	void SetUp() override
 	{
-		gb.reset();
-
 		std::string testPath{ "test_files/gameboy/blargg/" };
 		gb.loadCartridge((testPath + GetParam() + ".gb").c_str(), true);
+
+		gb.reset();
 	}
 };
 
@@ -49,10 +49,10 @@ struct MooneyeTests :
 
 	void SetUp() override
 	{
-		gb.reset();
-
 		std::string testPath{ "test_files/gameboy/mooneye/" };
 		gb.loadCartridge((testPath + GetParam() + ".gb").c_str(), true);
+
+		gb.reset();
 	}
 };
 
@@ -78,6 +78,7 @@ INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,
 		"timer/tim10",
 		"timer/tim10_div_trigger",
 		"timer/tim11",
-		"timer/tim11_div_trigger"
+		"timer/tim11_div_trigger",
+		"timer/tima_reload"
 	)
 );

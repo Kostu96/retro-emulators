@@ -125,7 +125,6 @@ void Gameboy::loadCartridge(const char* filename, bool quiet)
     m_isRunning = false;
     m_cartridge.loadFromFile(filename, quiet);
     m_hasCartridge = true;
-    m_isRunning = true;
 }
 
 void Gameboy::runUntilEndlessLoop()
