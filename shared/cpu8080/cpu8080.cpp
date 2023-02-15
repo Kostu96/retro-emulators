@@ -207,6 +207,7 @@ void CPU8080::reset()
     m_conditionalTaken = false;
     m_EIRequested = false;
     m_cyclesLeft = 0;
+    m_interruptRequested = false;
 }
 
 void CPU8080::clock()
@@ -216,14 +217,17 @@ void CPU8080::clock()
     if (m_cyclesLeft > 0)
         m_cyclesLeft--;
 
+    if (m_EIRequested) {
+        m_EIRequested = false;
+        m_state.InterruptEnabled = true;
+    }
+
     if (m_cyclesLeft == 0)
     {
         if (m_mode != Mode::Intel8080 && !m_prefixMode) {
-            if (handleInterrupts()) return;
-            
-            if (m_EIRequested) {
-                m_EIRequested = false;
-                m_state.InterruptEnabled = true;
+            if (m_interruptRequested) {
+                m_interruptRequested = false;
+                RST(m_interruptVector);
             }
         }
 
@@ -244,58 +248,19 @@ void CPU8080::clock()
     }
 }
 
-void CPU8080::interrupt(u8 vector)
+bool CPU8080::interrupt(u8 vector)
 {
+    m_state.IsHalted = false;
+
+    bool ret = m_state.InterruptEnabled;
     if (m_state.InterruptEnabled)
     {
         m_state.InterruptEnabled = false;
-        RST(vector);
-    }
-}
-
-bool CPU8080::handleInterrupts()
-{
-    bool hasInterrupt = false;
-    u8 IE = load8(0xFFFF);
-    u8 IF = load8(0xFF0F);
-    if ((IE & IF) & 0x1F) {
-        if (m_state.InterruptEnabled) {
-            m_state.InterruptEnabled = false;
-
-            if ((IE & 1) & (IF & 1)) { // V-Blank
-                push16(m_state.PC);
-                m_state.PC = 0x40;
-                store8(0xFF0F, IF & ~1);
-            }
-            else if ((IE & 2) & (IF & 2)) { // LCD STAT
-                push16(m_state.PC);
-                m_state.PC = 0x48;
-                store8(0xFF0F, IF & ~2);
-            }
-            else if ((IE & 4) & (IF & 4)) { // Timer
-                push16(m_state.PC);
-                m_state.PC = 0x50;
-                store8(0xFF0F, IF & ~4);
-            }
-            else if ((IE & 8) & (IF & 8)) { // Serial
-                push16(m_state.PC);
-                m_state.PC = 0x58;
-                store8(0xFF0F, IF & ~8);
-            }
-            else if ((IE & 0x10) & (IF & 0x10)) { // Joypad
-                push16(m_state.PC);
-                m_state.PC = 0x60;
-                store8(0xFF0F, IF & ~0x10);
-            }
-
-            m_cyclesLeft += m_state.IsHalted ? 6 : 5;
-            hasInterrupt = true;
-        }
-
-        m_state.IsHalted = false;
+        m_interruptRequested = true;
+        m_interruptVector = vector;
     }
 
-    return hasInterrupt;
+    return ret;
 }
 
 void CPU8080::standardInstruction(u8 opcode)

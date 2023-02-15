@@ -28,7 +28,7 @@ public:
 
     void reset();
     void clock();
-    void interrupt(u8 vector);
+    bool interrupt(u8 vector);
 
     u16 getAF() const { return m_state.AF; }
     void setAF(u16 value) { m_state.AF = value; }
@@ -44,6 +44,7 @@ public:
     void setPC(u16 value) { m_state.PC = value; }
     u8 getCyclesLeft() const { return m_cyclesLeft; }
     bool isHalted() const { return m_state.IsHalted; }
+    bool isHandlingInterrupt() const { return m_interruptRequested; }
 
     explicit CPU8080(Mode mode) : m_mode{ mode } {}
     CPU8080(const CPU8080&) = delete;
@@ -119,7 +120,6 @@ PRIVATE:
     u8 getParityFlag();
     void setParityFlag(u8 value);
 
-    bool handleInterrupts();
     void standardInstruction(u8 opcode);
     void prefixInstruction(u8 opcode);
 
@@ -185,6 +185,8 @@ PRIVATE:
 
     const Mode m_mode;
     bool m_prefixMode;
+    bool m_interruptRequested;
+    u8 m_interruptVector;
     bool m_conditionalTaken;
     bool m_EIRequested;
     u8 m_cyclesLeft;

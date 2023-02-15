@@ -31,4 +31,5 @@ private:
 
 	u8& m_interruptFlagsRef;
 	bool m_overflow;
+	bool m_wasCounterWritten;
 };

@@ -4,7 +4,7 @@
 
 void Timer::reset()
 {
-	constexpr u16 DIVIDER_AFTER_BOOT = 0xABD4;
+	constexpr u16 DIVIDER_AFTER_BOOT = 0xABD0;
 	constexpr u8 CONTROL_AFTER_BOOT = 0xF8;
 
 	m_prevTriggerBit = 0;
@@ -14,6 +14,7 @@ void Timer::reset()
 	m_control.byte = CONTROL_AFTER_BOOT;
 
 	m_overflow = false;
+	m_wasCounterWritten = false;
 }
 
 void Timer::clock()
@@ -21,9 +22,13 @@ void Timer::clock()
 	m_divider += 4;
 	if (m_overflow) {
 		m_overflow = false;
-		m_interruptFlagsRef |= 4;
-		m_counter = m_modulo;
+		if (!m_wasCounterWritten) {
+			m_interruptFlagsRef |= 4;
+			m_counter = m_modulo;
+		}
 	}
+
+	if (m_wasCounterWritten) m_wasCounterWritten = false;
 
 	u16 bit = 1;
 	switch (m_control.clockSelect)
@@ -67,7 +72,7 @@ void Timer::store8(u16 address, u8 data)
 	switch (address)
 	{
 	case 0: m_divider = 0; return;
-	case 1: m_counter = data; return;
+	case 1: m_counter = data; m_wasCounterWritten = true; return;
 	case 2: m_modulo = data; return;
 	case 3: m_control.byte = data & 0x7; return;
 	}

@@ -93,9 +93,31 @@ void Gameboy::reset()
 void Gameboy::update()
 {
     if (m_hasCartridge && m_isRunning) {
-        m_CPU.clock();
-        m_PPU.clock();
         m_timer.clock();
+        m_PPU.clock();
+        m_CPU.clock();
+        if (!m_CPU.isHandlingInterrupt()) {
+            if ((m_interruptEnables & 1) & (m_interruptFlags & 1)) { // V-Blank
+                if (m_CPU.interrupt(8))
+                    m_interruptFlags &= ~0x1;
+            }
+            else if ((m_interruptEnables & 2) & (m_interruptFlags & 2)) { // LCD STAT
+                if (m_CPU.interrupt(9))
+                    m_interruptFlags &= ~0x2;
+            }
+            else if ((m_interruptEnables & 4) & (m_interruptFlags & 4)) { // Timer
+                if (m_CPU.interrupt(10))
+                    m_interruptFlags &= ~0x4;
+            }
+            else if ((m_interruptEnables & 8) & (m_interruptFlags & 8)) { // Serial
+                if (m_CPU.interrupt(11))
+                    m_interruptFlags &= ~0x8;
+            }
+            else if ((m_interruptEnables & 0x10) & (m_interruptFlags & 0x10)) { // Joypad
+                if (m_CPU.interrupt(12))
+                    m_interruptFlags &= ~0x10;
+            }
+        }
 
 #if GB_DOCTOR_LOG == 1
         if (m_unmapBootloader == 1 && m_CPU.getCyclesLeft() == 0) {
@@ -208,7 +230,9 @@ void Gameboy::memoryWrite(u16 address, u8 data)
     if (APU_RANGE.contains(address, offset)) { return; } // TODO: sound
     if (UNUSED2_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
     if (PPU_RANGE.contains(address, offset)) { m_PPU.store8(offset, data); return; }
-    if (address == 0xFF0F) { m_interruptFlags = data & 0x1F; return; }
+    if (address == 0xFF0F) {
+        m_interruptFlags = data & 0x1F;
+        return; }
     if (address == 0xFF50 && m_unmapBootloader == 0) { m_unmapBootloader = data; return; }
     if (UNUSED3_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
     if (HRAM_RANGE.contains(address, offset)) { m_HRAM[offset] = data; return; }
