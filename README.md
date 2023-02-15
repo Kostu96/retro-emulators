@@ -3,5 +3,6 @@
 
 Emulalators of microcomputers, game consoles and arcades.
 
-### Currently working:
- - Original Game Boy (DMG)
+### Currently working on:
+ - Altair 8800
+ - Game Boy (DMG)

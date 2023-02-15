@@ -10,4 +10,5 @@ add_subdirectory(cores)
 add_subdirectory(assembler_app)
 add_subdirectory(emulator_app)
 
+add_subdirectory(altair8800)
 add_subdirectory(gameboy)
