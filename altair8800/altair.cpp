@@ -17,7 +17,7 @@ Altair::~Altair()
 
 void Altair::reset()
 {
-
+	m_CPU.reset();
 }
 
 void Altair::update()

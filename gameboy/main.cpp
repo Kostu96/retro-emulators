@@ -5,9 +5,6 @@
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
 
-#include <cassert>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <thread>
 
@@ -24,7 +21,7 @@ static void glfwErrorCallback(int error, const char* description)
     std::cerr << "GLFW error " << error << ": " << description << '\n';
 }
 
-int main(int /*argc*/, char* /*argv*/[])
+int main()
 {
     glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit()) {
