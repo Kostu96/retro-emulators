@@ -14,6 +14,14 @@ namespace GUI {
 
     static GLFWwindow* s_window = nullptr;
     static bool s_switches[16]{};
+    static const char* s_middleLEDLabels[16] = {
+        "A0", "A1", "A2",
+        "A3", "A4", "A5",
+        "A6", "A7", "A8",
+        "A9", "A10", "A11",
+        "A12", "A13", "A14",
+        "A15",
+    };
     static const char* s_switchLabels[16] = {
         "Switch0", "Switch1", "Switch2",
         "Switch3", "Switch4", "Switch5",
@@ -30,6 +38,7 @@ namespace GUI {
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         ImGui::StyleColorsDark();
+        ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = { 0.4f, 0.4f, 0.4f, 1.f };
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 450");
 
@@ -45,22 +54,54 @@ namespace GUI {
         ImGui::DestroyContext();
     }
 
-    /*static void drawTextureWindow(const glw::Texture& texture, float scale, const char* title, bool& show)
-    {
-        ImVec2 imageSize = { texture.getProperties().width * scale, texture.getProperties().height * scale };
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
-        ImGui::SetNextWindowSize({ imageSize.x, imageSize.y + 8 }, ImGuiCond_Always);
-        if (ImGui::Begin(title, &show, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
-            ImGui::Image((ImTextureID)texture.getRendererID(), imageSize, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
-        ImGui::End();
-        ImGui::PopStyleVar(2);
-    }*/
+    static void MiddleLEDsGroup() {
+        float frameHeight = ImGui::GetFrameHeight() * 1.2f;
+        float radius = frameHeight * 0.50f;
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-    static void ToggleButtonsGroup(int count, const char** labels, bool* states)
-    {
-        float frameHeight = ImGui::GetFrameHeight();
-        float height = frameHeight * 1.6f;
+        for (int i = 15; i >= 0; i--) {
+            ImVec2 p = ImGui::GetCursorScreenPos();
+
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::InvisibleButton("##", { frameHeight, frameHeight / 1.5f });
+            ImGui::PopItemFlag();
+
+            if (i % 3 == 0) {
+                ImGui::SameLine();
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::InvisibleButton("##", { frameHeight / 2.f, frameHeight / 1.5f });
+                ImGui::PopItemFlag();
+            }
+
+            float textHalfWidth = ImGui::CalcTextSize(s_middleLEDLabels[i]).x / 2.f;
+            draw_list->AddText({ p.x + frameHeight / 2.f - textHalfWidth, p.y }, ImGui::GetColorU32(ImGuiCol_Text), s_middleLEDLabels[i]);
+
+            if (i != 0) ImGui::SameLine();
+        }
+
+        for (int i = 15; i >= 0; i--) {
+            ImVec2 p = ImGui::GetCursorScreenPos();
+
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::InvisibleButton("##", { frameHeight, frameHeight * 2 });
+            ImGui::PopItemFlag();
+
+            if (i % 3 == 0) {
+                ImGui::SameLine();
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::InvisibleButton("##", { frameHeight / 2.f, frameHeight * 2 });
+                ImGui::PopItemFlag();
+            }
+
+            draw_list->AddCircleFilled({ p.x + radius, p.y + radius }, radius, IM_COL32(0x6b, 0, 3, 255));
+
+            if (i != 0) ImGui::SameLine();
+        }
+    }
+
+    static void ToggleButtonsGroup(int count, const char** labels, bool* states) {
+        float frameHeight = ImGui::GetFrameHeight() * 1.2f;
+        float height = frameHeight * 1.8f;
         float radius = frameHeight * 0.50f;
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -68,13 +109,13 @@ namespace GUI {
             ImVec2 p = ImGui::GetCursorScreenPos();
 
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ImGui::InvisibleButton("##", ImVec2{ frameHeight, frameHeight / 2.f });
+            ImGui::InvisibleButton("##", ImVec2{ frameHeight, frameHeight / 1.5f });
             ImGui::PopItemFlag();
 
             if (i % 3 == 0) {
                 ImGui::SameLine();
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                ImGui::InvisibleButton("##", ImVec2{ frameHeight / 2.f, frameHeight / 2.f });
+                ImGui::InvisibleButton("##", ImVec2{ frameHeight / 2.f, frameHeight / 1.5f });
                 ImGui::PopItemFlag();
             }
 
@@ -132,9 +173,12 @@ namespace GUI {
         }
         ImGui::EndMainMenuBar();
 
-        if (ImGui::Begin("Front Panel"))
+        auto windowPos = ImGui::GetMainViewport()->Pos;
+        ImGui::SetNextWindowPos({ windowPos.x, windowPos.y + ImGui::GetFrameHeight() }, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImGui::GetMainViewport()->Size, ImGuiCond_Always);
+        if (ImGui::Begin("Front Panel", nullptr, ImGuiWindowFlags_NoDecoration))
         {
-            static bool switch0 = false;
+            MiddleLEDsGroup();
             ToggleButtonsGroup(16, s_switchLabels, s_switches);
         }
         ImGui::End();

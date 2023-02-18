@@ -22,7 +22,7 @@ int main()
     }
 
     glfwWindowHint(GLFW_RESIZABLE, 0);
-    GLFWwindow* window = glfwCreateWindow(400, 300, "Altair 8800 Emulator by Kostu96", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(800, 300, "Altair 8800 Emulator by Kostu96", nullptr, nullptr);
     if (!window) {
         std::cerr << "GLFW window creation failed!\n";
         std::terminate();
