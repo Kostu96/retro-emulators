@@ -74,7 +74,10 @@ void Timer::store8(u16 address, u8 data)
 	case 0: m_divider = 0; return;
 	case 1: m_counter = data; m_wasCounterWritten = true; return;
 	case 2: m_modulo = data; return;
-	case 3: m_control.byte = data & 0x7; return;
+	case 3:
+		m_control.byte &= 0xF8;
+		m_control.byte |= data & 0x07;
+		return;
 	}
 
 	assert(false);

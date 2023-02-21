@@ -4,6 +4,7 @@
 
 #include <ccl/non_copyable.h>
 
+#include <functional>
 #include <span>
 
 namespace glw {
@@ -20,6 +21,9 @@ public:
 	explicit PPU(u8& interruptFlagsRef);
 	~PPU();
 
+	using ReadMemoryCallback = std::function<u8(u16)>;
+	void mapReadExternalMemoryCallback(ReadMemoryCallback callback) { loadExternal8 = callback; }
+
 	void reset();
 	void clock();
 
@@ -30,6 +34,7 @@ public:
 	void storeOAM8(u16 address, u8 data);
 	u8 load8(u16 address) const;
 	void store8(u16 address, u8 data);
+	ReadMemoryCallback loadExternal8 = nullptr;
 
 	std::span<u32> getScreenPixels() const { return { m_screenPixels, LCD_WIDTH * LCD_HEIGHT }; }
 
@@ -117,6 +122,13 @@ private:
 
 	u32* m_screenPixels;
 	u8& m_interruptFlagsRef;
+
+	// DMA
+	void handleDMA();
+
+	bool m_DMARequested;
+	bool m_DMAInProgress;
+	u8 m_DMAAddress;
 
 	// debug:
 	void redrawTileData(u8 xOffset = 0, u8 yOffset = 0, u8 width = 16, u8 height = 24);

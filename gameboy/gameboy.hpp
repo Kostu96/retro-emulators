@@ -37,7 +37,8 @@ PRIVATE:
     Cartridge m_cartridge;
     u8* m_WRAM;
     u8 m_joypad;
-    u8 m_serial[2];
+    u8 m_serialData;
+    u8 m_serialControl;
     Timer m_timer;
     u8 m_interruptFlags;
     APU m_APU;

@@ -56,6 +56,10 @@ void PPU::reset()
     m_pixelFIFOPaletteH = 0;
 
     m_currentPixelX = 0;
+
+    // DMA
+    m_DMARequested = false;
+    m_DMAInProgress = false;
 }
 
 void PPU::clock()
@@ -158,6 +162,8 @@ void PPU::clock()
         }
         break;
     }
+
+    handleDMA();
 }
 
 void PPU::clearVRAM()
@@ -187,12 +193,13 @@ void PPU::storeVRAM8(u16 address, u8 data)
 
 u8 PPU::loadOAM8(u16 address) const
 {
-    return m_OAM.bytes[address];
+    return m_DMAInProgress ? 0xFF : m_OAM.bytes[address];
 }
 
 void PPU::storeOAM8(u16 address, u8 data)
 {
-    m_OAM.bytes[address] = data;
+    if (!m_DMAInProgress)
+        m_OAM.bytes[address] = data;
 }
 
 u8 PPU::load8(u16 address) const
@@ -205,7 +212,7 @@ u8 PPU::load8(u16 address) const
     case 0x3: return m_SCX;
     case 0x4: return m_LY;
     case 0x5: return m_LYC;
-
+    case 0x6: return m_DMAAddress;
     case 0x7: return m_BGpaletteData;
     case 0x8: return m_OBJpalette0Data;
     case 0x9: return m_OBJpalette1Data;
@@ -223,14 +230,18 @@ void PPU::store8(u16 address, u8 data)
     {
     case 0x0: m_LCDControl.byte = data; return;
     case 0x1:
-        m_LCDStatus.byte &= 0x07;
-        m_LCDStatus.byte |= data & 0xF8;
+        m_LCDStatus.byte &= 0x87;
+        m_LCDStatus.byte |= data & 0x78;
         return;
     case 0x2: m_SCY = data; return;
     case 0x3: m_SCX = data; return;
 
     case 0x5: m_LYC = data; return;
-    case 0x6: return; // TODO: OAM transfer
+    case 0x6: {
+        m_DMAAddress = data;
+        m_DMARequested = true;
+        return;
+    }
     case 0x7:
         m_BGpaletteData = data;
         s_bgColorMap[0] = (m_BGpaletteData >> 0) & 0b11;
@@ -249,6 +260,30 @@ void PPU::store8(u16 address, u8 data)
 
     std::cerr << "Unexpected write to PPU - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address;
     std::cerr << ':' << std::hex << std::setw(2) << (u16)data << '\n';
+}
+
+void PPU::handleDMA()
+{
+    static u8 ticks = 0;
+    if (ticks > 0)
+    ticks--;
+
+    if (m_DMARequested)
+    {
+        m_DMARequested = false;
+        ticks = 162;
+    }
+
+    if (ticks == 160) m_DMAInProgress = true;
+    if (ticks == 0) m_DMAInProgress = false;
+
+    if (m_DMAInProgress)
+    {
+        u8 index = 160 - ticks;
+        u16 srcAddress = (m_DMAAddress << 8) | index;
+        m_OAM.bytes[index] = loadExternal8(srcAddress);
+
+    }
 }
 
 void PPU::redrawTileData(u8 xOffset, u8 yOffset, u8 width, u8 height)

@@ -20,4 +20,6 @@ if %errorlevel% neq 0 set error=%errorlevel%
 
 popd
 
+if %error% equ 0 (echo All tests passed.) else (echo Some tests failed.)
+
 exit /B %error%

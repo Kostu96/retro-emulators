@@ -69,6 +69,11 @@ INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,
 	testing::Values(
 		"boot/boot_div-dmgABCmgb",
 		"boot/boot_regs-dmgABC",
+		"dma/basic",
+		"dma/oam_dma_restart",
+		//"dma/oam_dma_start",
+		"dma/oam_dma_timing",
+		"dma/reg_read",
 		"timer/div_write",
 		"timer/rapid_toggle",
 		"timer/tim00",
@@ -79,6 +84,13 @@ INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,
 		"timer/tim10_div_trigger",
 		"timer/tim11",
 		"timer/tim11_div_trigger",
-		"timer/tima_reload"
+		"timer/tima_reload",
+		"timing/div_timing",
+		"timing/ei_timing",
+		"daa",
+		"ei_sequence",
+		"mem_oam",
+		"reg_f",
+		"unused_hwio-GS"
 	)
 );

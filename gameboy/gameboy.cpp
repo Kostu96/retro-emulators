@@ -37,6 +37,8 @@ Gameboy::Gameboy() :
     m_CPU.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
     m_CPU.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });
 
+    m_PPU.mapReadExternalMemoryCallback([this](u16 address) { return memoryRead(address); });
+
     //std::ifstream file{ "DMG_ROM.bin", std::ios_base::binary };
     //assert(file.is_open() && "Cannot open bootloader file");
     //file.read((char*)m_bootloader, 256);
@@ -65,8 +67,6 @@ void Gameboy::reset()
     std::memset(m_WRAM, 0, 0x2000);
     m_PPU.clearVRAM();
 
-    m_unmapBootloader = 1;
-    m_interruptEnables = 0;
 
     m_CPU.reset();
     m_CPU.setAF(0x01B0);
@@ -77,12 +77,14 @@ void Gameboy::reset()
     m_CPU.setPC(0x0100);
 
     m_joypad = 0xCF;
-    m_serial[0] = 0;
-    m_serial[1] = 0x7E;
+    m_serialData = 0;
+    m_serialControl = 0x7E;
     m_timer.reset();
     m_interruptFlags = 0xE1;
     m_APU.reset();
     m_PPU.reset();
+    m_unmapBootloader = 0xFF;
+    m_interruptEnables = 0xE0;
 
     m_serialBuffer[0] = '\0';
     m_serialBufferSize = 0;
@@ -179,14 +181,19 @@ u8 Gameboy::memoryRead(u16 address)
 {
     u16 offset;
     if (ROM_RANGE.contains(address, offset)) {
-        if (m_unmapBootloader == 0 && offset < 0x100) return m_bootloader[offset];
+        if ((m_unmapBootloader & 1) == 0 && offset < 0x100) return m_bootloader[offset];
         return m_cartridge.load8(offset);
     }
 
+    if (VRAM_RANGE.contains(address, offset)) return m_PPU.loadVRAM8(offset);
     if (EXTRAM_RANGE.contains(address, offset)) return m_cartridge.load8ExtRAM(offset);
     if (WRAM_RANGE.contains(address, offset)) return m_WRAM[offset];
+    if (OAM_RANGE.contains(address, offset)) return m_PPU.loadOAM8(offset);
     if (address == 0xFF00) return m_joypad;
-    if (SERIAL_RANGE.contains(address, offset)) return m_serial[offset];
+    if (SERIAL_RANGE.contains(address, offset)) {
+        if (offset == 0) return m_serialData;
+        if (offset == 1) return m_serialControl;
+    }
     if (TIMER_RANGE.contains(address, offset)) return m_timer.load8(offset);
     if (APU_RANGE.contains(address, offset)) return m_APU.load8(offset);
     if (PPU_RANGE.contains(address, offset)) return m_PPU.load8(offset);
@@ -216,12 +223,17 @@ void Gameboy::memoryWrite(u16 address, u8 data)
     }
 
     if (SERIAL_RANGE.contains(address, offset)) {
-        m_serial[offset] = data;
-        if (offset == 1 && data == 0x81) {
-            m_serialBuffer[m_serialBufferSize++] = m_serial[0];
+        if (offset == 0) m_serialData = data;
+        else if (offset == 1) {
+            m_serialControl &= 0x7E;
+            m_serialControl |= data & 0x81;
+        }
+
+        if (m_serialControl == 0xFF) {
+            m_serialBuffer[m_serialBufferSize++] = m_serialData;
             m_serialBuffer[m_serialBufferSize] = '\0';
             m_serialBufferSize %= 64;
-            m_serial[1] = 0;
+            m_serialControl &= 0x7F;
         }
         return;
     }
@@ -231,12 +243,20 @@ void Gameboy::memoryWrite(u16 address, u8 data)
     if (UNUSED2_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
     if (PPU_RANGE.contains(address, offset)) { m_PPU.store8(offset, data); return; }
     if (address == 0xFF0F) {
-        m_interruptFlags = data & 0x1F;
-        return; }
-    if (address == 0xFF50 && m_unmapBootloader == 0) { m_unmapBootloader = data; return; }
+        m_interruptFlags &= 0xE0;
+        m_interruptFlags |= data & 0x1F;
+        return;
+    }
+    if (address == 0xFF50 && (m_unmapBootloader & 1) == 0) { m_unmapBootloader |= data & 1; return; }
     if (UNUSED3_RANGE.contains(address, offset)) { return; } // Ignore writes to unused memory
     if (HRAM_RANGE.contains(address, offset)) { m_HRAM[offset] = data; return; }
-    if (address == 0xFFFF) { m_interruptEnables = data & 0x1F; return; }
+    if (address == 0xFFFF) { m_interruptEnables = data; return; }
+
+    if (address >= 0xFF00) {
+        std::cerr << "Unexpected IO region write - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address;
+        std::cerr << ':' << std::hex << std::setw(2) << (u16)data << '\n';
+        return;
+    }
 
     assert(false && "Unhandled memory write.");
 }

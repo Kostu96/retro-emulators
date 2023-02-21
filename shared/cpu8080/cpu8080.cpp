@@ -344,7 +344,7 @@ void CPU8080::standardInstruction(u8 opcode)
             m_state.PC += 2;
             break;
         }
-    } break; 
+    } break;
     case 0x23: m_state.HL++; break;
     case 0x24: INCR(m_state.H); break;
     case 0x25: DECR(m_state.H); break;
