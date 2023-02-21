@@ -1,8 +1,8 @@
-#include "cpu8080_gameboy_mode_fixture.hpp"
+#include "cpu_x80_gameboy_mode_fixture.hpp"
 
-using CPU8080GameBoyModeArithmeticTests = CPU8080GameBoyModeTests;
+using CPUx80GameBoyModeArithmeticTests = CPUx80GameBoyModeTests;
 
-TEST_F(CPU8080GameBoyModeArithmeticTests, INC_RPTest)
+TEST_F(CPUx80GameBoyModeArithmeticTests, INC_RPTest)
 {
 	rom[0x0] = 0x03; // INC BC
 	rom[0x1] = 0x13; // INC DE
@@ -27,7 +27,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, INC_RPTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeArithmeticTests, DEC_RPTest)
+TEST_F(CPUx80GameBoyModeArithmeticTests, DEC_RPTest)
 {
 	rom[0x0] = 0x0B; // DEC BC
 	rom[0x1] = 0x1B; // DEC DE
@@ -52,7 +52,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, DEC_RPTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_BCTest)
+TEST_F(CPUx80GameBoyModeArithmeticTests, ADD_HL_BCTest)
 {
 	rom[0x0] = 0x09; // ADD HL, BC
 
@@ -70,7 +70,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_BCTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_DETest)
+TEST_F(CPUx80GameBoyModeArithmeticTests, ADD_HL_DETest)
 {
 	rom[0x0] = 0x19; // ADD HL, DE
 
@@ -88,7 +88,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_DETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_HLTest)
+TEST_F(CPUx80GameBoyModeArithmeticTests, ADD_HL_HLTest)
 {
 	rom[0x0] = 0x29; // ADD HL, HL
 
@@ -105,7 +105,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_SPTest)
+TEST_F(CPUx80GameBoyModeArithmeticTests, ADD_HL_SPTest)
 {
 	rom[0x0] = 0x39; // ADD HL, SP
 
@@ -123,7 +123,7 @@ TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_HL_SPTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeArithmeticTests, ADD_SP_Imm8Test)
+TEST_F(CPUx80GameBoyModeArithmeticTests, ADD_SP_Imm8Test)
 {
 	rom[0x0] = 0xE8;
 	rom[0x1] = 0x42; // ADD SP, 0x42 (66)

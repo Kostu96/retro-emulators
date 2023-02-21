@@ -1,9 +1,9 @@
 #pragma once
-#include "cpu8080.hpp"
+#include "cpu_x80.hpp"
 
 #include <gtest/gtest.h>
 
-struct CPU8080GameBoyModeTests :
+struct CPUx80GameBoyModeTests :
 	public testing::Test
 {
 	static constexpr u16 ROM_SIZE = 0x10;
@@ -12,10 +12,10 @@ struct CPU8080GameBoyModeTests :
 	u8 rom[ROM_SIZE]{};
 	u8 ram[RAM_SIZE]{};
 
-	CPU8080 CPU;
+	CPUx80 CPU;
 
-	CPU8080GameBoyModeTests() :
-		CPU{ CPU8080::Mode::GameBoy }
+	CPUx80GameBoyModeTests() :
+		CPU{ CPUx80Mode::GameBoy }
 	{
 		CPU.mapReadMemoryCallback([&](u16 address)
 			{
@@ -47,14 +47,14 @@ struct CPU8080GameBoyModeTests :
 		CPU.m_state.F.byte = 0;
 	}
 
-	CPU8080::State captureCPUState()
+	CPUx80::State captureCPUState()
 	{
-		CPU8080::State state;
-		std::memcpy(&state, &CPU.m_state, sizeof(CPU8080::State));
+		CPUx80::State state;
+		std::memcpy(&state, &CPU.m_state, sizeof(CPUx80::State));
 		return state;
 	}
 
-	void compareCPUStates(const CPU8080::State& state1, const CPU8080::State& state2)
+	void compareCPUStates(const CPUx80::State& state1, const CPUx80::State& state2)
 	{
 		EXPECT_EQ(state1.PC, state2.PC);
 		EXPECT_EQ(state1.SP, state2.SP);

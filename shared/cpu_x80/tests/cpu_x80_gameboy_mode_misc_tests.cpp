@@ -1,8 +1,8 @@
-#include "cpu8080_gameboy_mode_fixture.hpp"
+#include "cpu_x80_gameboy_mode_fixture.hpp"
 
-using CPU8080GameBoyModeMiscTests = CPU8080GameBoyModeTests;
+using CPUx80GameBoyModeMiscTests = CPUx80GameBoyModeTests;
 
-TEST_F(CPU8080GameBoyModeMiscTests, NOPTest)
+TEST_F(CPUx80GameBoyModeMiscTests, NOPTest)
 {
 	rom[0x0] = 0x00; // NOP
 

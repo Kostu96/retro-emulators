@@ -1,6 +1,6 @@
 #pragma once
 #include "../../shared/emulator_core.hpp"
-#include "cpu8080.hpp"
+#include "cpu_x80.hpp"
 #include "disasm8080.hpp"
 
 class InvadersCore :
@@ -32,7 +32,7 @@ private:
     const size_t m_memorySizes[1] = { 0x4000 };
     const int m_memoryColsNumbers[1] = { 16 };
 
-    CPU8080 m_cpu;
+    CPUx80 m_cpu;
 
     const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;

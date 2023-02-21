@@ -1,26 +1,29 @@
 #pragma once
 #include "../type_aliases.hpp"
 
+#include <ccl/non_copyable.h>
+
 #include <functional>
 #include <vector>
 
-#if defined(CPU8080_TESTS)
+#if defined(CPUx80_TESTS)
 #define PRIVATE public
 #else
 #define PRIVATE private
 #endif
 
-class CPU8080
+enum class CPUx80Mode : u8
+{
+    Intel8080,
+    Intel8085,
+    Z80,
+    GameBoy
+};
+
+class CPUx80 :
+    public ccl::NonCopyable
 {
 public:
-    enum class Mode : u8
-    {
-        Intel8080,
-        Intel8085,
-        Z80,
-        GameBoy
-    };
-
     using ReadMemoryCallback = std::function<u8(u16)>;
     using WriteMemoryCallback = std::function<void(u16, u8)>;
     void mapReadMemoryCallback(ReadMemoryCallback callback) { load8 = callback; }
@@ -46,9 +49,7 @@ public:
     bool isHalted() const { return m_state.IsHalted; }
     bool isHandlingInterrupt() const { return m_interruptRequested; }
 
-    explicit CPU8080(Mode mode) : m_mode{ mode } {}
-    CPU8080(const CPU8080&) = delete;
-    CPU8080& operator=(const CPU8080&) = delete;
+    explicit CPUx80(CPUx80Mode mode) : m_mode{ mode } {}
 PRIVATE:
     union Flags {
         struct {
@@ -183,7 +184,7 @@ PRIVATE:
 
     State m_state;
 
-    const Mode m_mode;
+    const CPUx80Mode m_mode;
     bool m_prefixMode;
     bool m_interruptRequested;
     u8 m_interruptVector;

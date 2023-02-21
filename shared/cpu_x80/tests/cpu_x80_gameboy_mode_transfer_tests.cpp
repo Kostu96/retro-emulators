@@ -1,8 +1,8 @@
-#include "cpu8080_gameboy_mode_fixture.hpp"
+#include "cpu_x80_gameboy_mode_fixture.hpp"
 
-using CPU8080GameBoyModeTransferTests = CPU8080GameBoyModeTests;
+using CPUx80GameBoyModeTransferTests = CPUx80GameBoyModeTests;
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_RP_Imm16Test)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_RP_Imm16Test)
 {
 	rom[0x0] = 0x01;
 	rom[0x1] = 0x23;
@@ -31,7 +31,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_RP_Imm16Test)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_RP_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_RP_ATest)
 {
 	rom[0x0] = 0x02; // LD (BC), A
 	rom[0x1] = 0x12; // LD (DE), A
@@ -57,7 +57,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_RP_ATest)
 	EXPECT_EQ(ram[3], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_R_Imm8Test)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_R_Imm8Test)
 {
 	rom[0x0] = 0x06;
 	rom[0x1] = 0x01; // LD B, 0x01
@@ -105,7 +105,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_R_Imm8Test)
 	EXPECT_EQ(ram[0], 0xEF);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_Imm16_SPTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_Imm16_SPTest)
 {
 	rom[0x0] = 0x08;
 	rom[0x1] = 0x16;
@@ -125,7 +125,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_Imm16_SPTest)
 	EXPECT_EQ(ram[0x17], 0xDE);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_RPTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_RPTest)
 {
 	rom[0x0] = 0x0A; // LD A, (BC)
 	rom[0x1] = 0x1A; // LD A, (DE)
@@ -184,7 +184,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_RPTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_BTest)
 {
 	rom[0x0] = 0x40; // LD B, B
 
@@ -198,7 +198,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_CTest)
 {
 	rom[0x0] = 0x41; // LD B, C
 	CPU.m_state.C = 0x42;
@@ -214,7 +214,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_DTest)
 {
 	rom[0x0] = 0x42; // LD B, D
 	CPU.m_state.D = 0x42;
@@ -230,7 +230,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_ETest)
 {
 	rom[0x0] = 0x43; // LD B, E
 	CPU.m_state.E = 0x42;
@@ -246,7 +246,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_HTest)
 {
 	rom[0x0] = 0x44; // LD B, H
 	CPU.m_state.H = 0x42;
@@ -262,7 +262,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_LTest)
 {
 	rom[0x0] = 0x45; // LD B, L
 	CPU.m_state.L = 0x42;
@@ -278,7 +278,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_HLTest)
 {
 	rom[0x0] = 0x46; // LD B, (HL)
 	ram[0] = 0x42;
@@ -295,7 +295,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_B_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_B_ATest)
 {
 	rom[0x0] = 0x47; // LD B, A
 	CPU.m_state.A = 0x42;
@@ -311,7 +311,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_B_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_BTest)
 {
 	rom[0x0] = 0x48; // LD C, B
 	CPU.m_state.B = 0x42;
@@ -327,7 +327,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_CTest)
 {
 	rom[0x0] = 0x49; // LD C, C
 
@@ -341,7 +341,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_DTest)
 {
 	rom[0x0] = 0x4A; // LD C, D
 	CPU.m_state.D = 0x42;
@@ -357,7 +357,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_ETest)
 {
 	rom[0x0] = 0x4B; // LD C, E
 	CPU.m_state.E = 0x42;
@@ -373,7 +373,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_HTest)
 {
 	rom[0x0] = 0x4C; // LD C, H
 	CPU.m_state.H = 0x42;
@@ -389,7 +389,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_LTest)
 {
 	rom[0x0] = 0x4D; // LD C, L
 	CPU.m_state.L = 0x42;
@@ -405,7 +405,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_HLTest)
 {
 	rom[0x0] = 0x4E; // LD C, (HL)
 	ram[0] = 0x42;
@@ -422,7 +422,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_C_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_C_ATest)
 {
 	rom[0x0] = 0x4F; // LD C, A
 	CPU.m_state.A = 0x42;
@@ -438,7 +438,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_C_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_BTest)
 {
 	rom[0x0] = 0x50; // LD D, B
 	CPU.m_state.B = 0x42;
@@ -454,7 +454,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_CTest)
 {
 	rom[0x0] = 0x51; // LD D, C
 	CPU.m_state.C = 0x42;
@@ -470,7 +470,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_DTest)
 {
 	rom[0x0] = 0x52; // LD D, D
 
@@ -484,7 +484,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_ETest)
 {
 	rom[0x0] = 0x53; // LD D, E
 	CPU.m_state.E = 0x42;
@@ -500,7 +500,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_HTest)
 {
 	rom[0x0] = 0x54; // LD D, H
 	CPU.m_state.H = 0x42;
@@ -516,7 +516,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_LTest)
 {
 	rom[0x0] = 0x55; // LD D, L
 	CPU.m_state.L = 0x42;
@@ -532,7 +532,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_HLTest)
 {
 	rom[0x0] = 0x56; // LD D, (HL)
 	ram[0] = 0x42;
@@ -549,7 +549,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_D_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_D_ATest)
 {
 	rom[0x0] = 0x57; // LD D, A
 	CPU.m_state.A = 0x42;
@@ -565,7 +565,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_D_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_BTest)
 {
 	rom[0x0] = 0x58; // LD E, B
 	CPU.m_state.B = 0x42;
@@ -581,7 +581,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_CTest)
 {
 	rom[0x0] = 0x59; // LD E, C
 	CPU.m_state.C = 0x42;
@@ -597,7 +597,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_DTest)
 {
 	rom[0x0] = 0x5A; // LD E, D
 	CPU.m_state.D = 0x42;
@@ -613,7 +613,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_ETest)
 {
 	rom[0x0] = 0x5B; // LD E, E
 
@@ -627,7 +627,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_HTest)
 {
 	rom[0x0] = 0x5C; // LD E, H
 	CPU.m_state.H = 0x42;
@@ -643,7 +643,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_LTest)
 {
 	rom[0x0] = 0x5D; // LD E, L
 	CPU.m_state.L = 0x42;
@@ -659,7 +659,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_HLTest)
 {
 	rom[0x0] = 0x5E; // LD E, (HL)
 	ram[0] = 0x42;
@@ -676,7 +676,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_E_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_E_ATest)
 {
 	rom[0x0] = 0x5F; // LD E, A
 	CPU.m_state.A = 0x42;
@@ -692,7 +692,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_E_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_BTest)
 {
 	rom[0x0] = 0x60; // LD H, B
 	CPU.m_state.B = 0x42;
@@ -708,7 +708,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_CTest)
 {
 	rom[0x0] = 0x61; // LD H, C
 	CPU.m_state.C = 0x42;
@@ -724,7 +724,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_DTest)
 {
 	rom[0x0] = 0x62; // LD H, D
 	CPU.m_state.D = 0x42;
@@ -740,7 +740,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_ETest)
 {
 	rom[0x0] = 0x63; // LD H, E
 	CPU.m_state.E = 0x42;
@@ -756,7 +756,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_HTest)
 {
 	rom[0x0] = 0x64; // LD H, H
 
@@ -770,7 +770,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_LTest)
 {
 	rom[0x0] = 0x65; // LD H, L
 	CPU.m_state.L = 0x42;
@@ -786,7 +786,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_HLTest)
 {
 	rom[0x0] = 0x66; // LD H, (HL)
 	ram[0] = 0x42;
@@ -803,7 +803,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_H_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_H_ATest)
 {
 	rom[0x0] = 0x67; // LD H, A
 	CPU.m_state.A = 0x42;
@@ -819,7 +819,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_H_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_BTest)
 {
 	rom[0x0] = 0x68; // LD L, B
 	CPU.m_state.B = 0x42;
@@ -835,7 +835,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_CTest)
 {
 	rom[0x0] = 0x69; // LD L, C
 	CPU.m_state.C = 0x42;
@@ -851,7 +851,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_DTest)
 {
 	rom[0x0] = 0x6A; // LD L, D
 	CPU.m_state.D = 0x42;
@@ -867,7 +867,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_ETest)
 {
 	rom[0x0] = 0x6B; // LD L, E
 	CPU.m_state.E = 0x42;
@@ -883,7 +883,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_HTest)
 {
 	rom[0x0] = 0x6C; // LD L, H
 	CPU.m_state.H = 0x42;
@@ -899,7 +899,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_LTest)
 {
 	rom[0x0] = 0x6D; // LD L, L
 
@@ -913,7 +913,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_HLTest)
 {
 	rom[0x0] = 0x6E; // LD L, (HL)
 	ram[0] = 0x42;
@@ -930,7 +930,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_L_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_L_ATest)
 {
 	rom[0x0] = 0x6F; // LD L, A
 	CPU.m_state.A = 0x42;
@@ -946,7 +946,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_L_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_BTest)
 {
 	rom[0x0] = 0x70; // LD (HL), B
 	CPU.m_state.B = 0x42;
@@ -963,7 +963,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_BTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_CTest)
 {
 	rom[0x0] = 0x71; // LD (HL), C
 	CPU.m_state.C = 0x42;
@@ -980,7 +980,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_CTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_DTest)
 {
 	rom[0x0] = 0x72; // LD (HL), D
 	CPU.m_state.D = 0x42;
@@ -997,7 +997,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_DTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_ETest)
 {
 	rom[0x0] = 0x73; // LD (HL), E
 	CPU.m_state.E = 0x42;
@@ -1014,7 +1014,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_ETest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_HTest)
 {
 	rom[0x0] = 0x74; // LD (HL), H
 	CPU.m_state.HL = 0x8000;
@@ -1030,7 +1030,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_HTest)
 	EXPECT_EQ(ram[0], 0x80);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_LTest)
 {
 	rom[0x0] = 0x75; // LD (HL), L
 	CPU.m_state.HL = 0x8002;
@@ -1046,7 +1046,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_LTest)
 	EXPECT_EQ(ram[0x2], 0x02);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_ATest)
 {
 	rom[0x0] = 0x77; // LD (HL), A
 	CPU.m_state.A = 0x42;
@@ -1063,7 +1063,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_ATest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_BTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_BTest)
 {
 	rom[0x0] = 0x78; // LD A, B
 	CPU.m_state.B = 0x42;
@@ -1079,7 +1079,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_CTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_CTest)
 {
 	rom[0x0] = 0x79; // LD A, C
 	CPU.m_state.C = 0x42;
@@ -1095,7 +1095,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_DTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_DTest)
 {
 	rom[0x0] = 0x7A; // LD A, D
 	CPU.m_state.D = 0x42;
@@ -1111,7 +1111,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_ETest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_ETest)
 {
 	rom[0x0] = 0x7B; // LD A, E
 	CPU.m_state.E = 0x42;
@@ -1127,7 +1127,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_HTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_HTest)
 {
 	rom[0x0] = 0x7C; // LD A, H
 	CPU.m_state.H = 0x42;
@@ -1143,7 +1143,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_LTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_LTest)
 {
 	rom[0x0] = 0x7D; // LD A, L
 	CPU.m_state.L = 0x42;
@@ -1159,7 +1159,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_HLTest)
 {
 	rom[0x0] = 0x7E; // LD A, (HL)
 	ram[0] = 0x42;
@@ -1176,7 +1176,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_ATest)
 {
 	rom[0x0] = 0x7F; // LD A, A
 
@@ -1190,7 +1190,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, POP_RPTest)
+TEST_F(CPUx80GameBoyModeTransferTests, POP_RPTest)
 {
 	rom[0x0] = 0xC1; // POP BC
 	rom[0x1] = 0xD1; // POP DE
@@ -1223,7 +1223,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, POP_RPTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, PUSH_RPTest)
+TEST_F(CPUx80GameBoyModeTransferTests, PUSH_RPTest)
 {
 	rom[0x0] = 0xC5; // PUSH BC
 	rom[0x1] = 0xD5; // PUSH DE
@@ -1255,7 +1255,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, PUSH_RPTest)
 	EXPECT_EQ(ram[0x18], 0xEF);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_Imm8Indirect_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_Imm8Indirect_ATest)
 {
 	rom[0x0] = 0xE0;
 	rom[0x1] = 0x02; // LDH 0x02, A
@@ -1270,7 +1270,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_Imm8Indirect_ATest)
 	EXPECT_EQ(ram[0x2], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_CIndirect_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_CIndirect_ATest)
 {
 	rom[0x0] = 0xE2; // LD (C), A
 	CPU.m_state.C = 0x02;
@@ -1285,7 +1285,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_CIndirect_ATest)
 	EXPECT_EQ(ram[0x2], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_Imm16_ATest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_Imm16_ATest)
 {
 	rom[0x0] = 0xEA;
 	rom[0x1] = 0x02;
@@ -1301,7 +1301,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_Imm16_ATest)
 	EXPECT_EQ(ram[0x2], 0x42);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_Imm8IndirectTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_Imm8IndirectTest)
 {
 	rom[0x0] = 0xF0;
 	rom[0x1] = 0x02; // LD A, 0x02
@@ -1316,7 +1316,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_Imm8IndirectTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_CIndirectTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_CIndirectTest)
 {
 	rom[0x0] = 0xF2; // LD A, (C)
 	CPU.m_state.C = 0x02;
@@ -1331,7 +1331,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_A_CIndirectTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_SPPlusImm8Test)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_HL_SPPlusImm8Test)
 {
 	rom[0x0] = 0xF8;
 	rom[0x1] = 0x42; // LD HL, SP + 0x42 (66)
@@ -1365,7 +1365,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_HL_SPPlusImm8Test)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_SP_HLTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_SP_HLTest)
 {
 	rom[0x0] = 0xF9; // LD SP, HL
 
@@ -1380,7 +1380,7 @@ TEST_F(CPU8080GameBoyModeTransferTests, LD_SP_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeTransferTests, LD_A_Imm16IndirectTest)
+TEST_F(CPUx80GameBoyModeTransferTests, LD_A_Imm16IndirectTest)
 {
 	rom[0x0] = 0xFA;
 	rom[0x1] = 0x02;

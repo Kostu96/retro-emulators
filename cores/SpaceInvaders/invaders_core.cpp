@@ -135,7 +135,7 @@ void InvadersCore::update(double dt)
 }
 
 InvadersCore::InvadersCore() :
-    m_cpu{ CPU8080::Mode::Intel8080 },
+    m_cpu{ CPUx80Mode::Intel8080 },
     m_emulatorSettings{ 256, 224, 256 * 2, 224 * 2, "Space Invaders" }
 {
 #ifdef CPU_DIAG

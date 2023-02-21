@@ -1,8 +1,8 @@
-#include "cpu8080.hpp"
+#include "cpu_x80.hpp"
 
 #include <gtest/gtest.h>
 
-struct CPU8080ModeI8080Tests :
+struct CPUx80ModeI8080Tests :
 	public testing::Test
 {
 	static constexpr u16 ROM_SIZE = 0x10;
@@ -11,11 +11,11 @@ struct CPU8080ModeI8080Tests :
 	u8 rom[ROM_SIZE]{};
 	u8 ram[RAM_SIZE]{};
 
-	CPU8080 CPU;
-	CPU8080::State referenceCPUState;
+	CPUx80 CPU;
+	CPUx80::State referenceCPUState;
 
-	CPU8080ModeI8080Tests() :
-		CPU{ CPU8080::Mode::Intel8080 }
+	CPUx80ModeI8080Tests() :
+		CPU{ CPUx80Mode::Intel8080 }
 	{
 		CPU.mapReadMemoryCallback([&](u16 address)
 			{
@@ -34,7 +34,7 @@ struct CPU8080ModeI8080Tests :
 	{
 		CPU.reset();
 
-		std::memcpy(&referenceCPUState, &CPU.m_state, sizeof(CPU8080::State));
+		std::memcpy(&referenceCPUState, &CPU.m_state, sizeof(CPUx80::State));
 	}
 
 	void TearDown() override
@@ -48,7 +48,7 @@ struct CPU8080ModeI8080Tests :
 	}
 };
 
-TEST_F(CPU8080ModeI8080Tests, NOPTest)
+TEST_F(CPUx80ModeI8080Tests, NOPTest)
 {
 	rom[0x0] = 0x00; // NOP
 
@@ -59,7 +59,7 @@ TEST_F(CPU8080ModeI8080Tests, NOPTest)
 	referenceCPUState.PC = 0x0001;
 }
 
-TEST_F(CPU8080ModeI8080Tests, JMPTest)
+TEST_F(CPUx80ModeI8080Tests, JMPTest)
 {
 	rom[0x0] = 0xC3;
 	rom[0x1] = 0xAD;
@@ -72,7 +72,7 @@ TEST_F(CPU8080ModeI8080Tests, JMPTest)
 	referenceCPUState.PC = 0xDEAD;
 }
 
-TEST_F(CPU8080ModeI8080Tests, LXITest)
+TEST_F(CPUx80ModeI8080Tests, LXITest)
 {
 	rom[0x0] = 0x01;
 	rom[0x1] = 0x23;
@@ -101,7 +101,7 @@ TEST_F(CPU8080ModeI8080Tests, LXITest)
 	referenceCPUState.PC = 0x000C;
 }
 
-TEST_F(CPU8080ModeI8080Tests, MVITest)
+TEST_F(CPUx80ModeI8080Tests, MVITest)
 {
 	rom[0x0] = 0x06;
 	rom[0x1] = 0x01; // MVI B, 0x01

@@ -1,5 +1,5 @@
 #pragma once
-#include "cpu8080.hpp"
+#include "cpu_x80.hpp"
 
 #include <ccl/non_copyable.h>
 
@@ -16,6 +16,6 @@ private:
 	u8 memoryRead(u16 address);
 	void memoryWrite(u16 address, u8 data);
 
-	CPU8080 m_CPU;
+	CPUx80 m_CPU;
 	u8* m_RAM;
 };

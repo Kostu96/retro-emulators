@@ -1,8 +1,8 @@
-#include "cpu8080_gameboy_mode_fixture.hpp"
+#include "cpu_x80_gameboy_mode_fixture.hpp"
 
-using CPU8080GameBoyModeJumpsTests = CPU8080GameBoyModeTests;
+using CPUx80GameBoyModeJumpsTests = CPUx80GameBoyModeTests;
 
-TEST_F(CPU8080GameBoyModeJumpsTests, JR_Imm8Test)
+TEST_F(CPUx80GameBoyModeJumpsTests, JR_Imm8Test)
 {
 	rom[0x0] = 0x18;
 	rom[0x1] = 0x42; // JR 0x42 (66)
@@ -30,7 +30,7 @@ TEST_F(CPU8080GameBoyModeJumpsTests, JR_Imm8Test)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeJumpsTests, RETTest)
+TEST_F(CPUx80GameBoyModeJumpsTests, RETTest)
 {
 	rom[0x0] = 0xC9; // RET
 
@@ -50,7 +50,7 @@ TEST_F(CPU8080GameBoyModeJumpsTests, RETTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeJumpsTests, JPTest)
+TEST_F(CPUx80GameBoyModeJumpsTests, JPTest)
 {
 	rom[0x0] = 0xC3;
 	rom[0x1] = 0xAD;
@@ -66,7 +66,7 @@ TEST_F(CPU8080GameBoyModeJumpsTests, JPTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeJumpsTests, JP_HLTest)
+TEST_F(CPUx80GameBoyModeJumpsTests, JP_HLTest)
 {
 	rom[0x0] = 0xE9; // JP (HL)
 
@@ -82,7 +82,7 @@ TEST_F(CPU8080GameBoyModeJumpsTests, JP_HLTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeJumpsTests, RETITest)
+TEST_F(CPUx80GameBoyModeJumpsTests, RETITest)
 {
 	rom[0x0] = 0xD9; // RETI
 
@@ -103,7 +103,7 @@ TEST_F(CPU8080GameBoyModeJumpsTests, RETITest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080GameBoyModeJumpsTests, CALLTest)
+TEST_F(CPUx80GameBoyModeJumpsTests, CALLTest)
 {
 	rom[0x0] = 0xCD;
 	rom[0x1] = 0xAD;
@@ -137,12 +137,12 @@ struct TestParam
 	Condition con;
 };
 
-struct CPU8080GameBoyModeJumpRelConTests :
-	public CPU8080GameBoyModeTests,
+struct CPUx80GameBoyModeJumpRelConTests :
+	public CPUx80GameBoyModeTests,
 	public testing::WithParamInterface<TestParam>
 {};
 
-TEST_P(CPU8080GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
+TEST_P(CPUx80GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 {
 	rom[0x0] = GetParam().opcode;
 	rom[0x1] = 0x42; // JR NZ 0x42 (66)
@@ -195,7 +195,7 @@ TEST_P(CPU8080GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-INSTANTIATE_TEST_SUITE_P(Param, CPU8080GameBoyModeJumpRelConTests,
+INSTANTIATE_TEST_SUITE_P(Param, CPUx80GameBoyModeJumpRelConTests,
 	testing::Values(
 		TestParam{ 0x20, TestParam::Condition::NotZero },
 		TestParam{ 0x28, TestParam::Condition::Zero },
@@ -204,12 +204,12 @@ INSTANTIATE_TEST_SUITE_P(Param, CPU8080GameBoyModeJumpRelConTests,
 	)
 );
 
-struct CPU8080GameBoyModeRetConTests :
-	public CPU8080GameBoyModeTests,
+struct CPUx80GameBoyModeRetConTests :
+	public CPUx80GameBoyModeTests,
 	public testing::WithParamInterface<TestParam>
 {};
 
-TEST_P(CPU8080GameBoyModeRetConTests, RET_CONTest)
+TEST_P(CPUx80GameBoyModeRetConTests, RET_CONTest)
 {
 	rom[0x0] = GetParam().opcode;
 	rom[0x1] = GetParam().opcode;
@@ -257,7 +257,7 @@ TEST_P(CPU8080GameBoyModeRetConTests, RET_CONTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-INSTANTIATE_TEST_SUITE_P(Param, CPU8080GameBoyModeRetConTests,
+INSTANTIATE_TEST_SUITE_P(Param, CPUx80GameBoyModeRetConTests,
 	testing::Values(
 		TestParam{ 0xC0, TestParam::Condition::NotZero },
 		TestParam{ 0xC8, TestParam::Condition::Zero },
@@ -266,12 +266,12 @@ INSTANTIATE_TEST_SUITE_P(Param, CPU8080GameBoyModeRetConTests,
 	)
 );
 
-struct CPU8080GameBoyModeJumpConTests :
-	public CPU8080GameBoyModeTests,
+struct CPUx80GameBoyModeJumpConTests :
+	public CPUx80GameBoyModeTests,
 	public testing::WithParamInterface<TestParam>
 {};
 
-TEST_P(CPU8080GameBoyModeJumpConTests, JP_CONTest)
+TEST_P(CPUx80GameBoyModeJumpConTests, JP_CONTest)
 {
 	rom[0x0] = GetParam().opcode;
 	rom[0x1] = 0xAD;
@@ -316,7 +316,7 @@ TEST_P(CPU8080GameBoyModeJumpConTests, JP_CONTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-INSTANTIATE_TEST_SUITE_P(Param, CPU8080GameBoyModeJumpConTests,
+INSTANTIATE_TEST_SUITE_P(Param, CPUx80GameBoyModeJumpConTests,
 	testing::Values(
 		TestParam{ 0xC2, TestParam::Condition::NotZero },
 		TestParam{ 0xCA, TestParam::Condition::Zero },
@@ -325,12 +325,12 @@ INSTANTIATE_TEST_SUITE_P(Param, CPU8080GameBoyModeJumpConTests,
 	)
 );
 
-struct CPU8080GameBoyModeCallConTests :
-	public CPU8080GameBoyModeTests,
+struct CPUx80GameBoyModeCallConTests :
+	public CPUx80GameBoyModeTests,
 	public testing::WithParamInterface<TestParam>
 {};
 
-TEST_P(CPU8080GameBoyModeCallConTests, CALL_CONTest)
+TEST_P(CPUx80GameBoyModeCallConTests, CALL_CONTest)
 {
 	rom[0x0] = GetParam().opcode;
 	rom[0x1] = 0xAD;
@@ -380,7 +380,7 @@ TEST_P(CPU8080GameBoyModeCallConTests, CALL_CONTest)
 	EXPECT_EQ(ram[1], 0x00);
 }
 
-INSTANTIATE_TEST_SUITE_P(Param, CPU8080GameBoyModeCallConTests,
+INSTANTIATE_TEST_SUITE_P(Param, CPUx80GameBoyModeCallConTests,
 	testing::Values(
 		TestParam{ 0xC4, TestParam::Condition::NotZero },
 		TestParam{ 0xCC, TestParam::Condition::Zero },

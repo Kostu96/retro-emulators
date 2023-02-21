@@ -28,7 +28,7 @@ static std::ofstream s_log;
 #endif
 
 Gameboy::Gameboy() :
-    m_CPU{ CPU8080::Mode::GameBoy },
+    m_CPU{ CPUx80Mode::GameBoy },
     m_PPU{ m_interruptFlags },
     m_WRAM{ new u8[0x2000] },
     m_timer{ m_interruptFlags },
