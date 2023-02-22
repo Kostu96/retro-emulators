@@ -14,6 +14,8 @@
 class Gameboy
 {
 public:
+    using CPU = CPUx80<CPUx80Mode::GameBoy>;
+
     Gameboy();
     ~Gameboy();
 
@@ -32,7 +34,7 @@ PRIVATE:
     u8 memoryRead(u16 address);
     void memoryWrite(u16 address, u8 data);
 
-    CPUx80 m_CPU;
+    CPU m_CPU;
     PPU m_PPU;
     Cartridge m_cartridge;
     u8* m_WRAM;

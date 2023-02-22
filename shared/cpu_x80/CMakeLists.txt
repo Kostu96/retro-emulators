@@ -4,6 +4,9 @@ set(CPUX80_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80.inl
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80_gameboy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80_i8080.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/disasm8080.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/disasm8080.hpp
 )

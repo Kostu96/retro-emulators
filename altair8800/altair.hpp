@@ -16,6 +16,6 @@ private:
 	u8 memoryRead(u16 address);
 	void memoryWrite(u16 address, u8 data);
 
-	CPUx80 m_CPU;
+	CPUx80<CPUx80Mode::Intel8080> m_CPU;
 	u8* m_RAM;
 };

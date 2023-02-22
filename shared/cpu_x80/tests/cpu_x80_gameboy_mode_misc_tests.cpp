@@ -7,7 +7,7 @@ TEST_F(CPUx80GameBoyModeMiscTests, NOPTest)
 	rom[0x0] = 0x00; // NOP
 
 	auto preExecutionState = captureCPUState();
-	CPU.clock();
+	cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;

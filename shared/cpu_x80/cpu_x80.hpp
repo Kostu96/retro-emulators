@@ -3,25 +3,11 @@
 
 #include <ccl/non_copyable.h>
 
+#include <cassert>
 #include <functional>
 #include <vector>
 
-#if defined(CPUx80_TESTS)
-#define PRIVATE public
-#else
-#define PRIVATE private
-#endif
-
-enum class CPUx80Mode : u8
-{
-    Intel8080,
-    Intel8085,
-    Z80,
-    GameBoy
-};
-
-class CPUx80 :
-    public ccl::NonCopyable
+class CPUx80Base
 {
 public:
     using ReadMemoryCallback = std::function<u8(u16)>;
@@ -30,7 +16,6 @@ public:
     void mapWriteMemoryCallback(WriteMemoryCallback callback) { store8 = callback; }
 
     void reset();
-    void clock();
     bool interrupt(u8 vector);
 
     u16 getAF() const { return m_state.AF; }
@@ -48,27 +33,25 @@ public:
     u8 getCyclesLeft() const { return m_cyclesLeft; }
     bool isHalted() const { return m_state.IsHalted; }
     bool isHandlingInterrupt() const { return m_interruptRequested; }
-
-    explicit CPUx80(CPUx80Mode mode) : m_mode{ mode } {}
-PRIVATE:
+protected:
     union Flags {
         struct {
             u8 alwaysZero : 4; // 0-3
-            u8 Carry      : 1; // 4
-            u8 HalfCarry  : 1; // 5
-            u8 Subtract   : 1; // 6
-            u8 Zero       : 1; // 7
+            u8 Carry : 1; // 4
+            u8 HalfCarry : 1; // 5
+            u8 Subtract : 1; // 6
+            u8 Zero : 1; // 7
         } gb;
 
         struct {
-            u8 Carry     : 1; // 0
-            u8 unused1   : 1; // 1
-            u8 Parity    : 1; // 2
-            u8 unused3   : 1; // 3
+            u8 Carry : 1; // 0
+            u8 unused1 : 1; // 1
+            u8 Parity : 1; // 2
+            u8 unused3 : 1; // 3
             u8 HalfCarry : 1; // 4
-            u8 unused5   : 1; // 5
-            u8 Sign      : 1; // 6
-            u8 Zero      : 1; // 7
+            u8 unused5 : 1; // 5
+            u8 Sign : 1; // 6
+            u8 Zero : 1; // 7
         } i8080;
 
         u8 byte;
@@ -108,24 +91,58 @@ PRIVATE:
         bool IsHalted;
     };
 
+    CPUx80Base() = default;
+    virtual ~CPUx80Base() = default;
+
+    void add8(u8 value, u8 carry, u16& result, u8& result4bit);
+    void add16(u16 value, u32& result, u16& result12bit);
+    void subtract(u8 value, u8 carry, u16& result, u8& result4bit);
+    void compare(u8 value, u16& result, u8& result4bit);
+
+    ReadMemoryCallback load8 = nullptr;
+    WriteMemoryCallback store8 = nullptr;
+    State m_state;
+    u8 m_interruptVector;
+    bool m_interruptRequested;
+    bool m_prefixMode;
+    bool m_conditionalTaken;
+    bool m_EIRequested;
+    u8 m_cyclesLeft;
+};
+
+enum class CPUx80Mode : u8
+{
+    Intel8080,
+    Z80,
+    GameBoy
+};
+
+template <CPUx80Mode Mode>
+class CPUx80 :
+    public CPUx80Base,
+    public ccl::NonCopyable
+{
+public:
+    void clock();
+
+    explicit CPUx80(CPUx80Mode mode) : m_mode{ mode } {}
+private:
     u8 getCarryFlag();
     void setCarryFlag(u8 value);
     u8 getHalfCarryFlag();
     void setHalfCarryFlag(u8 value);
-    u8 getSubtractFlag();
-    void setSubtractFlag(u8 value);
+    u8 getSubtractFlag() { assert(false); return 0; }
+    void setSubtractFlag(u8 /*value*/) { assert(false); }
     u8 getZeroFlag();
     void setZeroFlag(u8 value);
-    u8 getSignFlag();
-    void setSignFlag(u8 value);
-    u8 getParityFlag();
-    void setParityFlag(u8 value);
+    u8 getSignFlag() { assert(false); return 0; }
+    void setSignFlag(u8 /*value*/) { assert(false); }
+    u8 getParityFlag() { assert(false); return 0; }
+    void setParityFlag(u8 /*value*/) { assert(false); }
 
     void standardInstruction(u8 opcode);
     void prefixInstruction(u8 opcode);
 
-    ReadMemoryCallback load8 = nullptr;
-    WriteMemoryCallback store8 = nullptr;
     u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }
     void store16(u16 address, u16 data) const { store8(address, data & 0xFF); store8(address + 1, data >> 8); }
     void push8(u8 data) { store8(--m_state.SP, data); }
@@ -160,9 +177,9 @@ PRIVATE:
     void XTHL();
     void ADD(u8 value);
     void ADC(u8 value);
+    void ADDHL(u16 value);
     void SUB(u8 value);
     void SBB(u8 value);
-    void ADDHL(u16 value);
     void CMP(u8 value);
     void DECR(u8& reg);
     void DECM();
@@ -182,15 +199,5 @@ PRIVATE:
     void RET(bool flag);
     void RST(u8 vector);
 
-    State m_state;
-
     const CPUx80Mode m_mode;
-    bool m_prefixMode;
-    bool m_interruptRequested;
-    u8 m_interruptVector;
-    bool m_conditionalTaken;
-    bool m_EIRequested;
-    u8 m_cyclesLeft;
 };
-
-#undef PRIVATE

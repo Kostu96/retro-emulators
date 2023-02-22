@@ -32,7 +32,7 @@ private:
     const size_t m_memorySizes[1] = { 0x4000 };
     const int m_memoryColsNumbers[1] = { 16 };
 
-    CPUx80 m_cpu;
+    CPUx80<CPUx80Mode::Intel8080> m_cpu;
 
     const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;

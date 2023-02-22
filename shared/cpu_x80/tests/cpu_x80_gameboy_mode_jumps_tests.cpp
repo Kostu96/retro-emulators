@@ -12,18 +12,18 @@ TEST_F(CPUx80GameBoyModeJumpsTests, JR_Imm8Test)
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 3;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0044;
 	compareCPUStates(preExecutionState, postExecutionState);
 
-	CPU.m_state.PC = 0x0002;
+	cpu.m_state.PC = 0x0002;
 
 	preExecutionState = captureCPUState();
 	cycles = 3;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -37,12 +37,12 @@ TEST_F(CPUx80GameBoyModeJumpsTests, RETTest)
 	ram[0x0] = 0xAD;
 	ram[0x1] = 0xDE;
 
-	CPU.m_state.SP = 0x8000;
+	cpu.m_state.SP = 0x8000;
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 4;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -59,7 +59,7 @@ TEST_F(CPUx80GameBoyModeJumpsTests, JPTest)
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 4;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -70,12 +70,12 @@ TEST_F(CPUx80GameBoyModeJumpsTests, JP_HLTest)
 {
 	rom[0x0] = 0xE9; // JP (HL)
 
-	CPU.m_state.HL = 0xDEAD;
+	cpu.m_state.HL = 0xDEAD;
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 1;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -89,12 +89,12 @@ TEST_F(CPUx80GameBoyModeJumpsTests, RETITest)
 	ram[0x0] = 0xAD;
 	ram[0x1] = 0xDE;
 
-	CPU.m_state.SP = 0x8000;
+	cpu.m_state.SP = 0x8000;
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 4;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -109,12 +109,12 @@ TEST_F(CPUx80GameBoyModeJumpsTests, CALLTest)
 	rom[0x1] = 0xAD;
 	rom[0x2] = 0xDE; // CALL 0xDEAD
 
-	CPU.m_state.SP = 0x8002;
+	cpu.m_state.SP = 0x8002;
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 6;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -152,16 +152,16 @@ TEST_P(CPUx80GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero  = 1; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero  = 0; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero  = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero  = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 2;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0002;
@@ -170,16 +170,16 @@ TEST_P(CPUx80GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero  = 0; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero  = 1; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero  = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero  = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
 	}
 
 	preExecutionState = captureCPUState();
 	cycles = 3;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0000;
@@ -188,7 +188,7 @@ TEST_P(CPUx80GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 	preExecutionState = captureCPUState();
 	cycles = 3;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0044;
@@ -217,21 +217,21 @@ TEST_P(CPUx80GameBoyModeRetConTests, RET_CONTest)
 	ram[0x0] = 0xAD;
 	ram[0x1] = 0xDE;
 
-	CPU.m_state.SP = 0x8000;
+	cpu.m_state.SP = 0x8000;
 
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 2;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0001;
@@ -240,16 +240,16 @@ TEST_P(CPUx80GameBoyModeRetConTests, RET_CONTest)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
 	}
 
 	preExecutionState = captureCPUState();
 	cycles = 4;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -280,16 +280,16 @@ TEST_P(CPUx80GameBoyModeJumpConTests, JP_CONTest)
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 3;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0003;
@@ -298,18 +298,18 @@ TEST_P(CPUx80GameBoyModeJumpConTests, JP_CONTest)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
 	}
 
-	CPU.m_state.PC = 0x0000;
+	cpu.m_state.PC = 0x0000;
 
 	preExecutionState = captureCPUState();
 	cycles = 4;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;
@@ -336,21 +336,21 @@ TEST_P(CPUx80GameBoyModeCallConTests, CALL_CONTest)
 	rom[0x1] = 0xAD;
 	rom[0x2] = 0xDE;
 
-	CPU.m_state.SP = 0x8002;
+	cpu.m_state.SP = 0x8002;
 
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
 	u8 cycles = 3;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	auto postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0x0003;
@@ -359,18 +359,18 @@ TEST_P(CPUx80GameBoyModeCallConTests, CALL_CONTest)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  CPU.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::Zero:     CPU.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::NotCarry: CPU.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    CPU.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
 	}
 
-	CPU.m_state.PC = 0x0000;
+	cpu.m_state.PC = 0x0000;
 
 	preExecutionState = captureCPUState();
 	cycles = 6;
 	while (cycles--)
-		CPU.clock();
+		cpu.clock();
 	postExecutionState = captureCPUState();
 
 	preExecutionState.PC = 0xDEAD;

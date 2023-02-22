@@ -67,7 +67,6 @@ void Gameboy::reset()
     std::memset(m_WRAM, 0, 0x2000);
     m_PPU.clearVRAM();
 
-
     m_CPU.reset();
     m_CPU.setAF(0x01B0);
     m_CPU.setBC(0x0013);
