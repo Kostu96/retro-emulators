@@ -3,13 +3,13 @@
 
 #include <gtest/gtest.h>
 
-struct CPUMock :
+struct CPUMockGB :
     public CPUx80<CPUx80Mode::GameBoy>
 {
     using CPUx80Base::State;
     using CPUx80Base::m_state;
 
-    CPUMock() : CPUx80<CPUx80Mode::GameBoy>{ CPUx80Mode::GameBoy } {}
+    CPUMockGB() : CPUx80<CPUx80Mode::GameBoy>{ CPUx80Mode::GameBoy } {}
 };
 
 struct CPUx80GameBoyModeTests :
@@ -21,7 +21,7 @@ struct CPUx80GameBoyModeTests :
     u8 rom[ROM_SIZE]{};
     u8 ram[RAM_SIZE]{};
 
-    CPUMock cpu;
+    CPUMockGB cpu;
 
     CPUx80GameBoyModeTests()
     {
@@ -55,14 +55,14 @@ struct CPUx80GameBoyModeTests :
         cpu.m_state.F.byte = 0;
     }
 
-    CPUMock::State captureCPUState()
+    CPUMockGB::State captureCPUState()
     {
-        CPUMock::State state;
-        std::memcpy(&state, &cpu.m_state, sizeof(CPUMock::State));
+        CPUMockGB::State state;
+        std::memcpy(&state, &cpu.m_state, sizeof(CPUMockGB::State));
         return state;
     }
 
-    void compareCPUStates(const CPUMock::State& state1, const CPUMock::State& state2)
+    void compareCPUStates(const CPUMockGB::State& state1, const CPUMockGB::State& state2)
     {
         EXPECT_EQ(state1.PC, state2.PC);
         EXPECT_EQ(state1.SP, state2.SP);

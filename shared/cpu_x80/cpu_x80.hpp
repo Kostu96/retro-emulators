@@ -126,6 +126,7 @@ public:
     void clock();
 
     explicit CPUx80(CPUx80Mode mode) : m_mode{ mode } {}
+    virtual ~CPUx80() = default;
 private:
     u8 getCarryFlag();
     void setCarryFlag(u8 value);

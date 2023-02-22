@@ -11,7 +11,7 @@ call cpu40xx_tests.exe
 if %errorlevel% neq 0 set error=%errorlevel%
 
 echo Running CPU8080 tests...
-call cpu8080_tests.exe
+call cpu_x80_tests.exe
 if %errorlevel% neq 0 set error=%errorlevel%
 
 echo Running gameboy tests...

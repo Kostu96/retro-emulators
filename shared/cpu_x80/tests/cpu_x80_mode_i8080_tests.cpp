@@ -2,13 +2,13 @@
 
 #include <gtest/gtest.h>
 
-struct CPUMock :
+struct CPUMockI8080 :
     public CPUx80<CPUx80Mode::Intel8080>
 {
     using CPUx80Base::State;
     using CPUx80Base::m_state;
 
-    CPUMock() : CPUx80<CPUx80Mode::Intel8080>{ CPUx80Mode::Intel8080 } {}
+    CPUMockI8080() : CPUx80<CPUx80Mode::Intel8080>{ CPUx80Mode::Intel8080 } {}
 };
 
 struct CPUx80ModeI8080Tests :
@@ -20,8 +20,8 @@ struct CPUx80ModeI8080Tests :
     u8 rom[ROM_SIZE]{};
     u8 ram[RAM_SIZE]{};
 
-    CPUMock cpu;
-    CPUMock::State referenceCPUState;
+    CPUMockI8080 cpu;
+    CPUMockI8080::State referenceCPUState;
 
     CPUx80ModeI8080Tests()
     {
@@ -42,7 +42,7 @@ struct CPUx80ModeI8080Tests :
     {
         cpu.reset();
 
-        std::memcpy(&referenceCPUState, &cpu.m_state, sizeof(CPUMock::State));
+        std::memcpy(&referenceCPUState, &cpu.m_state, sizeof(CPUMockI8080::State));
     }
 
     void TearDown() override
