@@ -59,3 +59,50 @@ void CPUx80Base::compare(u8 value, u16& result, u8& result4bit)
     result = (s16)m_state.A - (s16)value;
     result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
 }
+
+void CPUx80Base::rotateLeft(u8& reg, u8& newCarry)
+{
+    newCarry = reg >> 7;
+    reg <<= 1;
+    reg |= newCarry;
+}
+
+void CPUx80Base::rotateLeftWithCarry(u8& reg, u8 carry, u8& newCarry)
+{
+    newCarry = reg >> 7;
+    reg <<= 1;
+    reg |= carry;
+}
+
+void CPUx80Base::rotateRight(u8& reg, u8& newCarry)
+{
+    newCarry = reg & 1;
+    reg >>= 1;
+    reg |= newCarry << 7;
+}
+
+void CPUx80Base::rotateRightWithCarry(u8& reg, u8 carry, u8& newCarry)
+{
+    newCarry = reg & 1;
+    reg >>= 1;
+    reg |= carry << 7;
+}
+
+void CPUx80Base::shiftLeftArithmetic(u8& reg, u8& newCarry)
+{
+    newCarry = reg >> 7;
+    reg <<= 1;
+}
+
+void CPUx80Base::shiftRightArithmetic(u8& reg, u8& newCarry)
+{
+    newCarry = reg & 1;
+    reg >>= 1;
+    reg |= (reg << 1) & 0x80;
+}
+
+void CPUx80Base::shiftRightLogic(u8& reg, u8& newCarry)
+{
+    newCarry = reg & 1;
+    reg >>= 1;
+}

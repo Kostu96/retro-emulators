@@ -1,6 +1,36 @@
-#include "cpu_x80.inl"
+#include "cpu_x80_base.inl"
 
 #include <bitset>
+
+template <>
+void CPUx80<CPUx80Mode::Intel8080>::clock()
+{
+    m_cyclesLeft = 0; // TODO: temp WA until i8080 cycle times are implemented
+
+    if (m_cyclesLeft > 0)
+        m_cyclesLeft--;
+
+    if (m_EIRequested) {
+        m_EIRequested = false;
+        m_state.InterruptEnabled = true;
+    }
+
+    if (m_cyclesLeft == 0)
+    {
+        if (m_interruptRequested) {
+            m_interruptRequested = false;
+            RST(m_interruptVector);
+        }
+
+        if (!m_state.IsHalted) {
+            u8 opcode = load8(m_state.PC++);
+
+            standardInstruction(opcode);
+            // m_cyclesLeft += m_conditionalTaken ? conditionalCycleCounts[opcode] : standardCycleCounts[opcode];
+            m_conditionalTaken = false;
+        }
+    }
+}
 
 template <>
 u8 CPUx80<CPUx80Mode::Intel8080>::getCarryFlag()
@@ -159,6 +189,42 @@ void CPUx80<CPUx80Mode::Intel8080>::DAA()
     setParityFlag((std::bitset<8>(m_state.A).count() % 2) == 0);
     setSignFlag(m_state.A >> 7);
     setZeroFlag(m_state.A == 0);
+}
+
+template <>
+void CPUx80<CPUx80Mode::Intel8080>::RLCA()
+{
+    u8 newCarry;
+    rotateLeft(m_state.A, newCarry);
+
+    setCarryFlag(newCarry);
+}
+
+template <>
+void CPUx80<CPUx80Mode::Intel8080>::RAL()
+{
+    u8 newCarry;
+    rotateLeftWithCarry(m_state.A, getCarryFlag(), newCarry);
+
+    setCarryFlag(newCarry);
+}
+
+template <>
+void CPUx80<CPUx80Mode::Intel8080>::RRCA()
+{
+    u8 newCarry;
+    rotateRight(m_state.A, newCarry);
+
+    setCarryFlag(newCarry);
+}
+
+template <>
+void CPUx80<CPUx80Mode::Intel8080>::RAR()
+{
+    u8 newCarry;
+    rotateRightWithCarry(m_state.A, getCarryFlag(), newCarry);
+
+    setCarryFlag(newCarry);
 }
 
 template class CPUx80<CPUx80Mode::Intel8080>;

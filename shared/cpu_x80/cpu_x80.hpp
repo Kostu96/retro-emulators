@@ -98,9 +98,23 @@ protected:
     void add16(u16 value, u32& result, u16& result12bit);
     void subtract(u8 value, u8 carry, u16& result, u8& result4bit);
     void compare(u8 value, u16& result, u8& result4bit);
+    void rotateLeft(u8& reg, u8& newCarry);
+    void rotateLeftWithCarry(u8& reg, u8 carry, u8& newCarry);
+    void rotateRight(u8& reg, u8& newCarry);
+    void rotateRightWithCarry(u8& reg, u8 carry, u8& newCarry);
+    void shiftLeftArithmetic(u8& reg, u8& newCarry);
+    void shiftRightArithmetic(u8& reg, u8& newCarry);
+    void shiftRightLogic(u8& reg, u8& newCarry);
 
     ReadMemoryCallback load8 = nullptr;
     WriteMemoryCallback store8 = nullptr;
+    u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }
+    void store16(u16 address, u16 data) const { store8(address, data & 0xFF); store8(address + 1, data >> 8); }
+    void push8(u8 data) { store8(--m_state.SP, data); }
+    void push16(u16 data) { store16(m_state.SP - 2, data); m_state.SP -= 2; }
+    u8 pop8() { return load8(m_state.SP++); }
+    u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
+
     State m_state;
     u8 m_interruptVector;
     bool m_interruptRequested;
@@ -143,13 +157,6 @@ private:
 
     void standardInstruction(u8 opcode);
     void prefixInstruction(u8 opcode);
-
-    u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }
-    void store16(u16 address, u16 data) const { store8(address, data & 0xFF); store8(address + 1, data >> 8); }
-    void push8(u8 data) { store8(--m_state.SP, data); }
-    void push16(u16 data) { store16(m_state.SP - 2, data); m_state.SP -= 2; }
-    u8 pop8() { return load8(m_state.SP++); }
-    u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
 
     // CB prefix instructions:
     void RLC(u8& reg);
