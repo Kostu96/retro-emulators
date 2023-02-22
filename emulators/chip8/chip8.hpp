@@ -1,34 +1,32 @@
 #pragma once
-#include "../../shared/emulator_core.hpp"
-#include "../../shared/asm_common/asm_common.hpp"
+#include "../../shared/type_aliases.hpp"
 
-class CHIP8Core :
-    public EmulatorCore
+#include <vector>
+
+class CHIP8
 {
 public:
-    const EmulatorSettings& getEmulatorSettings() const override { return m_emulatorSettings; }
+    /*const EmulatorSettings& getEmulatorSettings() const override { return m_emulatorSettings; }
 
     const size_t* getMemorySizes() const override { return m_memorySizes; }
     const int* getMemoryColsNumbers() const override { return m_memoryColsNumbers; }
     const std::vector<DisassemblyLine>& getDisassembly() const override { return m_disassembly; }
-    const std::vector<StateEntry>& getState() const override { return m_state; }
+    const std::vector<StateEntry>& getState() const override { return m_state; }*/
 
-    u8 getByteAt(u16 address, size_t memoryIndex) const { return m_memory[address]; }
-    u16 getPC() const override { return PC; }
+    u8 getByteAt(u16 address, size_t /*memoryIndex*/) const { return m_memory[address]; }
+    //u16 getPC() const override { return PC; }
 
-    void handleKey(int key, int action) override;
+    void handleKey(int key, int action);
 
-    void loadROM(const char* filename) override;
-    void reset() override;
-    void update(double dt) override;
+    void loadROM(const char* filename);
+    void reset();
+    void update();
 
-    void setClearCallback(ClearCallback callback) override { m_clear = callback; }
-    void setRenderPointCallback(RenderPointCallback callback) override { m_renderPoint = callback; }
+    /*void setClearCallback(ClearCallback callback) override { m_clear = callback; }
+    void setRenderPointCallback(RenderPointCallback callback) override { m_renderPoint = callback; }*/
 
-    CHIP8Core();
+    CHIP8() = default;
 private:
-    void updateState();
-
     static constexpr u16 CHIP8_WIDTH = 64;
     static constexpr u16 CHIP8_HEIGHT = 32;
     static constexpr u16 ZOOM = 8;
@@ -52,10 +50,5 @@ private:
     bool keys[16];
     double m_elspsedTime;
 
-    const EmulatorSettings m_emulatorSettings;
     std::vector<DisassemblyLine> m_disassembly;
-    std::vector<StateEntry> m_state;
-
-    ClearCallback m_clear = nullptr;
-    RenderPointCallback m_renderPoint = nullptr;
 };

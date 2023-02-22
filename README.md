@@ -3,6 +3,16 @@
 
 Emulalators of microcomputers, game consoles and arcades.
 
-### Currently working on:
- - Altair 8800
- - Game Boy (DMG)
+### Machines:
+ - Altair 8800 - WIP
+ - CHIP-8 Interpreter - WIP
+ - Game Boy (DMG) - WIP
+ - Space Invaders Arcade - WIP
+
+### CPUs:
+ - Intel 4004
+ - Intel 4040
+ - Intel 8080
+ - MOS 6502
+ - Sharp LR35902 (GameBoy)
+ - Zilog Z80

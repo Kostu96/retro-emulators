@@ -12,7 +12,7 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
     for (size_t addr = 0; addr < code_size; )
     {
         DisassemblyLine line;
-        line.address = addr + 0x200;
+        line.address = (u16)(addr + 0x200);
         std::stringstream ss;
         ss << std::uppercase << std::hex << std::setw(3) << std::setfill('0') << addr + 0x200 << ":  ";
         Instruction opcode;

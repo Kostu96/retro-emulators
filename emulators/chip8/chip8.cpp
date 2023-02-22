@@ -1,4 +1,4 @@
-#include "chip8_core.hpp"
+#include "chip8.hpp"
 #include "disasm_chip8.hpp"
 #include "chip8_instruction.hpp"
 
@@ -6,20 +6,7 @@
 #include <cstring>
 #include <fstream>
 
-extern "C"
-{
-    __declspec(dllexport) CHIP8Core* allocator()
-    {
-        return new CHIP8Core{};
-    }
-
-    __declspec(dllexport) void deleter(CHIP8Core* ptr)
-    {
-        delete ptr;
-    }
-}
-
-void CHIP8Core::handleKey(int key, int action)
+void CHIP8::handleKey(int key, int action)
 {
     constexpr int KEY1 = 49;
     constexpr int KEY2 = 50;
@@ -59,7 +46,7 @@ void CHIP8Core::handleKey(int key, int action)
     }
 }
 
-void CHIP8Core::loadROM(const char* filename)
+void CHIP8::loadROM(const char* filename)
 {
     constexpr u8 CHARSET_SIZE = 80;
     const u8 charset[CHARSET_SIZE] = {
@@ -90,7 +77,7 @@ void CHIP8Core::loadROM(const char* filename)
     disassemble(m_memory + 0x200, 0x1000 - 0x200, m_disassembly);
 }
 
-void CHIP8Core::reset()
+void CHIP8::reset()
 {
     std::srand(1234567890);
 
@@ -105,20 +92,18 @@ void CHIP8Core::reset()
         keys[i] = false;
 
     m_elspsedTime = 0.0;
-
-    updateState();
 }
 
-void CHIP8Core::update(double dt)
+void CHIP8::update()
 {
-    m_elspsedTime += dt;
+    //m_elspsedTime += dt;
 
-    if (m_elspsedTime > 16.67)
-    {
-        m_elspsedTime -= 16.67;
-        if (DT) DT--;
-        if (ST) ST--;
-    }
+    //if (m_elspsedTime > 16.67)
+    //{
+    //    m_elspsedTime -= 16.67;
+    //    if (DT) DT--;
+    //    if (ST) ST--;
+    //}
 
     Instruction instruction;
     instruction.h2 = m_memory[PC++];
@@ -130,7 +115,7 @@ void CHIP8Core::update(double dt)
         if (instruction.word == 0x00E0)
         {
             std::memset(Screen, 0, 8 * 32);
-            m_clear();
+            //m_clear();
         }
         else if (instruction.word == 0x00EE)
         {
@@ -238,9 +223,9 @@ void CHIP8Core::update(double dt)
             for (u16 bit = 0; bit < 8; bit++)
             {
                 bool on = Screen[index] & (1 << (7 - bit));
-                m_renderPoint(x_byte * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
+                //m_renderPoint(x_byte * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
                 on = Screen[index + 1] & (1 << (7 - bit));
-                m_renderPoint((x_byte + 1) * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
+                //m_renderPoint((x_byte + 1) * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
             }
         }
     } break;
@@ -308,58 +293,4 @@ void CHIP8Core::update(double dt)
     default:
         assert(false && "Unhandled opcode!");
     }
-
-    updateState();
-}
-
-CHIP8Core::CHIP8Core() :
-    m_emulatorSettings{ CHIP8_WIDTH, CHIP8_HEIGHT,
-                        WINDOW_WIDTH, WINDOW_HEIGHT, "CHIP-8" }
-{
-    m_state.push_back({ 0, 2, "V0:", true });
-    m_state.push_back({ 0, 2, "V1:" });
-    m_state.push_back({ 0, 2, "V2:", true });
-    m_state.push_back({ 0, 2, "V3:" });
-    m_state.push_back({ 0, 2, "V4:", true });
-    m_state.push_back({ 0, 2, "V5:" });
-    m_state.push_back({ 0, 2, "V6:", true });
-    m_state.push_back({ 0, 2, "V7:" });
-    m_state.push_back({ 0, 2, "V8:", true });
-    m_state.push_back({ 0, 2, "V9:" });
-    m_state.push_back({ 0, 2, "VA:", true });
-    m_state.push_back({ 0, 2, "VB:" });
-    m_state.push_back({ 0, 2, "VC:", true });
-    m_state.push_back({ 0, 2, "VD:" });
-    m_state.push_back({ 0, 2, "VE:", true });
-    m_state.push_back({ 0, 2, "VF:", false, true });
-    m_state.push_back({ 0, 3, "PC:" });
-    m_state.push_back({ 0, 3, "I:", true });
-    m_state.push_back({ 0, 1, "SP:" });
-    m_state.push_back({ 0, 2, "DT:", true });
-    m_state.push_back({ 0, 2, "ST:" });
-}
-
-void CHIP8Core::updateState()
-{
-    m_state[0].value = GPR[0x0];
-    m_state[1].value = GPR[0x1];
-    m_state[2].value = GPR[0x2];
-    m_state[3].value = GPR[0x3];
-    m_state[4].value = GPR[0x4];
-    m_state[5].value = GPR[0x5];
-    m_state[6].value = GPR[0x6];
-    m_state[7].value = GPR[0x7];
-    m_state[8].value = GPR[0x8];
-    m_state[9].value = GPR[0x9];
-    m_state[10].value = GPR[0xA];
-    m_state[11].value = GPR[0xB];
-    m_state[12].value = GPR[0xC];
-    m_state[13].value = GPR[0xD];
-    m_state[14].value = GPR[0xE];
-    m_state[15].value = GPR[0xF];
-    m_state[16].value = PC;
-    m_state[17].value = I;
-    m_state[18].value = SP;
-    m_state[19].value = DT;
-    m_state[20].value = ST;
 }

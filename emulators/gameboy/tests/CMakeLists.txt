@@ -18,7 +18,7 @@ target_link_libraries(${GAMEBOY_TESTS_TARGET_NAME} PRIVATE
 )
 
 set_target_properties(${GAMEBOY_TESTS_TARGET_NAME} PROPERTIES
-    FOLDER gameboy
+    FOLDER ${GAMEBOY_FOLDER_NAME}
 )
 
 add_custom_command(
