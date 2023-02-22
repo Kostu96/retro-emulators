@@ -8,6 +8,7 @@ add_subdirectory(third_party)
 add_subdirectory(shared)
 add_subdirectory(assembler_app)
 
+add_subdirectory(emulators/common)
 add_subdirectory(emulators/altair8800)
 add_subdirectory(emulators/chip8)
 add_subdirectory(emulators/gameboy)

@@ -33,12 +33,7 @@ set(ALTAIR_APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
-add_executable(${ALTAIR_APP_TARGET_NAME}
-    ${ALTAIR_APP_SOURCES}
-    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c
-    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.h
-)
-set_source_files_properties(${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE CXX)
+add_executable(${ALTAIR_APP_TARGET_NAME} ${ALTAIR_APP_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${ALTAIR_APP_SOURCES})
 
 set_target_warnings(${ALTAIR_APP_TARGET_NAME})
@@ -46,15 +41,9 @@ target_compile_options(${ALTAIR_APP_TARGET_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/MP /fp:fast /external:anglebrackets /external:W1>
 )
 
-target_include_directories(${ALTAIR_APP_TARGET_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs
-)
-
 target_link_libraries(${ALTAIR_APP_TARGET_NAME} PRIVATE
     ${ALTAIR_LIB_TARGET_NAME}
-    glfw
-    glw
-    imgui
+    emulators_common_lib
 )
 
 set_target_properties(${ALTAIR_APP_TARGET_NAME} PROPERTIES
