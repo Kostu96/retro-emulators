@@ -32,9 +32,12 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
             break;
         case 0x1: ss << "JMP "  << (opcode.word & 0xFFF); break;
         case 0x2: ss << "CALL " << (opcode.word & 0xFFF); break;
-        case 0x3: ss << "SE V"  << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
+        case 0x3: ss << "SEQ V" << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
         case 0x4: ss << "SNE V" << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
-        case 0x5: ss << "SE V"  << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
+        case 0x5:
+            if (opcode.n1 == 0)ss << "SEQ V"  << (u16)opcode.n3 << ", V" << (u16)opcode.n2;
+            else ss << "???";
+            break;
         case 0x6: ss << "LD V"  << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
         case 0x7: ss << "ADD V" << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
         case 0x8:
@@ -58,7 +61,7 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
             break;
         case 0xA: ss << "LD I, "   << (opcode.word & 0xFFF); break;
         case 0xB: ss << "JMP V0, " << (opcode.word & 0xFFF); break;
-        case 0xC: ss << "RND V, " << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
+        case 0xC: ss << "RND V" << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
         case 0xD: ss << "SPR V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2 << ", " << (u16)opcode.n1; break;
         case 0xE:
             if (opcode.h1 == 0x9E) ss << "SKP V" << (u16)opcode.n3;
@@ -73,6 +76,7 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
             case 0x15: ss << "LD DT, V" << (u16)opcode.n3; break;
             case 0x18: ss << "LD ST, V" << (u16)opcode.n3; break;
             case 0x1E: ss << "ADD I, V" << (u16)opcode.n3; break;
+            case 0x29: ss << "CHR I, V" << (u16)opcode.n3; break;
             case 0x33: ss << "LD BCD, V" << (u16)opcode.n3; break;
             case 0x55: ss << "LD [I], V" << (u16)opcode.n3; break;
             case 0x65: ss << "LD V" << (u16)opcode.n3 << ", [I]"; break;

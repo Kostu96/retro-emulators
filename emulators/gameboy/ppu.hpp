@@ -36,7 +36,7 @@ public:
 	void store8(u16 address, u8 data);
 	ReadMemoryCallback loadExternal8 = nullptr;
 
-	std::span<u32> getScreenPixels() const { return { m_screenPixels, LCD_WIDTH * LCD_HEIGHT }; }
+	std::span<const u32> getScreenPixels() const { return { m_screenPixels, LCD_WIDTH * LCD_HEIGHT }; }
 
 	// debug:
 	static constexpr u16 TILE_DATA_WIDTH = 16 * 8;

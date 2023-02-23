@@ -3,14 +3,18 @@
 
 #include <ccl/types.hpp>
 
+#include <span>
 #include <vector>
 
 class CHIP8
 {
 public:
-    CHIP8() = default;
+    static constexpr u16 CHIP8_WIDTH = 64;
+    static constexpr u16 CHIP8_HEIGHT = 32;
 
-    u8 getByteAt(u16 address, size_t /*memoryIndex*/) const { return m_memory[address]; }
+    CHIP8() { reset(); }
+
+    //u8 getByteAt(u16 address, size_t /*memoryIndex*/) const { return m_memory[address]; }
     //u16 getPC() const override { return PC; }
 
     void handleKey(int key, int action);
@@ -19,13 +23,9 @@ public:
     void reset();
     void update();
 
+    std::span<const u32> getScreenPixels() const { return { m_screenPixels, CHIP8_WIDTH * CHIP8_HEIGHT }; }
     const std::vector<DisassemblyLine>& getDisassembly() const { return m_disassembly; }
-    /*void setClearCallback(ClearCallback callback) override { m_clear = callback; }
-    void setRenderPointCallback(RenderPointCallback callback) override { m_renderPoint = callback; }*/
 private:
-    static constexpr u16 CHIP8_WIDTH = 64;
-    static constexpr u16 CHIP8_HEIGHT = 32;
-
     static constexpr size_t MEMORY_SIZE = 0x1000;
 
     u8 m_memory[MEMORY_SIZE];
@@ -41,4 +41,5 @@ private:
     double m_elspsedTime;
 
     std::vector<DisassemblyLine> m_disassembly;
+    u32 m_screenPixels[CHIP8_WIDTH * CHIP8_HEIGHT] ;
 };

@@ -29,7 +29,7 @@ int main()
         std::cerr << "GLFW init failed!\n";
         std::terminate();
     }
-
+    
     glfwWindowHint(GLFW_RESIZABLE, 0);
     GLFWwindow* window =
         glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT + IMGUI_MENU_BAR_HEIGHT, "CHIP-8 Interpreter by Kostu96", nullptr, nullptr);
@@ -46,14 +46,44 @@ int main()
 
     EmuCommon::GUI::init(window);
 
+    glw::Texture screenTexture{
+        glw::Texture::Properties{
+                glw::TextureSpecification{
+                    glw::TextureFormat::RGBA8,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureFilter::Nearest,
+                    glw::TextureWrapMode::Clamp
+                },
+                FRAME_WIDTH, FRAME_HEIGHT
+        }
+    };
+
     CHIP8 chip8;
-    chip8.loadProgram("C:/Users/kmisiak/myplace/retro-extras/programs/chip8/Fishie.ch8");
+    //chip8.loadProgram("C:/Users/kmisiak/myplace/retro-extras/programs/chip8/Fishie.ch8");
+    chip8.loadProgram("C:/Users/Konstanty/Desktop/retro-extras/programs/chip8/Chip8 Picture.ch8");
 
     EmuCommon::GUI::DisassemblyView disasmView;
+
+    std::thread emuThread{
+        [&]() {
+            while (!glfwWindowShouldClose(window)) {
+                std::this_thread::sleep_for(std::chrono::nanoseconds{ 32 }); // TODO: temp
+                chip8.update();
+            }
+        }
+    };
 
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glw::Renderer::beginFrame();
+        glViewport(BORDER_SIZE, BORDER_SIZE, WINDOW_WIDTH - 2 * BORDER_SIZE, WINDOW_HEIGHT - 2 * BORDER_SIZE);
+        auto pixels = chip8.getScreenPixels();
+        screenTexture.setData(pixels.data(), pixels.size() * sizeof(u32));
+        screenTexture.bind(0);
+        glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
+        glw::Renderer::endFrame();
 
         EmuCommon::GUI::beginFrame();
         disasmView.updateWindow(chip8.getDisassembly());
@@ -62,6 +92,8 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    emuThread.join();
 
     EmuCommon::GUI::shutdown();
     glw::Renderer::shutdown();

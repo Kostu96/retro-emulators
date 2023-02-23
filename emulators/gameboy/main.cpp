@@ -76,11 +76,7 @@ int main()
         auto pixels = gameboy.getPPU().getScreenPixels();
         screenTexture.setData(pixels.data(), pixels.size() * sizeof(u32));
         screenTexture.bind(0);
-        float left = -1.f;
-        float right = 1.f;
-        float top = 1.f;
-        float bottom = -1.f;
-        glw::Renderer::renderTexture(left, top, right, bottom, 0.f, 0.f, 1.f, 1.f);
+        glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
         glw::Renderer::endFrame();
 
         GUI::update(gameboy);

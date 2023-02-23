@@ -118,7 +118,7 @@ void CHIP8::update()
         if (instruction.word == 0x00E0)
         {
             std::memset(Screen, 0, 8 * 32);
-            //m_clear();
+            std::memset(m_screenPixels, 0, CHIP8_WIDTH * CHIP8_HEIGHT * sizeof(u32));
         }
         else if (instruction.word == 0x00EE)
         {
@@ -226,9 +226,12 @@ void CHIP8::update()
             for (u16 bit = 0; bit < 8; bit++)
             {
                 bool on = Screen[index] & (1 << (7 - bit));
-                //m_renderPoint(x_byte * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
+                u16 x_coord = x_byte * 8 + bit;
+                u16 y_coord = y + i;
+                m_screenPixels[y_coord * CHIP8_WIDTH + x_coord] = on ? 0xFFFFFFFF : 0;
                 on = Screen[index + 1] & (1 << (7 - bit));
-                //m_renderPoint((x_byte + 1) * 8 + bit, y + i, on ? 0xFFFFFFFF : 0);
+                x_coord = (x_byte + 1) * 8 + bit;
+                m_screenPixels[y_coord * CHIP8_WIDTH + x_coord] = on ? 0xFFFFFFFF : 0;
             }
         }
     } break;
