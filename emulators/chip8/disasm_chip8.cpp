@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <sstream>
 
+#define PRINT_HEX(val, w) std::setw(w) << (u16)val
+
 void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)
 {
     for (size_t addr = 0; addr < code_size; )
@@ -28,18 +30,18 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
             else if (opcode.word == 0x00EE) ss << "RET";
             else ss << "???";
             break;
-        case 0x1: ss << "JMP " << (opcode.word & 0xFFF); break;
+        case 0x1: ss << "JMP "  << (opcode.word & 0xFFF); break;
         case 0x2: ss << "CALL " << (opcode.word & 0xFFF); break;
-        case 0x3: ss << "SE V" << (u16)opcode.n3 << ", " << (u16)opcode.h1; break;
-        case 0x4: ss << "SNE V" << (u16)opcode.n3 << ", " << (u16)opcode.h1; break;
-        case 0x5: ss << "SE V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
-        case 0x6: ss << "LD V" << (u16)opcode.n3 << ", " << (u16)opcode.h1; break;
-        case 0x7: ss << "ADD V" << (u16)opcode.n3 << ", " << (u16)opcode.h1; break;
+        case 0x3: ss << "SE V"  << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
+        case 0x4: ss << "SNE V" << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
+        case 0x5: ss << "SE V"  << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
+        case 0x6: ss << "LD V"  << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
+        case 0x7: ss << "ADD V" << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
         case 0x8:
             switch (opcode.n1)
             {
-            case 0x0: ss << "LD V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
-            case 0x1: ss << "OR V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
+            case 0x0: ss << "LD V"  << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
+            case 0x1: ss << "OR V"  << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
             case 0x2: ss << "AND V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
             case 0x3: ss << "XOR V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
             case 0x4: ss << "ADD V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2; break;
@@ -54,9 +56,9 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
             if (opcode.n1 == 0) ss << "SNE V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2;
             else ss << "???";
             break;
-        case 0xA: ss << "LD I, " << (opcode.word & 0xFFF); break;
+        case 0xA: ss << "LD I, "   << (opcode.word & 0xFFF); break;
         case 0xB: ss << "JMP V0, " << (opcode.word & 0xFFF); break;
-        case 0xC: ss << "RND V, " << (u16)opcode.n3 << ", " << (u16)opcode.h1; break;
+        case 0xC: ss << "RND V, " << (u16)opcode.n3 << ", " << PRINT_HEX(opcode.h1, 2); break;
         case 0xD: ss << "SPR V" << (u16)opcode.n3 << ", V" << (u16)opcode.n2 << ", " << (u16)opcode.n1; break;
         case 0xE:
             if (opcode.h1 == 0x9E) ss << "SKP V" << (u16)opcode.n3;
@@ -85,3 +87,5 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
         output.push_back(line);
     }
 }
+
+#undef PRINT_HEX

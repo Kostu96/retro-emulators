@@ -9,9 +9,9 @@
 #include <iostream>
 #include <thread>
 
-constexpr u16 FRAME_WIDTH = 160;
-constexpr u16 FRAME_HEIGHT = 144;
-constexpr u16 SCALE = 3;
+constexpr u16 FRAME_WIDTH = 64;
+constexpr u16 FRAME_HEIGHT = 32;
+constexpr u16 SCALE = 8;
 constexpr u16 BORDER_SIZE = 10;
 constexpr u16 IMGUI_MENU_BAR_HEIGHT = 0;
 constexpr u16 WINDOW_WIDTH = FRAME_WIDTH * SCALE + 2 * BORDER_SIZE;
@@ -44,17 +44,26 @@ int main()
     glw::Renderer::init();
     glClearColor(0.8f, 0.8f, 0.7f, 1.f);
 
-    GUI::init(window);
+    EmuCommon::GUI::init(window);
+
+    CHIP8 chip8;
+    chip8.loadProgram("C:/Users/kmisiak/myplace/retro-extras/programs/chip8/Fishie.ch8");
+
+    EmuCommon::GUI::DisassemblyView disasmView;
 
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        EmuCommon::GUI::beginFrame();
+        disasmView.updateWindow(chip8.getDisassembly());
+        EmuCommon::GUI::endFrame();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    GUI::shutdown();
+    EmuCommon::GUI::shutdown();
     glw::Renderer::shutdown();
     glfwTerminate();
 	return 0;

@@ -1,6 +1,8 @@
 #include "gui.hpp"
 #include "gameboy.hpp"
 
+#include "emu_common/gui.hpp"
+
 #include <glad/gl.h>
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
@@ -21,14 +23,8 @@ namespace GUI {
 
     void init(GLFWwindow* window)
     {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-        ImGui::StyleColorsDark();
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 450");
-
+        EmuCommon::GUI::init(window);
+        
         s_window = window;
 
         s_tileDataTexture = new glw::Texture{
@@ -82,9 +78,7 @@ namespace GUI {
 
         s_window = nullptr;
 
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
+        EmuCommon::GUI::shutdown();
     }
 
     static void drawTextureWindow(const glw::Texture& texture, float scale, const char* title, bool& show)
@@ -127,9 +121,7 @@ namespace GUI {
 
     void update(Gameboy& gb)
     {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        EmuCommon::GUI::beginFrame();
 
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File"))
@@ -169,16 +161,7 @@ namespace GUI {
         if (s_showMap1)
             drawTileMapWindow(s_tileMap1FB, ppu.getTileMap1(), ppu.getTileDataAddressingMode(), "Tile Map 1", s_showMap1);
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
+        EmuCommon::GUI::endFrame();
     }
 
 } // namespace GUI

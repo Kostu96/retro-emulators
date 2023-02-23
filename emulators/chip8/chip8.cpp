@@ -2,9 +2,10 @@
 #include "disasm_chip8.hpp"
 #include "chip8_instruction.hpp"
 
+#include <ccl/helper_functions.h>
+
 #include <cassert>
 #include <cstring>
-#include <fstream>
 
 void CHIP8::handleKey(int key, int action)
 {
@@ -46,8 +47,11 @@ void CHIP8::handleKey(int key, int action)
     }
 }
 
-void CHIP8::loadROM(const char* filename)
+void CHIP8::loadProgram(const char* filename)
 {
+    const void* PROGRAM_START = m_memory + 0x200;
+    const size_t MAX_PROGRAM_SIZE = MEMORY_SIZE - 0x200;
+
     constexpr u8 CHARSET_SIZE = 80;
     const u8 charset[CHARSET_SIZE] = {
         0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -70,11 +74,10 @@ void CHIP8::loadROM(const char* filename)
 
     std::memcpy(m_memory, charset, CHARSET_SIZE);
 
-    std::ifstream fin{ filename, std::ios::binary };
-    fin.read((char*)(m_memory + 0x200), 0x1000 - 0x200);
-    fin.close();
+    size_t size = MAX_PROGRAM_SIZE;
+    ccl::readFile(filename, (char*)PROGRAM_START, size, true);
 
-    disassemble(m_memory + 0x200, 0x1000 - 0x200, m_disassembly);
+    disassemble((u8*)PROGRAM_START, size, m_disassembly);
 }
 
 void CHIP8::reset()

@@ -1,6 +1,8 @@
 #include "gui.hpp"
 #include "altair.hpp"
 
+#include "emu_common/gui.hpp"
+
 #include <glad/gl.h>
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
@@ -33,14 +35,7 @@ namespace GUI {
 
     void init(GLFWwindow* window)
     {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-        ImGui::StyleColorsDark();
-        ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = { 0.4f, 0.4f, 0.4f, 1.f };
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 450");
+        EmuCommon::GUI::init(window);
 
         s_window = window;
     }
@@ -49,9 +44,7 @@ namespace GUI {
     {
         s_window = nullptr;
 
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
+        EmuCommon::GUI::shutdown();
     }
 
     static void MiddleLEDsGroup() {
@@ -151,9 +144,7 @@ namespace GUI {
 
     void update(Altair& altair)
     {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        EmuCommon::GUI::beginFrame();
 
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File"))
@@ -183,16 +174,7 @@ namespace GUI {
         }
         ImGui::End();
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
+        EmuCommon::GUI::endFrame();
     }
 
 } // namespace GUI

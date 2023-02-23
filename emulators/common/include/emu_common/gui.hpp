@@ -1,10 +1,21 @@
 #pragma once
+#include <vector>
 
+struct DisassemblyLine;
 struct GLFWwindow;
 
-namespace GUI {
+namespace EmuCommon::GUI {
 
     void init(GLFWwindow* window);
     void shutdown();
+    void beginFrame();
+    void endFrame();
 
-} // namespace GUI
+    struct DisassemblyView
+    {
+        bool open = true;
+
+        void updateWindow(const std::vector<DisassemblyLine>& disassembly);
+    };
+
+} // namespace EmuCommon::GUI
