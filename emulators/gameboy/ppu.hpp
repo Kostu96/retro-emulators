@@ -1,8 +1,8 @@
 #pragma once
-#include "../../shared/type_aliases.hpp"
 #include "bit_fifo.hpp"
 
 #include <ccl/non_copyable.h>
+#include <ccl/types.hpp>
 
 #include <functional>
 #include <span>

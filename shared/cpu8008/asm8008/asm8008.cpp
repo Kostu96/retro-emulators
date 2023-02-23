@@ -1,5 +1,6 @@
 #include "asm8008.hpp"
 #include "scanner8008.hpp"
+#include "../disassembly_line.hpp"
 
 #include <cassert>
 #include <iomanip>

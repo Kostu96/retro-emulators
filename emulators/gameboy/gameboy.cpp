@@ -1,6 +1,6 @@
 #include "gameboy.hpp"
 
-#include "../../shared/memory_map.hpp"
+#include "../../shared/address_range.hpp"
 
 #include <cassert>
 #include <fstream>

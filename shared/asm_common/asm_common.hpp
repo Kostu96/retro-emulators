@@ -1,5 +1,5 @@
 #pragma once
-#include "../type_aliases.hpp"
+#include <ccl/types.hpp>
 
 #include <sstream>
 

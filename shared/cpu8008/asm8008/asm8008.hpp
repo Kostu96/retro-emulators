@@ -3,6 +3,8 @@
 
 #include <vector>
 
+struct DisassemblyLine;
+
 namespace ASM8008
 {
 

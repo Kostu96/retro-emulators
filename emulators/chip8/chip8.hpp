@@ -1,5 +1,7 @@
 #pragma once
-#include "../../shared/type_aliases.hpp"
+#include "../../shared/disassembly_line.hpp"
+
+#include <ccl/types.hpp>
 
 #include <vector>
 

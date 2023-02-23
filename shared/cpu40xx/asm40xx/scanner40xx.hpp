@@ -1,6 +1,7 @@
 #pragma once
-#include "../type_aliases.hpp"
 #include "trie.hpp"
+
+#include <ccl/types.hpp>
 
 namespace ASM40xx {
 

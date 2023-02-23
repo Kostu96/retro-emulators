@@ -1,7 +1,6 @@
 #pragma once
-#include "../../shared/type_aliases.hpp"
-
 #include <ccl/non_copyable.h>
+#include <ccl/types.hpp>
 
 class Cartridge :
     public ccl::NonCopyable

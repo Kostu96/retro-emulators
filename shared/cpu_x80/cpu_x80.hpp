@@ -1,7 +1,6 @@
 #pragma once
-#include "../type_aliases.hpp"
-
 #include <ccl/non_copyable.h>
+#include <ccl/types.hpp>
 
 #include <cassert>
 #include <functional>

@@ -13,6 +13,10 @@ target_include_directories(${CPU6502_TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+target_link_libraries(${CPU6502_TARGET_NAME} PUBLIC
+    cpp-common-lib
+)
+
 set_target_properties(${CPU6502_TARGET_NAME} PROPERTIES
     FOLDER shared
 )

@@ -1,5 +1,6 @@
 #include "asm40xx.hpp"
 #include "parser40xx.hpp"
+#include "../disassembly_line.hpp"
 
 #include <cassert>
 #include <iomanip>

@@ -1,5 +1,7 @@
 #pragma once
-#include "../memory_map.hpp"
+#include "../address_range.hpp"
+
+#include <ccl/types.hpp>
 
 #include <vector>
 

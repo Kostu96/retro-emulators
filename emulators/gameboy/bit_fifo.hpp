@@ -1,5 +1,5 @@
 #pragma once
-#include "../../shared/type_aliases.hpp"
+#include <ccl/types.hpp>
 
 class BitFIFO
 {

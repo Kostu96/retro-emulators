@@ -1,4 +1,5 @@
 #include "disasm8080.hpp"
+#include "../disassembly_line.hpp"
 
 #include <cassert>
 #include <iomanip>

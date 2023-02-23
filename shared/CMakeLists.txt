@@ -1,6 +1,6 @@
 set(SHARED_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/memory_map.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/type_aliases.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/address_range.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/disassembly_line.hpp
 )
 
 add_subdirectory(asm_common)
