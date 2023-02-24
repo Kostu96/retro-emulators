@@ -10,7 +10,7 @@
 
 static void glfwErrorCallback(int error, const char* description)
 {
-	std::cerr << "GLFW error " << error << ": " << description << '\n';
+    std::cerr << "GLFW error " << error << ": " << description << '\n';
 }
 
 int main()
@@ -33,13 +33,16 @@ int main()
     glw::init(glfwGetProcAddress);
     GUI::init(window);
 
-	Altair altair;
-	
+    Altair altair;
+    bool running = false;
+    
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
                 std::this_thread::sleep_for(std::chrono::nanoseconds{ 24 }); // TODO: temp
-                altair.update();
+                
+                if (running)
+                    altair.update();
             }
         }
     };
@@ -55,8 +58,8 @@ int main()
     }
 
     emuThread.join();
-	
+    
     GUI::shutdown();
     glfwTerminate();
-	return 0;
+    return 0;
 }
