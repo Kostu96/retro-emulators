@@ -14,15 +14,11 @@ public:
 
     CHIP8() { reset(); }
 
-    //u8 getByteAt(u16 address, size_t /*memoryIndex*/) const { return m_memory[address]; }
-    //u16 getPC() const override { return PC; }
-
-    void handleKey(int key, int action);
-
     void loadProgram(const char* filename);
     void reset();
-    void update();
+    void update(double dt);
 
+    void handleKey(int key, int action);
     std::span<const u32> getScreenPixels() const { return { m_screenPixels, CHIP8_WIDTH * CHIP8_HEIGHT }; }
     const std::vector<DisassemblyLine>& getDisassembly() const { return m_disassembly; }
 private:

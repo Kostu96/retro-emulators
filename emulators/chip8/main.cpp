@@ -12,7 +12,7 @@
 constexpr u16 FRAME_WIDTH = 64;
 constexpr u16 FRAME_HEIGHT = 32;
 constexpr u16 SCALE = 8;
-constexpr u16 BORDER_SIZE = 10;
+constexpr u16 BORDER_SIZE = 8;
 constexpr u16 IMGUI_MENU_BAR_HEIGHT = 0;
 constexpr u16 WINDOW_WIDTH = FRAME_WIDTH * SCALE + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE + 2 * BORDER_SIZE;
@@ -20,6 +20,12 @@ constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE + 2 * BORDER_SIZE;
 static void glfwErrorCallback(int error, const char* description)
 {
     std::cerr << "GLFW error " << error << ": " << description << '\n';
+}
+
+static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+{
+    auto chip8 = reinterpret_cast<CHIP8*>(glfwGetWindowUserPointer(window));
+    chip8->handleKey(key, action);
 }
 
 int main()
@@ -59,19 +65,30 @@ int main()
     };
 
     CHIP8 chip8;
-    //chip8.loadProgram("C:/Users/kmisiak/myplace/retro-extras/programs/chip8/Fishie.ch8");
-    chip8.loadProgram("C:/Users/Konstanty/Desktop/retro-extras/programs/chip8/Chip8 Picture.ch8");
+    chip8.loadProgram("C:/Users/kmisiak/myplace/retro-extras/programs/chip8/Space Invaders [David Winter].ch8");
+    //chip8.loadProgram("C:/Users/Konstanty/Desktop/retro-extras/programs/chip8/Chip8 Picture.ch8");
 
     EmuCommon::GUI::DisassemblyView disasmView;
 
     std::thread emuThread{
         [&]() {
+            std::chrono::steady_clock::time_point lastFrameTime;
+            std::chrono::duration<double, std::micro> elapsedTime{ 0 };
             while (!glfwWindowShouldClose(window)) {
-                std::this_thread::sleep_for(std::chrono::nanoseconds{ 32 }); // TODO: temp
-                chip8.update();
+                auto time = std::chrono::steady_clock::now();
+                std::chrono::duration<double, std::micro> dt = time - lastFrameTime;
+                elapsedTime += dt;
+                lastFrameTime = time;
+
+                chip8.update(dt.count() * 0.000001);
+
+                std::this_thread::sleep_for(std::chrono::nanoseconds{ 64 });
             }
         }
     };
+
+    glfwSetKeyCallback(window, glfwKeyCallback);
+    glfwSetWindowUserPointer(window, &chip8);
 
     while (!glfwWindowShouldClose(window))
     {

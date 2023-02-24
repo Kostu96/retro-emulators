@@ -7,46 +7,6 @@
 #include <cassert>
 #include <cstring>
 
-void CHIP8::handleKey(int key, int action)
-{
-    constexpr int KEY1 = 49;
-    constexpr int KEY2 = 50;
-    constexpr int KEY3 = 51;
-    constexpr int KEY4 = 52;
-    constexpr int KEYQ = 81;
-    constexpr int KEYW = 87;
-    constexpr int KEYE = 69;
-    constexpr int KEYR = 82;
-    constexpr int KEYA = 65;
-    constexpr int KEYS = 83;
-    constexpr int KEYD = 68;
-    constexpr int KEYF = 70;
-    constexpr int KEYZ = 90;
-    constexpr int KEYX = 88;
-    constexpr int KEYC = 67;
-    constexpr int KEYV = 86;
-
-    switch (key)
-    {
-    case KEY1: keys[0x1] = action; break;
-    case KEY2: keys[0x2] = action; break;
-    case KEY3: keys[0x3] = action; break;
-    case KEY4: keys[0xC] = action; break;
-    case KEYQ: keys[0x4] = action; break;
-    case KEYW: keys[0x5] = action; break;
-    case KEYE: keys[0x6] = action; break;
-    case KEYR: keys[0xD] = action; break;
-    case KEYA: keys[0x7] = action; break;
-    case KEYS: keys[0x8] = action; break;
-    case KEYD: keys[0x9] = action; break;
-    case KEYF: keys[0xE] = action; break;
-    case KEYZ: keys[0xA] = action; break;
-    case KEYX: keys[0x0] = action; break;
-    case KEYC: keys[0xB] = action; break;
-    case KEYV: keys[0xF] = action; break;
-    }
-}
-
 void CHIP8::loadProgram(const char* filename)
 {
     const void* PROGRAM_START = m_memory + 0x200;
@@ -97,16 +57,16 @@ void CHIP8::reset()
     m_elspsedTime = 0.0;
 }
 
-void CHIP8::update()
+void CHIP8::update(double dt)
 {
-    //m_elspsedTime += dt;
+    m_elspsedTime += dt;
 
-    //if (m_elspsedTime > 16.67)
-    //{
-    //    m_elspsedTime -= 16.67;
-    //    if (DT) DT--;
-    //    if (ST) ST--;
-    //}
+    if (m_elspsedTime > 16.67)
+    {
+        m_elspsedTime -= 16.67;
+        if (DT) DT--;
+        if (ST) ST--;
+    }
 
     Instruction instruction;
     instruction.h2 = m_memory[PC++];
@@ -298,5 +258,45 @@ void CHIP8::update()
         break;
     default:
         assert(false && "Unhandled opcode!");
+    }
+}
+
+void CHIP8::handleKey(int key, int action)
+{
+    constexpr int KEY1 = 49;
+    constexpr int KEY2 = 50;
+    constexpr int KEY3 = 51;
+    constexpr int KEY4 = 52;
+    constexpr int KEYQ = 81;
+    constexpr int KEYW = 87;
+    constexpr int KEYE = 69;
+    constexpr int KEYR = 82;
+    constexpr int KEYA = 65;
+    constexpr int KEYS = 83;
+    constexpr int KEYD = 68;
+    constexpr int KEYF = 70;
+    constexpr int KEYZ = 90;
+    constexpr int KEYX = 88;
+    constexpr int KEYC = 67;
+    constexpr int KEYV = 86;
+
+    switch (key)
+    {
+    case KEY1: keys[0x1] = action; break;
+    case KEY2: keys[0x2] = action; break;
+    case KEY3: keys[0x3] = action; break;
+    case KEY4: keys[0xC] = action; break;
+    case KEYQ: keys[0x4] = action; break;
+    case KEYW: keys[0x5] = action; break;
+    case KEYE: keys[0x6] = action; break;
+    case KEYR: keys[0xD] = action; break;
+    case KEYA: keys[0x7] = action; break;
+    case KEYS: keys[0x8] = action; break;
+    case KEYD: keys[0x9] = action; break;
+    case KEYF: keys[0xE] = action; break;
+    case KEYZ: keys[0xA] = action; break;
+    case KEYX: keys[0x0] = action; break;
+    case KEYC: keys[0xB] = action; break;
+    case KEYV: keys[0xF] = action; break;
     }
 }
