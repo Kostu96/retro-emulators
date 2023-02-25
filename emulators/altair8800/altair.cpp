@@ -2,7 +2,7 @@
 
 Altair::Altair() :
 	m_CPU{ CPUx80Mode::Intel8080 },
-	m_RAM{ new u8[0x10000] }
+	m_RAM{ new u8[0x100] }
 {
 	m_CPU.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
 	m_CPU.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });

@@ -1,65 +1,58 @@
 #include "altair.hpp"
 #include "gui.hpp"
+#include  "emu_common/gui.hpp"
 
-#include <glad/gl.h>
-#include <glw/glw.hpp>
-#include <GLFW/glfw3.h>
+#include <SFML/GpuPreference.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/System/Sleep.hpp>
 
 #include <iostream>
 #include <thread>
 
-static void glfwErrorCallback(int error, const char* description)
-{
-    std::cerr << "GLFW error " << error << ": " << description << '\n';
-}
+SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
 int main()
 {
-    glfwSetErrorCallback(glfwErrorCallback);
-    if (!glfwInit()) {
-        std::cerr << "GLFW init failed!\n";
-        std::terminate();
-    }
-
-    glfwWindowHint(GLFW_RESIZABLE, 0);
-    GLFWwindow* window = glfwCreateWindow(800, 300, "Altair 8800 Emulator by Kostu96", nullptr, nullptr);
-    if (!window) {
-        std::cerr << "GLFW window creation failed!\n";
-        std::terminate();
-    }
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
-
-    glw::init(glfwGetProcAddress);
-    GUI::init(window);
+    sf::RenderWindow window{ { 600, 300 }, "Altair 8800 Emulator by Kostu96", sf::Style::Close };
+    window.setVerticalSyncEnabled(true);
 
     Altair altair;
-    bool running = false;
-    
+    bool isPaused = true;
+
     std::thread emuThread{
         [&]() {
-            while (!glfwWindowShouldClose(window)) {
-                std::this_thread::sleep_for(std::chrono::nanoseconds{ 24 }); // TODO: temp
+            sf::Clock clock;
+            u64 updates = 0;
+            while (window.isOpen()) {
+                u64 realTimeNS = clock.restart().asMicroseconds() * 1000;
+                u64 emuTimeNS = updates * 500;
+                updates = 0;
+                if (realTimeNS - emuTimeNS > 1000000)
+                    sf::sleep(sf::microseconds(1000));
                 
-                if (running)
+                if (!isPaused)
                     altair.update();
+
+                updates++;
             }
         }
     };
 
-    while (!glfwWindowShouldClose(window))
+    while (window.isOpen())
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        window.clear();
 
-        GUI::update(altair);
+        window.display();
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
     }
 
     emuThread.join();
-    
-    GUI::shutdown();
-    glfwTerminate();
     return 0;
 }
