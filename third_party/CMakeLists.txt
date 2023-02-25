@@ -1,4 +1,5 @@
 add_subdirectory(cpp-common-lib)
+set_target_properties(cpp-common-lib PROPERTIES FOLDER third_party)
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -11,6 +12,7 @@ add_subdirectory(glw)
 set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 add_subdirectory(googletest)
+set_target_properties(gtest gtest_main PROPERTIES FOLDER third_party/googletest)
 
 set(IMGUI_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_glfw.cpp
@@ -39,12 +41,15 @@ target_link_libraries(imgui PUBLIC
     glfw
 )
 
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(SDL_TEST OFF CACHE BOOL "" FORCE)
+set(SDL2_DISABLE_UNINSTALL ON CACHE BOOL "" FORCE)
+add_subdirectory(SDL2)
+set_target_properties(sdl_headers_copy SDL2main SDL2-static PROPERTIES FOLDER third_party/SDL2)
+
 set_target_properties(
-    cpp-common-lib
     glfw
     glw
-    gtest
-    gtest_main
     imgui
     update_mappings
     PROPERTIES

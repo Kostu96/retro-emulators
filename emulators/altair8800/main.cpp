@@ -2,57 +2,61 @@
 #include "gui.hpp"
 #include  "emu_common/gui.hpp"
 
-#include <SFML/GpuPreference.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/System/Sleep.hpp>
+#include <SDL.h>
 
 #include <iostream>
 #include <thread>
 
-SFML_DEFINE_DISCRETE_GPU_PREFERENCE
-
-int main()
+int main(int /*argc*/, char* /*argv*/[])
 {
-    sf::RenderWindow window{ { 600, 300 }, "Altair 8800 Emulator by Kostu96", sf::Style::Close };
-    window.setVerticalSyncEnabled(true);
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+        return -1;
+
+    SDL_Window* window = SDL_CreateWindow("Altair 8800 Emulator by Kostu96", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 400, SDL_WINDOW_SHOWN);
+    if (!window)
+        return -1;
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer)
+        return -1;
 
     Altair altair;
-    bool isPaused = true;
+    bool shouldQuit = false;
 
     std::thread emuThread{
         [&]() {
-            sf::Clock clock;
-            u64 updates = 0;
-            while (window.isOpen()) {
-                u64 realTimeNS = clock.restart().asMicroseconds() * 1000;
-                u64 emuTimeNS = updates * 500;
-                updates = 0;
-                if (realTimeNS - emuTimeNS > 1000000)
-                    sf::sleep(sf::microseconds(1000));
+            /*sf::Clock clock;
+            u64 updates = 0;*/
+            while (!shouldQuit) {
+                //u64 realTimeNS = clock.restart().asMicroseconds() * 1000;
+                //u64 emuTimeNS = updates * 500;
+                //updates = 0;
+                //if (realTimeNS - emuTimeNS > 1000000)
+                //    sf::sleep(sf::microseconds(1000));
                 
-                if (!isPaused)
-                    altair.update();
+                //altair.update();
 
-                updates++;
+                //updates++;
             }
         }
     };
-
-    while (window.isOpen())
+    
+    while (!shouldQuit)
     {
-        window.clear();
+        SDL_RenderClear(renderer);
 
-        window.display();
+        SDL_RenderPresent(renderer);
 
-        sf::Event event;
-        while (window.pollEvent(event))
+        SDL_Event e;
+        while (SDL_PollEvent(&e))
         {
-            if (event.type == sf::Event::Closed)
-                window.close();
+            if (e.type == SDL_QUIT) shouldQuit = true;
         }
     }
 
     emuThread.join();
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }

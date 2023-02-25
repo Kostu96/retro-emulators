@@ -16,3 +16,6 @@
 [submodule "gb-test-roms"]
 	path = third_party/gb-test-roms
 	url = https://github.com/retrio/gb-test-roms.git
+[submodule "SDL2"]
+	path = third_party/SDL2
+	url = https://github.com/libsdl-org/SDL.git
