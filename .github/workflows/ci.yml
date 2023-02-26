@@ -42,6 +42,8 @@ jobs:
     - name: Configure
       shell: cmake -P {0}
       run: |
+        execute_process(COMMAND git submodule update --init WORKING_DIRECTORY ./third_party/SDL_ttf)
+        
         set(ENV{CC} ${{matrix.config.cc}})
         set(ENV{CXX} ${{matrix.config.cxx}})
         
