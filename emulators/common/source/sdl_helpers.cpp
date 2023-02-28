@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include <cassert>
 #include <iostream>
 
 namespace EmuCommon {
@@ -23,8 +24,8 @@ namespace EmuCommon {
             return false;
         }
 
-        m_width = surface->w;
-        m_height = surface->h;
+        m_size.x = surface->w;
+        m_size.y = surface->h;
 
         m_handle = SDL_CreateTextureFromSurface(Application::get().getSDLRenderer(), surface);
         if (m_handle == nullptr) {
@@ -41,17 +42,22 @@ namespace EmuCommon {
         TTF_CloseFont(m_handle);
     }
 
-    bool SDLFont::loadFromFile(const char* filename, int size)
+    bool SDLFont::loadFromFile(const char* filename)
     {
-        m_handle = TTF_OpenFont(filename, size);
+        m_handle = TTF_OpenFont(filename, DEFAULT_SIZE);
         if (m_handle == nullptr) {
             std::cerr << "Could not load font file: " << filename << " SDL_ttf Error: " << TTF_GetError();
             return false;
         }
 
         TTF_SetFontHinting(m_handle, TTF_HINTING_LIGHT_SUBPIXEL);
-
         return true;
+    }
+
+    void SDLFont::setSize(int size)
+    {
+        assert(m_handle != nullptr);
+        TTF_SetFontSize(m_handle, size);
     }
 
     SDLText::~SDLText()
@@ -60,18 +66,26 @@ namespace EmuCommon {
             SDL_DestroyTexture(m_texture);
     }
 
-    void SDLText::setText(const char* str, uint8_t colorR, uint8_t colorG, uint8_t colorB)
+    void SDLText::setText(const char* text)
     {
-        m_text = str;
+        m_text = text;
+        TTF_SizeUTF8(m_font, m_text.c_str(), &m_size.x, &m_size.y);
+    }
 
-        SDL_Surface* surface = TTF_RenderText_Blended(m_font, m_text.c_str(), { colorR, colorG, colorB });
+    void SDLText::setTextSize(unsigned int size)
+    {
+        m_textSize = size;
+        m_font.setSize(m_textSize);
+        TTF_SizeUTF8(m_font, m_text.c_str(), &m_size.x, &m_size.y);
+    }
+
+    void SDLText::render(SDL_Renderer* renderer)
+    {
+        SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font, m_text.c_str(), { m_color.r, m_color.g, m_color.b });
         if (surface == nullptr) {
             std::cerr << "Could not render text to surface. SDL_ttf Error: " << TTF_GetError();
             return;
         }
-
-        m_textureWidth = surface->w;
-        m_textureHeight = surface->h;
 
         if (m_texture)
             SDL_DestroyTexture(m_texture);
@@ -83,6 +97,9 @@ namespace EmuCommon {
         }
 
         SDL_FreeSurface(surface);
+
+        SDL_Rect rect = { m_position.x, m_position.y, m_size.x, m_size.y };
+        SDL_RenderCopy(renderer, m_texture, nullptr, &rect);
     }
 
 } // EmuCommon

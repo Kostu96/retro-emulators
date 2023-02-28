@@ -2,6 +2,7 @@
 
 struct SDL_Window;
 struct SDL_Renderer;
+union SDL_Event;
 
 namespace EmuCommon {
 
@@ -18,7 +19,8 @@ namespace EmuCommon {
 
 		static Application& get() { return *s_instance; }
 	protected:
-		virtual void onRender() {}
+		virtual void onUpdate() {}
+		virtual void onEvent(SDL_Event& /*e*/) {}
 	private:
 		bool m_isRunning = false;
 		SDL_Window* m_window = nullptr;

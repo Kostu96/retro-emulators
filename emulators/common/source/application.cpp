@@ -59,12 +59,13 @@ namespace EmuCommon {
 	{
 		while (m_isRunning)
 		{
-			onRender();
+			onUpdate();
 			SDL_RenderPresent(m_renderer);
 
 			SDL_Event e;
 			while (SDL_PollEvent(&e))
 			{
+				onEvent(e);
 				if (e.type == SDL_QUIT) m_isRunning = false;
 			}
 		}
