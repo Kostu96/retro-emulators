@@ -7,47 +7,95 @@
 #include <iostream>
 #include <thread>
 
+using EmuCommon::Vec2i;
+
+class LabeledLED
+{
+public:
+    LabeledLED(const char* text, EmuCommon::SDLFont& font, EmuCommon::SDLTexture& ledTexture) :
+        m_label{ font },
+        m_LEDTexture{ ledTexture }
+    {
+        m_label.setText(text);
+        m_label.setTextSize(14);
+        m_label.setColor({ 0xF2, 0xF1, 0xED });
+
+        m_size.x = std::max(m_label.getSize().x, (m_LEDTexture.getSize().x / 2) / LED_SCALE);
+        m_size.y = m_label.getSize().y + m_LEDTexture.getSize().y / LED_SCALE + 2;
+    }
+
+    void setPosition(Vec2i position)
+    {
+        m_position = position;
+        int xPos = position.x + ((m_size.x == m_label.getSize().x) ? 0 : (m_size.x - m_label.getSize().x) / 2);
+        m_label.setPosition({ xPos, position.y });
+    }
+
+    Vec2i getSize() const { return m_size; }
+
+    void render(SDL_Renderer* renderer)
+    {
+        m_label.render(renderer);
+        const int width = m_LEDTexture.getSize().x / 2;
+        const int scaledWidth = width / LED_SCALE;
+        const int height = m_LEDTexture.getSize().y;
+        const SDL_Rect srcRect{ m_status ? width : 0, 0, width, height };
+        int xPos = m_position.x + ((m_size.x == scaledWidth) ? 0 : (m_size.x - scaledWidth) / 2);
+        const SDL_Rect dstRect{ xPos, m_position.y + m_label.getSize().y + 2, scaledWidth, height / LED_SCALE };
+        SDL_RenderCopy(renderer, m_LEDTexture, &srcRect, &dstRect);
+    }
+private:
+    static constexpr int LED_SCALE = 4;
+
+    bool m_status = false;
+    Vec2i m_position;
+    Vec2i m_size;
+    EmuCommon::SDLText m_label;
+    EmuCommon::SDLTexture& m_LEDTexture;
+};
+
 class Emulator :
     public EmuCommon::Application
 {
 public:
     Emulator() :
         Application{ "Altair 8800 Emulator by Kostu96", 1024, 400 },
-        m_INTEText{ m_labelFont },
-        m_PROTText{ m_labelFont },
-        m_MEMRText{ m_labelFont },
-        m_INPText{ m_labelFont },
-        m_MIText{ m_labelFont },
-        m_OUTText{ m_labelFont },
-        m_HLTAText{ m_labelFont },
-        m_STACKText{ m_labelFont },
-        m_WOText{ m_labelFont },
-        m_INTText{ m_labelFont },
+        m_labelFont{ "assets/altair/coolvetica.ttf" },
+        m_ledTexture{ "assets/altair/led.png" },
+        m_INTE{ "INTE", m_labelFont, m_ledTexture },
+        m_PROT{ "PROT", m_labelFont, m_ledTexture },
+        m_MEMR{ "MEMR", m_labelFont, m_ledTexture },
+        m_INP{ "INP", m_labelFont, m_ledTexture },
+        m_MI{ "MI", m_labelFont, m_ledTexture },
+        m_OUT{ "OUT", m_labelFont, m_ledTexture },
+        m_HLTA{ "HLTA", m_labelFont, m_ledTexture },
+        m_STACK{ "STACK", m_labelFont, m_ledTexture },
+        m_WO{ "WO", m_labelFont, m_ledTexture },
+        m_INT{ "INT", m_labelFont, m_ledTexture },
         m_STATUSText{ m_labelFont },
         m_logo1{ m_256bytesFont },
         m_logo2{ m_256bytesFont }
     {
-        m_labelFont.loadFromFile("assets/altair/coolvetica.ttf");
+        int maxWidth = m_INTE.getSize().x;
+        for (const auto& i : { m_PROT, m_MEMR, m_INP, m_MI, m_OUT, m_HLTA, m_STACK, m_WO, m_INT })
+            if (i.getSize().x > maxWidth) maxWidth = i.getSize().x;
+
+        for (auto* i : { &m_INTE, &m_PROT, &m_MEMR, &m_INP, &m_MI, &m_OUT, &m_HLTA, &m_STACK, &m_WO, &m_INT }) {
+            static int x = 64;
+            int off = (maxWidth + 3 - i->getSize().x) / 2;
+            i->setPosition({ x + off, 20 });
+            x += maxWidth + 3;
+        }
+
         m_256bytesFont.loadFromFile("assets/altair/256bytes.ttf");
 
-        m_INTEText.setText("INTE"); m_INTEText.setTextSize(14); m_INTEText.setColor({ 0xF2, 0xF1, 0xED });
-        m_PROTText.setText("PROT"); m_PROTText.setTextSize(14); m_PROTText.setColor({ 0xF2, 0xF1, 0xED });
-        m_MEMRText.setText("MEMR"); m_MEMRText.setTextSize(14); m_MEMRText.setColor({ 0xF2, 0xF1, 0xED });
-        m_INPText.setText("INP"); m_INPText.setTextSize(14); m_INPText.setColor({ 0xF2, 0xF1, 0xED });
-        m_MIText.setText("MI"); m_MIText.setTextSize(14); m_MIText.setColor({ 0xF2, 0xF1, 0xED });
-        m_OUTText.setText("OUT"); m_OUTText.setTextSize(14); m_OUTText.setColor({ 0xF2, 0xF1, 0xED });
-        m_HLTAText.setText("HLTA"); m_HLTAText.setTextSize(14); m_HLTAText.setColor({ 0xF2, 0xF1, 0xED });
-        m_STACKText.setText("STACK"); m_STACKText.setTextSize(14); m_STACKText.setColor({ 0xF2, 0xF1, 0xED });
-        m_WOText.setText("WO"); m_WOText.setTextSize(14); m_WOText.setColor({ 0xF2, 0xF1, 0xED });
-        m_INTText.setText("INT"); m_INTText.setTextSize(14); m_INTText.setColor({ 0xF2, 0xF1, 0xED });
-        m_STATUSText.setText("STATUS"); m_STATUSText.setTextSize(14); m_STATUSText.setColor({ 0xF2, 0xF1, 0xED });
+        m_STATUSText.setText("STATUS"); m_STATUSText.setTextSize(14); m_STATUSText.setColor({ 0xF2, 0xF1, 0xED }); m_STATUSText.setPosition({ 295, 70 });
 
         m_logo1.setText("ALTAIR 8800"); m_logo1.setTextSize(64); m_logo1.setColor({ 0, 0, 0 });
         m_logo1.setPosition({ 16 + 64, 400 - 72 - 32 });
         m_logo2.setText("COMPUTER"); m_logo2.setTextSize(46); m_logo2.setColor({ 0, 0, 0 });
         m_logo2.setPosition({ m_logo1.getPosition().x + m_logo1.getSize().x + 16, m_logo1.getPosition().y + 10 });
 
-        m_ledTexture.loadFromFile("assets/altair/led.png");
         m_switchTexture.loadFromFile("assets/altair/switch.png");
     }
 protected:
@@ -67,47 +115,21 @@ protected:
         m_logo1.render(renderer);
         m_logo2.render(renderer);
 
-        // 1st row of LEDs
-        const int firstRowLevel = 20;
-        for (int i = 0; i < 10; i++) {
-            const float ledScale = 4.f;
-            const int width = m_ledTexture.getSize().x / 2;
-            const int height = m_ledTexture.getSize().y;
-            const SDL_Rect srcRect{ (i % 2) * width, 0, width, height };
-            const SDL_FRect dstRect{
-                64.f + (18.f + width / ledScale) * i,
-                firstRowLevel + height / ledScale - 4.f,
-                width / ledScale,
-                height / ledScale
-            };
-            SDL_RenderCopyF(renderer, m_ledTexture, &srcRect, &dstRect);
-        }
-        rect = { 64, firstRowLevel, m_INTEText.getSize().x, m_INTEText.getSize().y };
-        SDL_RenderCopy(renderer, m_INTEText.getTexture(), nullptr, &rect);
-        rect = { 105, firstRowLevel, m_PROTText.getSize().x, m_PROTText.getSize().y };
-        SDL_RenderCopy(renderer, m_PROTText.getTexture(), nullptr, &rect);
-        rect = { 145, firstRowLevel, m_MEMRText.getSize().x, m_MEMRText.getSize().y };
-        SDL_RenderCopy(renderer, m_MEMRText.getTexture(), nullptr, &rect);
-        rect = { 198, firstRowLevel, m_INPText.getSize().x, m_INPText.getSize().y };
-        SDL_RenderCopy(renderer, m_INPText.getTexture(), nullptr, &rect);
-        rect = { 242, firstRowLevel, m_MIText.getSize().x, m_MIText.getSize().y };
-        SDL_RenderCopy(renderer, m_MIText.getTexture(), nullptr, &rect);
-        rect = { 279, firstRowLevel, m_OUTText.getSize().x, m_OUTText.getSize().y };
-        SDL_RenderCopy(renderer, m_OUTText.getTexture(), nullptr, &rect);
-        rect = { 321, firstRowLevel, m_HLTAText.getSize().x, m_HLTAText.getSize().y };
-        SDL_RenderCopy(renderer, m_HLTAText.getTexture(), nullptr, &rect);
-        rect = { 360, firstRowLevel, m_STACKText.getSize().x, m_STACKText.getSize().y };
-        SDL_RenderCopy(renderer, m_STACKText.getTexture(), nullptr, &rect);
-        rect = { 410, firstRowLevel, m_WOText.getSize().x, m_WOText.getSize().y };
-        SDL_RenderCopy(renderer, m_WOText.getTexture(), nullptr, &rect);
-        rect = { 456, firstRowLevel, m_INTText.getSize().x, m_INTText.getSize().y };
-        SDL_RenderCopy(renderer, m_INTText.getTexture(), nullptr, &rect);
+        m_INTE.render(renderer);
+        m_PROT.render(renderer);
+        m_MEMR.render(renderer);
+        m_INP.render(renderer);
+        m_MI.render(renderer);
+        m_OUT.render(renderer);
+        m_HLTA.render(renderer);
+        m_STACK.render(renderer);
+        m_WO.render(renderer);
+        m_INT.render(renderer);
 
-        rect = { 144, firstRowLevel + 50, 338, 2 };
+        rect = { 145, 67, 337, 2 };
         SDL_SetRenderDrawColor(renderer, 0xF2, 0xF1, 0xED, 0xFF);
         SDL_RenderFillRect(renderer, &rect);
-        rect = { 295, firstRowLevel + 51, m_STATUSText.getSize().x, m_STATUSText.getSize().y };
-        SDL_RenderCopy(renderer, m_STATUSText.getTexture(), nullptr, &rect);
+        m_STATUSText.render(renderer);
 
         // switches
         for (int i = 0; i < 16; i++) {
@@ -122,21 +144,13 @@ protected:
 private:
     EmuCommon::SDLFont m_labelFont;
     EmuCommon::SDLFont m_256bytesFont;
-    EmuCommon::SDLText m_INTEText;
-    EmuCommon::SDLText m_PROTText;
-    EmuCommon::SDLText m_MEMRText;
-    EmuCommon::SDLText m_INPText;
-    EmuCommon::SDLText m_MIText;
-    EmuCommon::SDLText m_OUTText;
-    EmuCommon::SDLText m_HLTAText;
-    EmuCommon::SDLText m_STACKText;
-    EmuCommon::SDLText m_WOText;
-    EmuCommon::SDLText m_INTText;
+    EmuCommon::SDLTexture m_ledTexture;
+    EmuCommon::SDLTexture m_switchTexture;
+    LabeledLED m_INTE, m_PROT, m_MEMR, m_INP, m_MI,
+               m_OUT, m_HLTA, m_STACK, m_WO, m_INT;
     EmuCommon::SDLText m_STATUSText;
     EmuCommon::SDLText m_logo1;
     EmuCommon::SDLText m_logo2;
-    EmuCommon::SDLTexture m_ledTexture;
-    EmuCommon::SDLTexture m_switchTexture;
 };
 
 int main(int /*argc*/, char* /*argv*/[])

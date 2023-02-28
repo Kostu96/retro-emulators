@@ -8,12 +8,14 @@ typedef struct _TTF_Font TTF_Font;
 namespace EmuCommon {
 
 	struct Vec2i { int x = 0, y = 0; };
+	struct Vec2f { float x = 0.f, y = 0.f; };
 	struct Color { uint8_t r = 0, g = 0, b = 0, a = 255; };
 
 	class SDLTexture
 	{
 	public:
 		SDLTexture() = default;
+		explicit SDLTexture(const char* filename) { loadFromFile(filename); }
 		~SDLTexture();
 
 		bool loadFromFile(const char* filename);
@@ -30,6 +32,7 @@ namespace EmuCommon {
 	{
 	public:
 		SDLFont() = default;
+		explicit SDLFont(const char* filename) { loadFromFile(filename); }
 		~SDLFont();
 
 		bool loadFromFile(const char* filename);
@@ -50,8 +53,6 @@ namespace EmuCommon {
 		SDLText(SDLFont& font) : m_font{ font } {};
 		~SDLText();
 
-		SDL_Texture* getTexture() { return m_texture; }
-
 		void setText(const char* text);
 		void setTextSize(unsigned int size);
 		void setColor(Color color) { m_color = color; }
@@ -62,12 +63,14 @@ namespace EmuCommon {
 		void render(SDL_Renderer* renderer);
 	private:
 		SDLFont& m_font;
-		SDL_Texture* m_texture = nullptr;
 		std::string m_text{ "" };
 		unsigned int m_textSize{ SDLFont::DEFAULT_SIZE };
 		Color m_color{ 255, 255, 255, 255 };
 		Vec2i m_position;
 		Vec2i m_size;
+
+		SDL_Texture* m_texture = nullptr;
+		bool m_isTextureDirty = true;
 	};
 
 } // namespace EmuCommon

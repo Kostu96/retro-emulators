@@ -70,6 +70,7 @@ namespace EmuCommon {
     {
         m_text = text;
         TTF_SizeUTF8(m_font, m_text.c_str(), &m_size.x, &m_size.y);
+        m_isTextureDirty = true;
     }
 
     void SDLText::setTextSize(unsigned int size)
@@ -77,26 +78,32 @@ namespace EmuCommon {
         m_textSize = size;
         m_font.setSize(m_textSize);
         TTF_SizeUTF8(m_font, m_text.c_str(), &m_size.x, &m_size.y);
+        m_isTextureDirty = true;
     }
 
     void SDLText::render(SDL_Renderer* renderer)
     {
-        SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font, m_text.c_str(), { m_color.r, m_color.g, m_color.b });
-        if (surface == nullptr) {
-            std::cerr << "Could not render text to surface. SDL_ttf Error: " << TTF_GetError();
-            return;
+        if (m_isTextureDirty) {
+            m_font.setSize(m_textSize);
+            SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font, m_text.c_str(), { m_color.r, m_color.g, m_color.b });
+            if (surface == nullptr) {
+                std::cerr << "Could not render text to surface. SDL_ttf Error: " << TTF_GetError();
+                return;
+            }
+            assert(m_size.x == surface->w);
+            assert(m_size.y == surface->h);
+
+            if (m_texture)
+                SDL_DestroyTexture(m_texture);
+
+            m_texture = SDL_CreateTextureFromSurface(Application::get().getSDLRenderer(), surface);
+            if (m_texture == nullptr) {
+                std::cerr << "Could not create texture from text surface. SDL Error: " << SDL_GetError();
+                return;
+            }
+
+            SDL_FreeSurface(surface);
         }
-
-        if (m_texture)
-            SDL_DestroyTexture(m_texture);
-
-        m_texture = SDL_CreateTextureFromSurface(Application::get().getSDLRenderer(), surface);
-        if (m_texture == nullptr) {
-            std::cerr << "Could not create texture from text surface. SDL Error: " << SDL_GetError();
-            return;
-        }
-
-        SDL_FreeSurface(surface);
 
         SDL_Rect rect = { m_position.x, m_position.y, m_size.x, m_size.y };
         SDL_RenderCopy(renderer, m_texture, nullptr, &rect);
