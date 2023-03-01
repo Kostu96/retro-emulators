@@ -1,9 +1,9 @@
 #pragma once
-#include <string>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 
-struct SDL_Renderer;
-struct SDL_Texture;
-typedef struct _TTF_Font TTF_Font;
+#include <string>
 
 namespace EmuCommon {
 
@@ -58,7 +58,7 @@ namespace EmuCommon {
 		void setColor(Color color) { m_color = color; }
 		void setPosition(Vec2i position) { m_position = position; }
 		Vec2i getPosition() const { return m_position; }
-		Vec2i getSize() const { return m_size; }
+		Vec2i getSize();
 
 		void render(SDL_Renderer* renderer);
 	private:
@@ -71,6 +71,7 @@ namespace EmuCommon {
 
 		SDL_Texture* m_texture = nullptr;
 		bool m_isTextureDirty = true;
+		bool m_isSizeDirty = true;
 	};
 
 } // namespace EmuCommon

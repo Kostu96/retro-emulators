@@ -1,8 +1,7 @@
 #include "altair.hpp"
+#include "widgets/button.hpp"
 #include "emu_common/application.hpp"
 #include "emu_common/sdl_helpers.hpp"
-
-#include <SDL.h>
 
 #include <iostream>
 #include <thread>
@@ -61,6 +60,7 @@ public:
     Emulator() :
         Application{ "Altair 8800 Emulator by Kostu96", 1024, 400 },
         m_labelFont{ "assets/altair/coolvetica.ttf" },
+        m_256bytesFont{ "assets/altair/256bytes.ttf" },
         m_ledTexture{ "assets/altair/led.png" },
         m_INTE{ "INTE", m_labelFont, m_ledTexture },
         m_PROT{ "PROT", m_labelFont, m_ledTexture },
@@ -74,7 +74,8 @@ public:
         m_INT{ "INT", m_labelFont, m_ledTexture },
         m_STATUSText{ m_labelFont },
         m_logo1{ m_256bytesFont },
-        m_logo2{ m_256bytesFont }
+        m_logo2{ m_256bytesFont },
+        m_runButton{ m_labelFont, "RUN"}
     {
         int maxWidth = m_INTE.getSize().x;
         for (const auto& i : { m_PROT, m_MEMR, m_INP, m_MI, m_OUT, m_HLTA, m_STACK, m_WO, m_INT })
@@ -86,8 +87,6 @@ public:
             i->setPosition({ x + off, 20 });
             x += maxWidth + 3;
         }
-
-        m_256bytesFont.loadFromFile("assets/altair/256bytes.ttf");
 
         m_STATUSText.setText("STATUS"); m_STATUSText.setTextSize(14); m_STATUSText.setColor({ 0xF2, 0xF1, 0xED }); m_STATUSText.setPosition({ 295, 70 });
 
@@ -132,14 +131,19 @@ protected:
         m_STATUSText.render(renderer);
 
         // switches
-        for (int i = 0; i < 16; i++) {
+        /*for (int i = 0; i < 16; i++) {
             const float switchScale = 3.f;
             const int width = m_switchTexture.getSize().x / 3;
             const int height = m_switchTexture.getSize().y;
             const SDL_Rect srcRect{ (i % 3) * width, 0, width, height };
             const SDL_FRect dstRect{ (10.f + width / switchScale) * i + 50.f, 200, width / switchScale, height / switchScale };
             SDL_RenderCopyF(renderer, m_switchTexture, &srcRect, &dstRect);
-        }     
+        } */    
+        m_runButton.render();
+    }
+
+    void onEvent(SDL_Event& e) override {
+        m_runButton.onEvent(e);
     }
 private:
     EmuCommon::SDLFont m_labelFont;
@@ -151,6 +155,7 @@ private:
     EmuCommon::SDLText m_STATUSText;
     EmuCommon::SDLText m_logo1;
     EmuCommon::SDLText m_logo2;
+    Button m_runButton;
 };
 
 int main(int /*argc*/, char* /*argv*/[])

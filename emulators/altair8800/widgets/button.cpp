@@ -1,20 +1,14 @@
-#pragma once
-#include <functional>
-#include <string>
+#include "button.hpp"
+#include "emu_common/application.hpp"
 
-class Button
+void Button::render()
 {
-public:
-    explicit Button(const char* text = "") :
-        m_text{ text } {}
+    auto renderer = EmuCommon::Application::get().getSDLRenderer();
 
-    void setCallback(std::function<void()> callback) { m_callback = callback; }
+    m_text.render(renderer);
+}
 
-    void render()
-    {
+void Button::onEvent(SDL_Event& /*e*/)
+{
 
-    }
-private:
-    std::string m_text;
-    std::function<void()> m_callback;
-};
+}
