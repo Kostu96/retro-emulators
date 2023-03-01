@@ -1,67 +1,21 @@
 #include "altair.hpp"
-#include "widgets/button.hpp"
+#include "gui.hpp"
 #include "emu_common/application.hpp"
-#include "emu_common/sdl_helpers.hpp"
 
 #include <iostream>
 #include <thread>
-
-using EmuCommon::Vec2i;
-
-class LabeledLED
-{
-public:
-    LabeledLED(const char* text, EmuCommon::SDLFont& font, EmuCommon::SDLTexture& ledTexture) :
-        m_label{ font },
-        m_LEDTexture{ ledTexture }
-    {
-        m_label.setText(text);
-        m_label.setTextSize(14);
-        m_label.setColor({ 0xF2, 0xF1, 0xED });
-
-        m_size.x = std::max(m_label.getSize().x, (m_LEDTexture.getSize().x / 2) / LED_SCALE);
-        m_size.y = m_label.getSize().y + m_LEDTexture.getSize().y / LED_SCALE + 2;
-    }
-
-    void setPosition(Vec2i position)
-    {
-        m_position = position;
-        int xPos = position.x + ((m_size.x == m_label.getSize().x) ? 0 : (m_size.x - m_label.getSize().x) / 2);
-        m_label.setPosition({ xPos, position.y });
-    }
-
-    Vec2i getSize() const { return m_size; }
-
-    void render(SDL_Renderer* renderer)
-    {
-        m_label.render(renderer);
-        const int width = m_LEDTexture.getSize().x / 2;
-        const int scaledWidth = width / LED_SCALE;
-        const int height = m_LEDTexture.getSize().y;
-        const SDL_Rect srcRect{ m_status ? width : 0, 0, width, height };
-        int xPos = m_position.x + ((m_size.x == scaledWidth) ? 0 : (m_size.x - scaledWidth) / 2);
-        const SDL_Rect dstRect{ xPos, m_position.y + m_label.getSize().y + 2, scaledWidth, height / LED_SCALE };
-        SDL_RenderCopy(renderer, m_LEDTexture, &srcRect, &dstRect);
-    }
-private:
-    static constexpr int LED_SCALE = 4;
-
-    bool m_status = false;
-    Vec2i m_position;
-    Vec2i m_size;
-    EmuCommon::SDLText m_label;
-    EmuCommon::SDLTexture& m_LEDTexture;
-};
 
 class Emulator :
     public EmuCommon::Application
 {
 public:
-    Emulator() :
+    Emulator(Altair& altair) :
         Application{ "Altair 8800 Emulator by Kostu96", 1024, 400 },
+        m_altair{ altair },
         m_labelFont{ "assets/altair/coolvetica.ttf" },
         m_256bytesFont{ "assets/altair/256bytes.ttf" },
         m_ledTexture{ "assets/altair/led.png" },
+        m_switchTexture{ "assets/altair/switch.png" },
         m_INTE{ "INTE", m_labelFont, m_ledTexture },
         m_PROT{ "PROT", m_labelFont, m_ledTexture },
         m_MEMR{ "MEMR", m_labelFont, m_ledTexture },
@@ -72,10 +26,10 @@ public:
         m_STACK{ "STACK", m_labelFont, m_ledTexture },
         m_WO{ "WO", m_labelFont, m_ledTexture },
         m_INT{ "INT", m_labelFont, m_ledTexture },
-        m_STATUSText{ m_labelFont },
-        m_logo1{ m_256bytesFont },
-        m_logo2{ m_256bytesFont },
-        m_runButton{ m_labelFont, "RUN"}
+        m_STATUSText{ m_labelFont, "STATUS" },
+        m_stopRunBtn{ "STOP", "RUN", m_labelFont, m_switchTexture },
+        m_logo1{ m_256bytesFont, "ALTAIR 8800" },
+        m_logo2{ m_256bytesFont, "COMPUTER" }
     {
         int maxWidth = m_INTE.getSize().x;
         for (const auto& i : { m_PROT, m_MEMR, m_INP, m_MI, m_OUT, m_HLTA, m_STACK, m_WO, m_INT })
@@ -87,18 +41,19 @@ public:
             i->setPosition({ x + off, 20 });
             x += maxWidth + 3;
         }
+        m_STATUSText.setColor({ 0xF2, 0xF1, 0xED }); m_STATUSText.setPosition({ 295, 70 });
 
-        m_STATUSText.setText("STATUS"); m_STATUSText.setTextSize(14); m_STATUSText.setColor({ 0xF2, 0xF1, 0xED }); m_STATUSText.setPosition({ 295, 70 });
+        m_stopRunBtn.setPosition({ 100, 150 });
 
-        m_logo1.setText("ALTAIR 8800"); m_logo1.setTextSize(64); m_logo1.setColor({ 0, 0, 0 });
-        m_logo1.setPosition({ 16 + 64, 400 - 72 - 32 });
-        m_logo2.setText("COMPUTER"); m_logo2.setTextSize(46); m_logo2.setColor({ 0, 0, 0 });
-        m_logo2.setPosition({ m_logo1.getPosition().x + m_logo1.getSize().x + 16, m_logo1.getPosition().y + 10 });
-
-        m_switchTexture.loadFromFile("assets/altair/switch.png");
+        m_logo1.setTextSize(64); m_logo1.setColor({ 0, 0, 0 }); m_logo1.setPosition({ 16 + 64, 400 - 72 - 32 });
+        m_logo2.setTextSize(46); m_logo2.setColor({ 0, 0, 0 }); m_logo2.setPosition({ m_logo1.getPosition().x + m_logo1.getSize().x + 16, m_logo1.getPosition().y + 10 });
     }
 protected:
     void onUpdate() override {
+        Vec2i mousePos;;
+        SDL_GetMouseState(&mousePos.x, &mousePos.y);
+        m_stopRunBtn.handleMousePos(mousePos);
+
         auto renderer = getSDLRenderer();
         SDL_Rect rect;
 
@@ -139,13 +94,14 @@ protected:
             const SDL_FRect dstRect{ (10.f + width / switchScale) * i + 50.f, 200, width / switchScale, height / switchScale };
             SDL_RenderCopyF(renderer, m_switchTexture, &srcRect, &dstRect);
         } */    
-        m_runButton.render();
+        m_stopRunBtn.render(renderer);
     }
 
     void onEvent(SDL_Event& e) override {
-        m_runButton.onEvent(e);
+        m_stopRunBtn.onEvent(e);
     }
 private:
+    Altair& m_altair;
     EmuCommon::SDLFont m_labelFont;
     EmuCommon::SDLFont m_256bytesFont;
     EmuCommon::SDLTexture m_ledTexture;
@@ -153,15 +109,15 @@ private:
     LabeledLED m_INTE, m_PROT, m_MEMR, m_INP, m_MI,
                m_OUT, m_HLTA, m_STACK, m_WO, m_INT;
     EmuCommon::SDLText m_STATUSText;
+    TwoWayButton m_stopRunBtn;
     EmuCommon::SDLText m_logo1;
     EmuCommon::SDLText m_logo2;
-    Button m_runButton;
 };
 
 int main(int /*argc*/, char* /*argv*/[])
 {
-    Emulator emulator;
     Altair altair;
+    Emulator emulator{ altair };
 
     std::thread altairThread{
         [&]() {

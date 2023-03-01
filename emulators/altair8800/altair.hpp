@@ -11,6 +11,8 @@ public:
 	Altair();
 	~Altair();
 
+	void run() { m_isStopped = false; }
+	void stop() { m_isStopped = true; }
 	void reset();
 	void update();
 
@@ -21,6 +23,7 @@ private:
 
 	CPUx80<CPUx80Mode::Intel8080> m_CPU;
 	u8* m_RAM;
+	bool m_isStopped = true;
 
 	//std::vector<DisassemblyLine> m_disassembly;
 };

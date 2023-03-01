@@ -37,7 +37,7 @@ namespace EmuCommon {
 
 		bool loadFromFile(const char* filename);
 	private:
-		static constexpr int DEFAULT_SIZE = 16;
+		static constexpr int DEFAULT_SIZE = 14;
 
 		void setSize(int size);
 		operator TTF_Font*() { return m_handle; }
@@ -50,7 +50,7 @@ namespace EmuCommon {
 	class SDLText
 	{
 	public:
-		SDLText(SDLFont& font) : m_font{ font } {};
+		explicit SDLText(SDLFont& font, const char* text = "") : m_font{font} { setText(text); };
 		~SDLText();
 
 		void setText(const char* text);
@@ -60,7 +60,7 @@ namespace EmuCommon {
 		Vec2i getPosition() const { return m_position; }
 		Vec2i getSize();
 
-		void render(SDL_Renderer* renderer);
+		void render(SDL_Renderer* renderer, Vec2i offset = { 0, 0 });
 	private:
 		SDLFont& m_font;
 		std::string m_text{ "" };

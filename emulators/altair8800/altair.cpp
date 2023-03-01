@@ -22,7 +22,8 @@ void Altair::reset()
 
 void Altair::update()
 {
-	m_CPU.clock();
+	if (!m_isStopped)
+		m_CPU.clock();
 }
 
 u8 Altair::memoryRead(u16 address)

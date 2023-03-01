@@ -90,7 +90,7 @@ namespace EmuCommon {
         return m_size;
     }
 
-    void SDLText::render(SDL_Renderer* renderer)
+    void SDLText::render(SDL_Renderer* renderer, Vec2i offset)
     {
         if (m_isTextureDirty) {
             m_font.setSize(m_textSize);
@@ -115,7 +115,7 @@ namespace EmuCommon {
             m_isTextureDirty = false;
         }
 
-        SDL_Rect rect = { m_position.x, m_position.y, getSize().x, getSize().y};
+        SDL_Rect rect = { m_position.x + offset.x, m_position.y + offset.y, getSize().x, getSize().y};
         SDL_RenderCopy(renderer, m_texture, nullptr, &rect);
     }
 
