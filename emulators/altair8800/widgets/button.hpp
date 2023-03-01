@@ -28,7 +28,7 @@ class InvisibleButton :
 public:
     InvisibleButton(const SDL_Rect& rect = {}) { setRect(rect); }
 
-    void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = { 0, 0 }) override;
+    void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = {}) override;
 
     void setRect(const SDL_Rect& rect);
 };
@@ -45,7 +45,7 @@ public:
         m_size.y = m_text.getSize().y + 2 * DEFAULT_PADDING;
     }
 
-    void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = { 0, 0 }) override;
+    void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = {}) override;
 private:
     static constexpr int DEFAULT_PADDING = 4;
 

@@ -6,14 +6,15 @@
 
 using EmuCommon::Vec2i;
 
-class LabeledLED {
+class LabeledLED
+{
 public:
     LabeledLED(const char* text, EmuCommon::SDLFont& font, EmuCommon::SDLTexture& ledTexture) :
         m_label{ font, text },
         m_LEDTexture{ ledTexture } {
         m_label.setColor({ 0xF2, 0xF1, 0xED });
 
-        m_size.x = std::max(m_label.getSize().x, (m_LEDTexture.getSize().x / 2) / LED_SCALE);
+        m_size.x = std::max(m_label.getSize().x, int(m_LEDTexture.getSize().x / 2) / LED_SCALE);
         m_size.y = m_label.getSize().y + m_LEDTexture.getSize().y / LED_SCALE + 2;
     }
 
@@ -142,4 +143,22 @@ private:
     int m_switchPos = 0;
     Vec2i m_position;
     bool m_is2line;
+};
+
+class LabeledSwitch
+{
+public:
+    void onEvent(SDL_Event& /*e*/) {
+
+    }
+
+    void handleMousePos(EmuCommon::Vec2i /*position*/) {
+
+    }
+
+    void render(SDL_Renderer* /*renderer*/) {
+
+    }
+private:
+
 };

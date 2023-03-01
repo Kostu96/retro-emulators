@@ -1,12 +1,12 @@
 #pragma once
-#include "emu_common/sdl_helpers.hpp"
+#include "emu_common/vec2.hpp"
 
 class Widget
 {
 public:
 	virtual ~Widget() = default;
 
-	virtual void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = { 0, 0 }) = 0;
+	virtual void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = {}) = 0;
 	virtual void onEvent(SDL_Event& e) = 0;
 	virtual void handleMousePos(EmuCommon::Vec2i position) = 0;
 
