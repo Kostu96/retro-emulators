@@ -2,6 +2,8 @@
 #include "widgets/button.hpp"
 #include "emu_common/sdl_helpers.hpp"
 
+#include <algorithm>
+
 using EmuCommon::Vec2i;
 
 class LabeledLED {
@@ -46,22 +48,59 @@ private:
 class TwoWayButton {
 public:
     TwoWayButton(const char* upText, const char* downText, EmuCommon::SDLFont& font, EmuCommon::SDLTexture& texture, Vec2i position = {}) :
-        m_upLabel{ font, upText },
-        m_upButton{ { 0, 0, 40, int(texture.getSize().y / SWITCH_SCALE) / 2 }},
-        m_downLabel{ font, downText },
-        m_downButton{ { 0, m_upButton.getSize().y, 40, int(texture.getSize().y / SWITCH_SCALE) / 2}},
         m_texture{ texture },
-        m_position{ position } {
-        m_upLabel.setColor({ 0xF2, 0xF1, 0xED }); m_upLabel.setPosition({});
-        m_downLabel.setColor({ 0xF2, 0xF1, 0xED }); m_downLabel.setPosition({});
+        m_upLabel{ font, upText },
+        m_downLabel{ font, downText },
+        m_secondLabel{ font },
+        m_position{ position }
+    {
+        int upBtnOff = 0;
+        std::string str{ upText };
+        size_t pos = str.find_first_of('\n');
+        m_is2line = pos != str.npos;
+        if (m_is2line) {
+            m_secondLabel.setText(str.substr(pos + 1).c_str());
+            str[pos] = '\0';
+            m_upLabel.setText(str.c_str());
+            upBtnOff = m_secondLabel.getSize().y;
+        }
 
-        /*m_stopButton.setPosition({ 200, 150 });
-        m_stopButton.setPressedCallback([this]() { m_stopRunSwitchPos = 1; });
-        m_stopButton.setReleasedCallback([this]() { m_stopRunSwitchPos = 0; m_altair.stop(); });
+        int downBtnOff = 0;
+        str = downText;
+        pos = str.find_first_of('\n');
+        m_is2line = pos != str.npos;
+        if (m_is2line) {
+            m_secondLabel.setText(str.substr(pos + 1).c_str());
+            str[pos] = '\0';
+            m_downLabel.setText(str.c_str());
+            downBtnOff = m_secondLabel.getSize().y;
+        }
 
-        m_runButton.setPosition({ 200, 200 });
-        m_runButton.setPressedCallback([this]() { m_stopRunSwitchPos = 2; });
-        m_runButton.setReleasedCallback([this]() { m_stopRunSwitchPos = 0; m_altair.run(); });*/
+        m_width = std::max({ int((texture.getSize().x / 3) / SWITCH_SCALE), m_upLabel.getSize().x, m_downLabel.getSize().x, m_secondLabel.getSize().x }) + 4;
+        if (*upText)
+            m_upButton.setRect({ 0, -upBtnOff,
+                m_width, (int((texture.getSize().y / 2) / SWITCH_SCALE) / 2) + m_upLabel.getSize().y + upBtnOff
+            });
+        if (*downText)
+            m_downButton.setRect({ 0, m_upButton.getSize().y + (int((texture.getSize().y / 2) / SWITCH_SCALE) / 2) - 3,
+                m_width, (int((texture.getSize().y / 2) / SWITCH_SCALE) / 2) + m_downLabel.getSize().y + downBtnOff
+            });
+
+        m_upLabel.setColor({ 0xF2, 0xF1, 0xED });
+        m_upLabel.setPosition({ (m_width - m_upLabel.getSize().x) / 2, -upBtnOff });
+        m_downLabel.setColor({ 0xF2, 0xF1, 0xED });
+        m_downLabel.setPosition({
+            (m_width - m_downLabel.getSize().x) / 2,
+            m_downButton.getPosition().y + m_downButton.getSize().y - m_downLabel.getSize().y - downBtnOff - 2
+        });
+        m_secondLabel.setColor({ 0xF2, 0xF1, 0xED });
+        m_secondLabel.setPosition({ (m_width - m_secondLabel.getSize().x) / 2, downBtnOff ? m_downButton.getPosition().y + m_downButton.getSize().y - m_downLabel.getSize().y - 2 : 0 });
+
+        m_upButton.setPressedCallback([this]() { m_switchPos = 1; });
+        m_upButton.setReleasedCallback([this]() { m_switchPos = 0; });
+
+        m_downButton.setPressedCallback([this]() { m_switchPos = 2; });
+        m_downButton.setReleasedCallback([this]() { m_switchPos = 0; });
     }
 
     void onEvent(SDL_Event& e) {
@@ -75,26 +114,32 @@ public:
     }
 
     void render(SDL_Renderer* renderer) {
-        m_upLabel.render(renderer, { m_position.x, m_position.y });
-        m_upButton.render(renderer, { m_position.x, m_position.y });
-        m_downLabel.render(renderer, { m_position.x, m_position.y });
-        m_downButton.render(renderer, { m_position.x, m_position.y });
+        m_upLabel.render(renderer, m_position);
+        m_upButton.render(renderer, m_position);
+        m_secondLabel.render(renderer, m_position);
+        m_downLabel.render(renderer, m_position);
+        m_downButton.render(renderer, m_position);
         const int width = m_texture.getSize().x / 3;
+        const float scaledWidth = width / SWITCH_SCALE;
         const int height = m_texture.getSize().y;
         const SDL_Rect srcRect{ m_switchPos * width, 0, width, height };
-        const SDL_FRect dstRect{ (float)m_position.x, (float)m_position.y, width / SWITCH_SCALE, height / SWITCH_SCALE };
+        const SDL_FRect dstRect{ (float)m_position.x + ((float)m_width - scaledWidth) / 2.f, (float)m_position.y + m_upLabel.getSize().y / 2, scaledWidth, height / SWITCH_SCALE};
         SDL_RenderCopyF(renderer, m_texture, &srcRect, &dstRect);
     }
 
     void setPosition(Vec2i position) { m_position = position; }
+    int getWidth() const { return m_width; }
 private:
     static constexpr float SWITCH_SCALE = 3.f;
 
-    EmuCommon::SDLText m_upLabel;
-    InvisibleButton m_upButton;
-    EmuCommon::SDLText m_downLabel;
-    InvisibleButton m_downButton;
     EmuCommon::SDLTexture& m_texture;
+    EmuCommon::SDLText m_upLabel;
+    EmuCommon::SDLText m_downLabel;
+    EmuCommon::SDLText m_secondLabel;
+    int m_width;
+    InvisibleButton m_upButton;
+    InvisibleButton m_downButton;
     int m_switchPos = 0;
     Vec2i m_position;
+    bool m_is2line;
 };

@@ -81,7 +81,7 @@ namespace EmuCommon {
 
     Vec2i SDLText::getSize()
     {
-        if (m_isSizeDirty) {
+        if (m_isSizeDirty && !m_text.empty()) {
             m_font.setSize(m_textSize);
             [[maybe_unused]] int ret = TTF_SizeUTF8(m_font, m_text.c_str(), &m_size.x, &m_size.y);
             assert(ret == 0);
@@ -92,11 +92,14 @@ namespace EmuCommon {
 
     void SDLText::render(SDL_Renderer* renderer, Vec2i offset)
     {
+        if (getSize().x == 0)
+            return;
+
         if (m_isTextureDirty) {
             m_font.setSize(m_textSize);
             SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font, m_text.c_str(), { m_color.r, m_color.g, m_color.b });
             if (surface == nullptr) {
-                std::cerr << "Could not render text to surface. SDL_ttf Error: " << TTF_GetError();
+                std::cerr << "Could not render text to surface. SDL_ttf Error: " << TTF_GetError() << '\n';
                 return;
             }
             assert(getSize().x == surface->w);
@@ -107,15 +110,17 @@ namespace EmuCommon {
 
             m_texture = SDL_CreateTextureFromSurface(Application::get().getSDLRenderer(), surface);
             if (m_texture == nullptr) {
-                std::cerr << "Could not create texture from text surface. SDL Error: " << SDL_GetError();
+                std::cerr << "Could not create texture from text surface. SDL Error: " << SDL_GetError() << '\n';
                 return;
             }
 
             SDL_FreeSurface(surface);
+
             m_isTextureDirty = false;
         }
 
-        SDL_Rect rect = { m_position.x + offset.x, m_position.y + offset.y, getSize().x, getSize().y};
+
+        SDL_Rect rect = { m_position.x + offset.x, m_position.y + offset.y, getSize().x, getSize().y };
         SDL_RenderCopy(renderer, m_texture, nullptr, &rect);
     }
 

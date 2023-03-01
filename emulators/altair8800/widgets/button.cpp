@@ -1,22 +1,7 @@
 #include "button.hpp"
 #include "emu_common/application.hpp"
 
-InvisibleButton::InvisibleButton(const SDL_Rect& rect)
-{
-    m_position.x = rect.x;
-    m_position.y = rect.y;
-    m_size.x = rect.w;
-    m_size.y = rect.h;
-}
-
-void InvisibleButton::render(SDL_Renderer* renderer, EmuCommon::Vec2i offset)
-{
-    SDL_Rect rect = { m_position.x + offset.x, m_position.y + offset.y, m_size.x, m_size.y };
-    SDL_SetRenderDrawColor(renderer, 0xF2, 0xF1, 0xED, 0xFF);
-    SDL_RenderDrawRect(renderer, &rect);
-}
-
-void InvisibleButton::onEvent(SDL_Event& e)
+void ButtonBase::onEvent(SDL_Event& e)
 {
     switch (e.type)
     {
@@ -35,11 +20,27 @@ void InvisibleButton::onEvent(SDL_Event& e)
     };
 }
 
-void InvisibleButton::handleMousePos(EmuCommon::Vec2i position)
+void ButtonBase::handleMousePos(EmuCommon::Vec2i position)
 {
     SDL_Point p{ position.x, position.y };
     SDL_Rect r{ m_position.x, m_position.y, m_size.x, m_size.y };
     m_isHovered = SDL_PointInRect(&p, &r);
+    if (m_isHovered) EmuCommon::Application::get().setHandCursor();
+}
+
+void InvisibleButton::render(SDL_Renderer* /*renderer*/, EmuCommon::Vec2i /*offset*/)
+{
+    /*SDL_Rect rect = { m_position.x + offset.x, m_position.y + offset.y, m_size.x, m_size.y };
+    SDL_SetRenderDrawColor(renderer, 0xF2, 0xF1, 0xED, 0xFF);
+    SDL_RenderDrawRect(renderer, &rect);*/
+}
+
+void InvisibleButton::setRect(const SDL_Rect& rect)
+{
+    m_position.x = rect.x;
+    m_position.y = rect.y;
+    m_size.x = rect.w;
+    m_size.y = rect.h;
 }
 
 void TextButton::render(SDL_Renderer* renderer, EmuCommon::Vec2i offset)

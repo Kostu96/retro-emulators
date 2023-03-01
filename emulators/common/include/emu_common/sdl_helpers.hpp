@@ -72,6 +72,9 @@ namespace EmuCommon {
 		SDL_Texture* m_texture = nullptr;
 		bool m_isTextureDirty = true;
 		bool m_isSizeDirty = true;
+		bool m_need2Texture = false;
+		SDL_Texture* m_texture2 = nullptr;
+		std::string m_str2;
 	};
 
 } // namespace EmuCommon

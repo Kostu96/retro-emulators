@@ -43,11 +43,14 @@ namespace EmuCommon {
 			abort();
 		}
 
+		m_handCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+
 		m_isRunning = true;
 	}
 
 	Application::~Application()
 	{
+		SDL_FreeCursor(m_handCursor);
 		TTF_Quit();
 		IMG_Quit();
 		SDL_DestroyRenderer(m_renderer);
@@ -59,6 +62,7 @@ namespace EmuCommon {
 	{
 		while (m_isRunning)
 		{
+			setRegularCursor();
 			onUpdate();
 			SDL_RenderPresent(m_renderer);
 
@@ -68,6 +72,24 @@ namespace EmuCommon {
 				onEvent(e);
 				if (e.type == SDL_QUIT) m_isRunning = false;
 			}
+		}
+	}
+
+	void Application::setHandCursor()
+	{
+		if (m_backupCursor == nullptr)
+		{
+			m_backupCursor = SDL_GetCursor();
+			SDL_SetCursor(m_handCursor);
+		}
+	}
+
+	void Application::setRegularCursor()
+	{
+		if (m_backupCursor != nullptr)
+		{
+			SDL_SetCursor(m_backupCursor);
+			m_backupCursor = nullptr;
 		}
 	}
 

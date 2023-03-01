@@ -4,17 +4,14 @@
 #include <functional>
 #include <string>
 
-class InvisibleButton :
+class ButtonBase :
     public Widget
 {
 public:
-    InvisibleButton(const SDL_Rect& rect);
-
     void setPressedCallback(std::function<void()> callback) { m_pressedCallback = callback; }
     void setReleasedCallback(std::function<void()> callback) { m_releasedCallback = callback; }
     EmuCommon::Vec2i getSize() const { return m_size; }
 
-    void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = { 0, 0 }) override;
     void onEvent(SDL_Event& e) override;
     void handleMousePos(EmuCommon::Vec2i position) override;
 protected:
@@ -25,12 +22,22 @@ protected:
     EmuCommon::Vec2i m_size;
 };
 
+class InvisibleButton :
+    public ButtonBase
+{
+public:
+    InvisibleButton(const SDL_Rect& rect = {}) { setRect(rect); }
+
+    void render(SDL_Renderer* renderer, EmuCommon::Vec2i offset = { 0, 0 }) override;
+
+    void setRect(const SDL_Rect& rect);
+};
+
 class TextButton :
-    public InvisibleButton
+    public ButtonBase
 {
 public:
     TextButton(EmuCommon::SDLFont& font, const char* text = "") :
-        InvisibleButton{ {} },
         m_text{ font }
     {
         m_text.setText(text);
@@ -46,7 +53,7 @@ private:
 };
 
 //class ImageButton :
-//    public InvisibleButton
+//    public ButtonBase
 //{
 //public:
 //
