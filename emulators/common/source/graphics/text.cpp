@@ -1,5 +1,5 @@
-#include "emu_common/SDL/text.hpp"
-#include "emu_common/SDL/font.hpp"
+#include "emu_common/graphics/text.hpp"
+#include "emu_common/graphics/font.hpp"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -27,12 +27,15 @@ namespace EmuCommon {
         m_isTextureDirty = true;
     }
 
-    Vec2i SDLText::getSize()
+    Vec2u SDLText::getSize()
     {
         if (m_isSizeDirty && !m_text.empty()) {
             m_font.setSize(m_textSize);
-            [[maybe_unused]] int ret = TTF_SizeUTF8(m_font, m_text.c_str(), &m_size.x, &m_size.y);
+            int w, h;
+            [[maybe_unused]] int ret = TTF_SizeUTF8(m_font.getHandle(), m_text.c_str(), &w, &h);
             assert(ret == 0);
+            m_size.x = w;
+            m_size.y = h;
             m_isSizeDirty = false;
         }
         return m_size;
@@ -45,12 +48,9 @@ namespace EmuCommon {
 
         if (m_isTextureDirty) {
             m_font.setSize(m_textSize);
-            SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font, m_text.c_str(), { m_color.r, m_color.g, m_color.b });
+            SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font.getHandle(), m_text.c_str(), {m_color.r, m_color.g, m_color.b});
             if (surface == nullptr)
                 return;
-
-            assert(getSize().x == surface->w);
-            assert(getSize().y == surface->h);
 
             if (m_texture)
                 SDL_DestroyTexture(m_texture);

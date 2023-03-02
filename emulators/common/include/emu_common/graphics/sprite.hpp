@@ -1,7 +1,7 @@
 #pragma once
-#include "emu_common/SDL/transformable.hpp"
-#include "emu_common/SDL/renderable.hpp"
-#include "emu_common/rect.hpp"
+#include "emu_common/graphics/transformable.hpp"
+#include "emu_common/graphics/renderable.hpp"
+#include "emu_common/graphics/rect.hpp"
 
 namespace EmuCommon {
 

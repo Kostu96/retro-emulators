@@ -1,4 +1,4 @@
-#include "emu_common/SDL/font.hpp"
+#include "emu_common/graphics/font.hpp"
 
 #include <SDL_ttf.h>
 #include <cassert>
@@ -22,7 +22,7 @@ namespace EmuCommon {
         return true;
     }
 
-    void SDLFont::setSize(int size)
+    void SDLFont::setSize(int size) const
     {
         assert(m_handle != nullptr);
         [[maybe_unused]] int ret = TTF_SetFontSize(m_handle, size);

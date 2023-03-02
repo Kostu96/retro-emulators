@@ -1,4 +1,4 @@
-#include "emu_common/gui.hpp"
+#include "emu_common/imgui_helper.hpp"
 #include "../../../shared/disassembly_line.hpp"
 
 #include <imgui.h>

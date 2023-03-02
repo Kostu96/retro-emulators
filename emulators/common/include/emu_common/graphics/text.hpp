@@ -1,14 +1,13 @@
 #pragma once
-#include "emu_common/SDL/transformable.hpp"
-#include "emu_common/SDL/renderable.hpp"
+#include "emu_common/graphics/transformable.hpp"
+#include "emu_common/graphics/renderable.hpp"
+#include "emu_common/graphics/color.hpp"
 
 #include <string>
 
 struct SDL_Texture;
 
 namespace EmuCommon {
-
-	struct Color { unsigned char r = 0, g = 0, b = 0, a = 255; };
 
 	class SDLFont;
 	class SDLTexture;
@@ -18,21 +17,21 @@ namespace EmuCommon {
 		public Renderable
 	{
 	public:
-		explicit SDLText(SDLFont& font, const char* text = "") : m_font{ font } { setText(text); };
+		explicit SDLText(const SDLFont& font, const char* text = "") : m_font{ font } { setText(text); };
 		~SDLText();
 
 		void setText(const char* text);
 		void setTextSize(unsigned int size);
 		void setColor(Color color) { m_color = color; }
-		Vec2i getSize();
+		Vec2u getSize();
 
 		void render(SDL_Renderer* renderer, Vec2f offset) override;
 	private:
-		SDLFont& m_font;
+		const SDLFont& m_font;
 		std::string m_text{ "" };
 		unsigned int m_textSize{ 14 };
-		Color m_color{ 255, 255, 255, 255 };
-		Vec2i m_size;
+		Color m_color;
+		Vec2u m_size;
 
 		SDL_Texture* m_texture = nullptr;
 		bool m_isTextureDirty = true;

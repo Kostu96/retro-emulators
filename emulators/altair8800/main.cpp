@@ -1,21 +1,58 @@
 #include "altair.hpp"
 #include "gui.hpp"
 #include "emu_common/application.hpp"
+#include "emu_common/graphics/font.hpp"
+#include "emu_common/graphics/texture.hpp"
+#include "emu_common/graphics/rect_shape.hpp"
 
+#include <SDL.h>
 #include <iostream>
 #include <thread>
+
+static constexpr int WINDOW_WIDTH = 1024;
+static constexpr int WINDOW_HEIGHT = 500;
+static constexpr int ALTAIR_OUTLINE_SIZE = 16;
+static constexpr EmuCommon::Color ALTAIR_WHITE_COLOR{ 0xF2, 0xF1, 0xED };
+static constexpr EmuCommon::Color ALTAIR_BLUE_COLOR{ 0x66, 0x9D, 0xD2 };
+static constexpr EmuCommon::Color ALTAIR_GRAY_COLOR{ 0x6B, 0x69, 0x6A };
+
+class Logo :
+    public EmuCommon::Transformable,
+    public EmuCommon::Renderable,
+{
+public:
+    explicit Logo(const EmuCommon::SDLFont& font) :
+        m_background{
+            { float(WINDOW_WIDTH + 2 * ALTAIR_OUTLINE_SIZE), 72.f },
+            ALTAIR_WHITE_COLOR
+        },
+        m_text1{ font, "ALTAIR 8800" },
+        m_text2{ font, "COMPUTER" }
+    {
+
+    }
+private:
+    EmuCommon::RectShape m_background;
+    EmuCommon::SDLText m_text1;
+    EmuCommon::SDLText m_text2;
+};
 
 class Emulator :
     public EmuCommon::Application
 {
 public:
     Emulator(Altair& altair) :
-        Application{ "Altair 8800 Emulator by Kostu96", 1024, 500 },
+        Application{ "Altair 8800 Emulator by Kostu96", WINDOW_WIDTH, WINDOW_HEIGHT },
         m_altair{ altair },
         m_labelFont{ "assets/altair/coolvetica.ttf" },
         m_256bytesFont{ "assets/altair/256bytes.ttf" },
         m_ledTexture{ "assets/altair/led.png" },
         m_switchTexture{ "assets/altair/switch.png" },
+        m_background{
+            { float(WINDOW_WIDTH - 2 * ALTAIR_OUTLINE_SIZE), float(WINDOW_HEIGHT - 2 * ALTAIR_OUTLINE_SIZE) },
+            ALTAIR_GRAY_COLOR
+        },
+        m_logo{ m_256bytesFont },
         m_INTE{ "INTE", m_labelFont, m_ledTexture },
         m_PROT{ "PROT", m_labelFont, m_ledTexture },
         m_MEMR{ "MEMR", m_labelFont, m_ledTexture },
@@ -56,10 +93,10 @@ public:
         m_examineBtn{ "EXAMINE", "EXAMINE\nNEXT", m_labelFont, m_switchTexture },
         m_depositBtn{ "DEPOSIT", "DEPOSIT\nNEXT", m_labelFont, m_switchTexture },
         m_rstClrBtn{ "RESET", "CLR", m_labelFont, m_switchTexture },
-        m_protectBtn{ "PROTECT", "UNPROTECT", m_labelFont, m_switchTexture },
-        m_logo1{ m_256bytesFont, "ALTAIR 8800" },
-        m_logo2{ m_256bytesFont, "COMPUTER" }
+        m_protectBtn{ "PROTECT", "UNPROTECT", m_labelFont, m_switchTexture }
     {
+        m_background.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(ALTAIR_OUTLINE_SIZE) });
+
         int maxWidth = m_INTE.getSize().x;
         for (const auto& i : { m_PROT, m_MEMR, m_INP, m_MI, m_OUT, m_HLTA, m_STACK, m_WO, m_INT })
             if (i.getSize().x > maxWidth) maxWidth = i.getSize().x;
@@ -118,17 +155,13 @@ protected:
         auto renderer = getSDLRenderer();
         SDL_Rect rect;
 
-        // BG and LOGO
-        SDL_SetRenderDrawColor(renderer, 0x66, 0x9D, 0xD2, 0xFF);
+        SDL_SetRenderDrawColor(renderer, ALTAIR_BLUE_COLOR.r, ALTAIR_BLUE_COLOR.g, ALTAIR_BLUE_COLOR.b, ALTAIR_BLUE_COLOR.a);
         SDL_RenderClear(renderer);
-        rect = { 16, 16, 1024 - 32, 500 - 32 };
-        SDL_SetRenderDrawColor(renderer, 0x6b, 0x69, 0x6A, 0xFF);
-        SDL_RenderFillRect(renderer, &rect);
+        m_background.render(renderer);
+
         rect = { 16, 500 - 72 - 32, 1024 - 32, 72 };
         SDL_SetRenderDrawColor(renderer, 0xF2, 0xF1, 0xED, 0xFF);
         SDL_RenderFillRect(renderer, &rect);
-        m_logo1.render(renderer);
-        m_logo2.render(renderer);
 
         m_INTE.render(renderer);
         m_PROT.render(renderer);
@@ -205,6 +238,10 @@ private:
     EmuCommon::SDLFont m_256bytesFont;
     EmuCommon::SDLTexture m_ledTexture;
     EmuCommon::SDLTexture m_switchTexture;
+
+    EmuCommon::RectShape m_background;
+    Logo m_logo;
+
     LabeledLED m_INTE, m_PROT, m_MEMR, m_INP, m_MI,
                m_OUT, m_HLTA, m_STACK, m_WO, m_INT;
     EmuCommon::SDLText m_STATUSText;
@@ -216,8 +253,7 @@ private:
     TwoWayButton m_depositBtn;
     TwoWayButton m_rstClrBtn;
     TwoWayButton m_protectBtn;
-    EmuCommon::SDLText m_logo1;
-    EmuCommon::SDLText m_logo2;
+
 };
 
 int main(int /*argc*/, char* /*argv*/[])

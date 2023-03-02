@@ -1,6 +1,6 @@
 #include "chip8.hpp"
 
-#include "emu_common/gui.hpp"
+#include "emu_common/imgui_helper.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>

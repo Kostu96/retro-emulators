@@ -1,6 +1,5 @@
 #pragma once
-#include "widgets/button.hpp"
-#include "emu_common/sdl_helpers.hpp"
+#include "emu_common/gui/button.hpp"
 
 #include <algorithm>
 

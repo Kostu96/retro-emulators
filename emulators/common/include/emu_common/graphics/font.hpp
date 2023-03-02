@@ -14,11 +14,12 @@ namespace EmuCommon {
 		~SDLFont();
 
 		bool loadFromFile(const char* filename);
+
+		TTF_Font* getHandle() const { return m_handle; }
 	private:
 		static constexpr int DEFAULT_SIZE = 14;
 
-		void setSize(int size);
-		operator TTF_Font* () { return m_handle; }
+		void setSize(int size) const;
 
 		TTF_Font* m_handle = nullptr;
 

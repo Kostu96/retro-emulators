@@ -32,13 +32,6 @@ set(ALTAIR_APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui_helper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui_helper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/widgets/button.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/widgets/button.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/widgets/label.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/widgets/label.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/widgets/switch.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/widgets/switch.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/widgets/widget.hpp
 )
 
 add_executable(${ALTAIR_APP_TARGET_NAME} ${ALTAIR_APP_SOURCES})
