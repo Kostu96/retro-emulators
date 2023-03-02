@@ -19,7 +19,7 @@ namespace EmuCommon {
 		const SDLTexture* getTexture() const { return m_texture; }
 		const IRect& getTextureRect() const { return m_textureRect; }
 
-		void render(SDL_Renderer* renderer, Vec2f offset) override;
+		void render(SDL_Renderer* renderer, const RenderStates& states) override;
 	private:
 		const SDLTexture* m_texture = nullptr;
 		IRect m_textureRect{};

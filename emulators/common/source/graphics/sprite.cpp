@@ -12,14 +12,14 @@ namespace EmuCommon {
 			m_textureRect = { 0, 0, (int)texture.getSize().x, (int)texture.getSize().y };
 	}
 
-	void SDLSprite::render(SDL_Renderer* renderer, Vec2f offset)
+	void SDLSprite::render(SDL_Renderer* renderer, const RenderStates& states)
 	{
 		const SDL_Rect* srcRect = (const SDL_Rect*)&m_textureRect;
 		const SDL_FRect dstRect{
-			getPosition().x + offset.x,
-			getPosition().y + offset.y,
-			(float)m_textureRect.width,
-			(float)m_textureRect.height
+			getPosition().x + states.position.x,
+			getPosition().y + states.position.y,
+			(float)m_textureRect.width * getScale().x * states.scale.x,
+			(float)m_textureRect.height * getScale().y * states.scale.y
 		};
 		SDL_RenderCopyF(renderer, m_texture->getHandle(), srcRect, &dstRect);
 	}

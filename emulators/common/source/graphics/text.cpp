@@ -41,7 +41,7 @@ namespace EmuCommon {
         return m_size;
     }
 
-    void SDLText::render(SDL_Renderer* renderer, Vec2f offset)
+    void SDLText::render(SDL_Renderer* renderer, const RenderStates& states)
     {
         if (getSize().x == 0)
             return;
@@ -65,10 +65,10 @@ namespace EmuCommon {
         }
 
         const SDL_FRect rect{
-            getPosition().x + offset.x,
-            getPosition().y + offset.y,
-            (float)getSize().x,
-            (float)getSize().y
+            getPosition().x + states.position.x,
+            getPosition().y + states.position.y,
+            (float)getSize().x * getScale().x * states.scale.x,
+            (float)getSize().y * getScale().y * states.scale.y
         };
         SDL_RenderCopyF(renderer, m_texture, nullptr, &rect);
     }
