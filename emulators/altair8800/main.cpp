@@ -1,41 +1,15 @@
 #include "altair.hpp"
+#include "constants.hpp"
 #include "gui.hpp"
+#include "entities/logo.hpp"
+
 #include "emu_common/application.hpp"
 #include "emu_common/graphics/font.hpp"
 #include "emu_common/graphics/texture.hpp"
-#include "emu_common/graphics/rect_shape.hpp"
 
 #include <SDL.h>
 #include <iostream>
 #include <thread>
-
-static constexpr int WINDOW_WIDTH = 1024;
-static constexpr int WINDOW_HEIGHT = 500;
-static constexpr int ALTAIR_OUTLINE_SIZE = 16;
-static constexpr EmuCommon::Color ALTAIR_WHITE_COLOR{ 0xF2, 0xF1, 0xED };
-static constexpr EmuCommon::Color ALTAIR_BLUE_COLOR{ 0x66, 0x9D, 0xD2 };
-static constexpr EmuCommon::Color ALTAIR_GRAY_COLOR{ 0x6B, 0x69, 0x6A };
-
-class Logo :
-    public EmuCommon::Transformable,
-    public EmuCommon::Renderable,
-{
-public:
-    explicit Logo(const EmuCommon::SDLFont& font) :
-        m_background{
-            { float(WINDOW_WIDTH + 2 * ALTAIR_OUTLINE_SIZE), 72.f },
-            ALTAIR_WHITE_COLOR
-        },
-        m_text1{ font, "ALTAIR 8800" },
-        m_text2{ font, "COMPUTER" }
-    {
-
-    }
-private:
-    EmuCommon::RectShape m_background;
-    EmuCommon::SDLText m_text1;
-    EmuCommon::SDLText m_text2;
-};
 
 class Emulator :
     public EmuCommon::Application
@@ -96,14 +70,15 @@ public:
         m_protectBtn{ "PROTECT", "UNPROTECT", m_labelFont, m_switchTexture }
     {
         m_background.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(ALTAIR_OUTLINE_SIZE) });
+        m_logo.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(WINDOW_HEIGHT) - m_logo.getSize().y - 32 });
 
-        int maxWidth = m_INTE.getSize().x;
+        unsigned int maxWidth = m_INTE.getSize().x;
         for (const auto& i : { m_PROT, m_MEMR, m_INP, m_MI, m_OUT, m_HLTA, m_STACK, m_WO, m_INT })
             if (i.getSize().x > maxWidth) maxWidth = i.getSize().x;
 
         for (auto* i : { &m_INTE, &m_PROT, &m_MEMR, &m_INP, &m_MI, &m_OUT, &m_HLTA, &m_STACK, &m_WO, &m_INT }) {
-            static int x = 56;
-            int off = (maxWidth + 3 - i->getSize().x) / 2;
+            static unsigned int x = 56;
+            unsigned int off = (maxWidth + 3 - i->getSize().x) / 2;
             i->setPosition({ x + off, 20 });
             x += maxWidth + 3;
         }
@@ -111,8 +86,8 @@ public:
 
         int idx = 7;
         for (auto* i : { &m_D7, &m_D6, &m_D5, &m_D4, &m_D3, &m_D2, &m_D1, &m_D0 }) {
-            static int x = 580;
-            int off = (maxWidth + 3 - i->getSize().x) / 2;
+            static unsigned int x = 580;
+            unsigned int off = (maxWidth + 3 - i->getSize().x) / 2;
             i->setPosition({ x + off, 20 });
             x += maxWidth + 3 + (idx % 3 == 0 ? 20 : 0);
             idx--;
@@ -120,8 +95,8 @@ public:
 
         idx = 15;
         for (auto* i : { &m_A15, &m_A14, &m_A13, &m_A12, &m_A11, &m_A10, &m_A9, &m_A8, &m_A7, &m_A6, &m_A5, &m_A4, &m_A3, &m_A2, &m_A1, &m_A0 }) {
-            static int x = 184;
-            int off = (maxWidth + 3 - i->getSize().x) / 2;
+            static unsigned int x = 184;
+            unsigned int off = (maxWidth + 3 - i->getSize().x) / 2;
             i->setPosition({ x + off, 130 });
             x += maxWidth + 3 + (idx % 3 == 0 ? 20 : 0);
             idx--;
@@ -129,7 +104,7 @@ public:
 
         maxWidth = m_stopRunBtn.getWidth();
         for (const auto& i : { m_stepBtn, m_examineBtn, m_depositBtn, m_rstClrBtn, m_protectBtn })
-            if (i.getWidth() > maxWidth) maxWidth = i.getWidth();
+            if (unsigned int(i.getWidth()) > maxWidth) maxWidth = i.getWidth();
 
         for (auto* i : { &m_stopRunBtn, &m_stepBtn, &m_examineBtn, &m_depositBtn, &m_rstClrBtn, &m_protectBtn }) {
             static int x = 166;
@@ -137,9 +112,6 @@ public:
             i->setPosition({ x + off, 310 });
             x += maxWidth + 7;
         }
-
-        m_logo1.setTextSize(64); m_logo1.setColor({ 0, 0, 0 }); m_logo1.setPosition({ 16 + 64, 500 - 72 - 32 });
-        m_logo2.setTextSize(46); m_logo2.setColor({ 0, 0, 0 }); m_logo2.setPosition({ m_logo1.getPosition().x + m_logo1.getSize().x + 16, m_logo1.getPosition().y + 10 });
     }
 protected:
     void onUpdate() override {
@@ -158,10 +130,7 @@ protected:
         SDL_SetRenderDrawColor(renderer, ALTAIR_BLUE_COLOR.r, ALTAIR_BLUE_COLOR.g, ALTAIR_BLUE_COLOR.b, ALTAIR_BLUE_COLOR.a);
         SDL_RenderClear(renderer);
         m_background.render(renderer);
-
-        rect = { 16, 500 - 72 - 32, 1024 - 32, 72 };
-        SDL_SetRenderDrawColor(renderer, 0xF2, 0xF1, 0xED, 0xFF);
-        SDL_RenderFillRect(renderer, &rect);
+        m_logo.render(renderer);
 
         m_INTE.render(renderer);
         m_PROT.render(renderer);
@@ -253,7 +222,6 @@ private:
     TwoWayButton m_depositBtn;
     TwoWayButton m_rstClrBtn;
     TwoWayButton m_protectBtn;
-
 };
 
 int main(int /*argc*/, char* /*argv*/[])

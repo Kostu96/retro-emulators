@@ -1,6 +1,8 @@
 #pragma once
+#include "emu_common/graphics/texture.hpp"
 #include "emu_common/gui/button.hpp"
 
+#include <SDL.h>
 #include <algorithm>
 
 using EmuCommon::Vec2i;
@@ -13,34 +15,35 @@ public:
         m_LEDTexture{ ledTexture } {
         m_label.setColor({ 0xF2, 0xF1, 0xED });
 
-        m_size.x = std::max(m_label.getSize().x, int(m_LEDTexture.getSize().x / 2) / LED_SCALE);
+        m_size.x = std::max(m_label.getSize().x, m_LEDTexture.getSize().x / 2 / LED_SCALE);
         m_size.y = m_label.getSize().y + m_LEDTexture.getSize().y / LED_SCALE + 2;
     }
 
-    void setPosition(Vec2i position) {
+    void setPosition(EmuCommon::Vec2u position) {
         m_position = position;
-        int xPos = position.x + ((m_size.x == m_label.getSize().x) ? 0 : (m_size.x - m_label.getSize().x) / 2);
-        m_label.setPosition({ xPos, position.y });
+        unsigned int xPos = position.x + ((m_size.x == m_label.getSize().x) ? 0 : (m_size.x - m_label.getSize().x) / 2);
+        m_label.setPosition({ (float)xPos, (float)position.y });
     }
 
-    Vec2i getSize() const { return m_size; }
+    EmuCommon::Vec2u getSize() const { return m_size; }
 
     void render(SDL_Renderer* renderer) {
         m_label.render(renderer);
-        const int width = m_LEDTexture.getSize().x / 2;
-        const int scaledWidth = width / LED_SCALE;
-        const int height = m_LEDTexture.getSize().y;
-        const SDL_Rect srcRect{ m_status ? width : 0, 0, width, height };
+        const unsigned int width = m_LEDTexture.getSize().x / 2;
+        const unsigned int scaledWidth = width / LED_SCALE;
+        const unsigned int height = m_LEDTexture.getSize().y;
+        const SDL_Rect srcRect{ int(m_status ? width : 0), 0, int(width), int(height) };
         int xPos = m_position.x + ((m_size.x == scaledWidth) ? 0 : (m_size.x - scaledWidth) / 2);
-        const SDL_Rect dstRect{ xPos, m_position.y + m_label.getSize().y + 2, scaledWidth, height / LED_SCALE };
+        const SDL_Rect dstRect{ xPos, int(m_position.y + m_label.getSize().y + 2),
+            int(scaledWidth), int(height / LED_SCALE) };
         SDL_RenderCopy(renderer, m_LEDTexture, &srcRect, &dstRect);
     }
 private:
-    static constexpr int LED_SCALE = 4;
+    static constexpr unsigned int LED_SCALE = 4;
 
     bool m_status = false;
-    Vec2i m_position;
-    Vec2i m_size;
+    EmuCommon::Vec2u m_position;
+    EmuCommon::Vec2u m_size;
     EmuCommon::SDLText m_label;
     EmuCommon::SDLTexture& m_LEDTexture;
 };
@@ -76,25 +79,30 @@ public:
             downBtnOff = m_secondLabel.getSize().y;
         }
 
-        m_width = std::max({ int((texture.getSize().x / 3) / SWITCH_SCALE), m_upLabel.getSize().x, m_downLabel.getSize().x, m_secondLabel.getSize().x }) + 4;
-        if (*upText)
-            m_upButton.setRect({ 0, -upBtnOff,
-                m_width, (int((texture.getSize().y / 2) / SWITCH_SCALE) / 2) + m_upLabel.getSize().y + upBtnOff
-            });
-        if (*downText)
-            m_downButton.setRect({ 0, m_upButton.getSize().y + (int((texture.getSize().y / 2) / SWITCH_SCALE) / 2) - 3,
-                m_width, (int((texture.getSize().y / 2) / SWITCH_SCALE) / 2) + m_downLabel.getSize().y + downBtnOff
-            });
+        m_width = std::max({
+            unsigned int((texture.getSize().x / 3) / SWITCH_SCALE),
+            m_upLabel.getSize().x,
+            m_downLabel.getSize().x,
+            m_secondLabel.getSize().x
+        }) + 4;
+        if (*upText) {
+            m_upButton.setPosition({ 0, float(-upBtnOff) });
+            m_upButton.setSize({ float(m_width), ((texture.getSize().y / 2) / SWITCH_SCALE / 2) + m_upLabel.getSize().y + upBtnOff });
+        }
+        if (*downText) {
+            m_downButton.setPosition({ 0, m_upButton.getSize().y + (int((texture.getSize().y / 2) / SWITCH_SCALE) / 2) - 3 });
+            m_downButton.setSize({  float(m_width), ((texture.getSize().y / 2) / SWITCH_SCALE / 2) + m_downLabel.getSize().y + downBtnOff });
+        }
 
         m_upLabel.setColor({ 0xF2, 0xF1, 0xED });
-        m_upLabel.setPosition({ (m_width - m_upLabel.getSize().x) / 2, -upBtnOff });
+        m_upLabel.setPosition({ float((m_width - m_upLabel.getSize().x) / 2), float(-upBtnOff) });
         m_downLabel.setColor({ 0xF2, 0xF1, 0xED });
         m_downLabel.setPosition({
-            (m_width - m_downLabel.getSize().x) / 2,
+            float((m_width - m_downLabel.getSize().x) / 2),
             m_downButton.getPosition().y + m_downButton.getSize().y - m_downLabel.getSize().y - downBtnOff - 2
         });
         m_secondLabel.setColor({ 0xF2, 0xF1, 0xED });
-        m_secondLabel.setPosition({ (m_width - m_secondLabel.getSize().x) / 2, downBtnOff ? m_downButton.getPosition().y + m_downButton.getSize().y - m_downLabel.getSize().y - 2 : 0 });
+        m_secondLabel.setPosition({ (m_width - m_secondLabel.getSize().x) / 2.f, float(downBtnOff ? m_downButton.getPosition().y + m_downButton.getSize().y - m_downLabel.getSize().y - 2 : 0) });
 
         m_upButton.setPressedCallback([this]() { m_switchPos = 1; });
         m_upButton.setReleasedCallback([this]() { m_switchPos = 0; });
@@ -114,11 +122,12 @@ public:
     }
 
     void render(SDL_Renderer* renderer) {
-        m_upLabel.render(renderer, m_position);
-        m_upButton.render(renderer, m_position);
-        m_secondLabel.render(renderer, m_position);
-        m_downLabel.render(renderer, m_position);
-        m_downButton.render(renderer, m_position);
+        EmuCommon::Vec2f off{ m_position };
+        m_upLabel.render(renderer, off);
+        m_upButton.render(renderer, off);
+        m_secondLabel.render(renderer, off);
+        m_downLabel.render(renderer, off);
+        m_downButton.render(renderer, off);
         const int width = m_texture.getSize().x / 3;
         const float scaledWidth = width / SWITCH_SCALE;
         const int height = m_texture.getSize().y;
@@ -137,8 +146,8 @@ private:
     EmuCommon::SDLText m_downLabel;
     EmuCommon::SDLText m_secondLabel;
     int m_width;
-    InvisibleButton m_upButton;
-    InvisibleButton m_downButton;
+    EmuCommon::GUI::InvisibleButton m_upButton;
+    EmuCommon::GUI::InvisibleButton m_downButton;
     int m_switchPos = 0;
     Vec2i m_position;
     bool m_is2line;

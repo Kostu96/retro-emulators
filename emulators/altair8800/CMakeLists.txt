@@ -28,6 +28,8 @@ set_target_properties(${ALTAIR_LIB_TARGET_NAME} PROPERTIES
 set(ALTAIR_APP_TARGET_NAME ${ALTAIR_TARGET_NAME}_app)
 set(ALTAIR_APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/entities/logo.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/constants.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gui.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui_helper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui_helper.hpp

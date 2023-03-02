@@ -21,6 +21,7 @@ set(EMULATORS_COMMON_HEADERS
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/vec2.hpp
 )
 set(EMULATORS_COMMON_SOURCES
+    ${EMULATORS_COMMON_SOURCES_DIR}/graphics/color.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/font.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/rect_shape.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/sprite.cpp

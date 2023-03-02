@@ -25,7 +25,7 @@ namespace EmuCommon {
 		void setColor(Color color) { m_color = color; }
 		Vec2u getSize();
 
-		void render(SDL_Renderer* renderer, Vec2f offset) override;
+		void render(SDL_Renderer* renderer, Vec2f offset = {}) override;
 	private:
 		const SDLFont& m_font;
 		std::string m_text{ "" };

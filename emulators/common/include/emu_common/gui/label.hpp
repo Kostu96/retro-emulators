@@ -12,7 +12,7 @@ namespace EmuCommon::GUI {
             m_text{ font, text }
         {}
 
-        void render(SDL_Renderer* /*renderer*/, Vec2f /*offset*/) override {}
+        void render(SDL_Renderer* renderer, Vec2f offset = {}) override { m_text.render(renderer, offset); }
     private:
         SDLText m_text;
     };
