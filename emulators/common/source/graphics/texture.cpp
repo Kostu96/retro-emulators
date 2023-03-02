@@ -1,4 +1,4 @@
-#include "emu_common/SDL/texture.hpp"
+#include "emu_common/graphics/texture.hpp"
 #include "emu_common/application.hpp"
 
 #include <SDL.h>

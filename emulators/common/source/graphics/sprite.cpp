@@ -1,5 +1,5 @@
-#include "emu_common/SDL/sprite.hpp"
-#include "emu_common/SDL/texture.hpp"
+#include "emu_common/graphics/sprite.hpp"
+#include "emu_common/graphics/texture.hpp"
 
 #include <SDL.h>
 
