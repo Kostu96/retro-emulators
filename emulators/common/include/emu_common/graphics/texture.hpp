@@ -2,8 +2,11 @@
 #include "emu_common/vec2.hpp"
 
 struct SDL_Texture;
+struct SDL_Surface;
 
 namespace EmuCommon {
+
+	class SDLText;
 
 	class SDLTexture
 	{
@@ -16,11 +19,14 @@ namespace EmuCommon {
 
 		Vec2u getSize() const { return m_size; }
 
-		operator SDL_Texture*() { return m_handle; }
 		SDL_Texture* getHandle() const { return m_handle; }
 	private:
+		bool createFromSurface(SDL_Surface* surface);
+
 		SDL_Texture* m_handle = nullptr;
 		Vec2u m_size;
+
+		friend class SDLText;
 	};
 
 } // namespace EmuCommon

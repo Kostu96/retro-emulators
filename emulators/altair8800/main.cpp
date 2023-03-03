@@ -181,7 +181,7 @@ protected:
             const int height = m_switchTexture.getSize().y;
             const SDL_Rect srcRect{ 2 * width, 0, width, height };
             const SDL_FRect dstRect{ x, 220, width / switchScale, height / switchScale };
-            SDL_RenderCopyF(renderer, m_switchTexture, &srcRect, &dstRect);
+            SDL_RenderCopyF(renderer, m_switchTexture.getHandle(), &srcRect, &dstRect);
             x += 42.f + (i % 3 == 0 ? 20.f : 0);
         }
 

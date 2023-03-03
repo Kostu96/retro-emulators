@@ -17,10 +17,10 @@ public:
         m_text1{ font, "ALTAIR 8800" },
         m_text2{ font, "COMPUTER" }
     {
-        m_text1.setTextSize(64);
+        m_text1.setCharacterSize(64);
         m_text1.setColor(EmuCommon::Color::BLACK);
         m_text1.setPosition({ 64, 0 });
-        m_text2.setTextSize(46);
+        m_text2.setCharacterSize(46);
         m_text2.setColor(EmuCommon::Color::BLACK);
         m_text2.setPosition({ 385, 10 });
     }

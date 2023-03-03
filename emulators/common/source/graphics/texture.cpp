@@ -19,6 +19,14 @@ namespace EmuCommon {
         if (surface == nullptr)
             return false;
         
+        bool ret = createFromSurface(surface);
+        
+        SDL_FreeSurface(surface);
+        return ret;
+    }
+
+    bool SDLTexture::createFromSurface(SDL_Surface* surface)
+    {
         assert(m_handle == nullptr);
         m_handle = SDL_CreateTextureFromSurface(Application::get().getSDLRenderer(), surface);
         if (m_handle == nullptr)
@@ -26,7 +34,6 @@ namespace EmuCommon {
 
         m_size.x = surface->w;
         m_size.y = surface->h;
-        SDL_FreeSurface(surface);
         return true;
     }
 
