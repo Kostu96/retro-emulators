@@ -11,6 +11,7 @@ set(EMULATORS_COMMON_HEADERS
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/sprite.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/text.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/texture.hpp
+    ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/transform.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/transformable.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/button.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/label.hpp
@@ -27,6 +28,7 @@ set(EMULATORS_COMMON_SOURCES
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/sprite.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/text.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/texture.cpp
+    ${EMULATORS_COMMON_SOURCES_DIR}/graphics/transform.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/transformable.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/gui/button.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/gui/label.cpp
