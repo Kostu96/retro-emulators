@@ -89,18 +89,15 @@ namespace EmuCommon {
                 SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font.getHandle(), line.c_str(), { m_color.r, m_color.g, m_color.b });
                 assert(surface && "Could not render line surface!");
                 
-                /*switch (m_align)
+                switch (m_align)
                 {
-                case Align::Left:
-
-                    break;
                 case Align::Center:
-                    rect.x = floorf(getPosition().x + states.position.x + (float)(getSize().x - texture->getSize().x) / 2.f);
+                    dstRect.x = (getSize().x - surface->w) / 2;
                     break;
                 case Align::Right:
-                    rect.x = ceilf(getPosition().x + states.position.x + (float)(getSize().x - texture->getSize().x));
+                    dstRect.x = getSize().x - surface->w;
                     break;
-                }*/
+                }
 
                 SDL_BlitSurface(surface, nullptr, textSurface, &dstRect);
                 dstRect.y += m_lineHeight;
@@ -115,8 +112,8 @@ namespace EmuCommon {
 
         transform *= getTransform();
         FRect rect = transform.tranformRect({ 0, 0, (float)getSize().x, (float)getSize().y });
-        /*SDL_SetRenderDrawColor(renderer, m_color.r, m_color.g, m_color.b, m_color.a);
-        SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));*/ // DEBUG
+        SDL_SetRenderDrawColor(renderer, m_color.r, m_color.g, m_color.b, m_color.a);
+        SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect)); // DEBUG
 
         SDL_RenderCopyF(renderer, m_texture.getHandle(), nullptr, reinterpret_cast<SDL_FRect*>(&rect));
     }

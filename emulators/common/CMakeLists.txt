@@ -14,8 +14,8 @@ set(EMULATORS_COMMON_HEADERS
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/transform.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/transformable.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/button.hpp
+    ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/checkbox.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/label.hpp
-    ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/switch.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/widget.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/application.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/imgui_helper.hpp
@@ -31,8 +31,8 @@ set(EMULATORS_COMMON_SOURCES
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/transform.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/transformable.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/gui/button.cpp
+    ${EMULATORS_COMMON_SOURCES_DIR}/gui/checkbox.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/gui/label.cpp
-    ${EMULATORS_COMMON_SOURCES_DIR}/gui/switch.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/application.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/imgui_helper.cpp
 )
