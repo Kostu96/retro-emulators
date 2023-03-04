@@ -5,11 +5,7 @@ struct SDL_Renderer;
 
 namespace EmuCommon {
 
-	struct RenderStates
-	{
-		Vec2f position{ 0.f, 0.f };
-		Vec2f scale{ 1.f, 1.f };
-	};
+	class Transform;
 
 	class Renderable
 	{
@@ -17,7 +13,7 @@ namespace EmuCommon {
 		Renderable() = default;
 		virtual ~Renderable() = default;
 
-		virtual void render(SDL_Renderer* renderer, const RenderStates& states) = 0;
+		virtual void render(SDL_Renderer* renderer, Transform transform = {}) = 0;
 	};
 
 } // EmuCommon

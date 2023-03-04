@@ -70,7 +70,7 @@ public:
         m_protectBtn{ "PROTECT", "UNPROTECT", m_labelFont, m_switchTexture }
     {
         m_background.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(ALTAIR_OUTLINE_SIZE) });
-        m_logo.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(WINDOW_HEIGHT) - m_logo.getSize().y - 32 });
+        m_logo.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(WINDOW_HEIGHT) - m_logo.getSize().y - 30 });
 
         unsigned int maxWidth = m_INTE.getSize().x;
         for (const auto& i : { m_PROT, m_MEMR, m_INP, m_MI, m_OUT, m_HLTA, m_STACK, m_WO, m_INT })

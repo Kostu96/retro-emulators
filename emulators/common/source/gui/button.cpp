@@ -33,24 +33,16 @@ namespace EmuCommon::GUI {
         if (m_isHovered) EmuCommon::Application::get().setHandCursor();
     }
 
-    void TextButton::render(SDL_Renderer* renderer, const RenderStates& states)
+    void TextButton::render(SDL_Renderer* renderer, Transform transform)
     {
-        RenderStates statesCopy{ states };
-        statesCopy.position += getPosition();
-        statesCopy.scale.x *= getScale().x;
-        statesCopy.scale.y *= getScale().y;
+        transform *= getTransform();
+        FRect rect = transform.tranformRect({ 0, 0, m_size.x, m_size.y });
 
-        const SDL_FRect rect{
-            statesCopy.position.x,
-            statesCopy.position.y,
-            m_size.x * statesCopy.scale.x,
-            m_size.y * statesCopy.scale.y
-        };
         SDL_SetRenderDrawColor(renderer, 0x33, 0x33, 0x33, 0xFF);
-        SDL_RenderFillRectF(renderer, &rect);
+        SDL_RenderFillRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));
         
-        statesCopy.position += Vec2f{ 2 * DEFAULT_PADDING, DEFAULT_PADDING };
-        m_text.render(renderer, statesCopy);
+        //statesCopy.position += Vec2f{ 2 * DEFAULT_PADDING, DEFAULT_PADDING }; TODO:
+        m_text.render(renderer, transform);
     }
 
 } // namespace EmuCommon::GUI

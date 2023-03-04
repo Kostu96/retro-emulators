@@ -98,13 +98,13 @@ public:
     }
 
     void render(SDL_Renderer* renderer) {
-        EmuCommon::RenderStates states;
-        states.position = EmuCommon::Vec2f{ m_position } ;
+        EmuCommon::Transform transform;
+        transform.translate(EmuCommon::Vec2f{ m_position });
 
-        m_upLabel.render(renderer, states);
-        m_upButton.render(renderer, states);
-        m_downLabel.render(renderer, states);
-        m_downButton.render(renderer, states);
+        m_upLabel.render(renderer, transform);
+        m_upButton.render(renderer, transform);
+        m_downLabel.render(renderer, transform);
+        m_downButton.render(renderer, transform);
 
         const int width = m_texture.getSize().x / 3;
         const float scaledWidth = width / SWITCH_SCALE;

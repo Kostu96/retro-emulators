@@ -9,7 +9,7 @@ namespace EmuCommon {
 
     SDLText::~SDLText()
     {
-        destroyTextures();
+        
     }
 
     void SDLText::setText(const char* text)
@@ -34,6 +34,18 @@ namespace EmuCommon {
         m_isTextureDirty = true;
     }
 
+    void SDLText::setColor(Color color)
+    {
+        m_color = color;
+        m_isTextureDirty = true;
+    }
+
+    void SDLText::setAlign(Align align)
+    {
+        m_align = align;
+        m_isTextureDirty = true;
+    }
+
     Vec2u SDLText::getSize()
     {
         if (m_isSizeDirty) {
@@ -45,7 +57,7 @@ namespace EmuCommon {
             assert(ret == 0);
             int maxWidth = w;
             m_size.y = h;
-            m_lineHeight = (float)h;
+            m_lineHeight = h;
 
             for (auto it = m_text.begin() + 1; it != m_text.end(); it++) {
                 ret = TTF_SizeUTF8(m_font.getHandle(), it->c_str(), &w, &h);
@@ -60,68 +72,53 @@ namespace EmuCommon {
         return m_size;
     }
 
-    void SDLText::render(SDL_Renderer* renderer, const RenderStates& states)
+    void SDLText::render(SDL_Renderer* renderer, Transform transform)
     {
         if (getSize().x == 0)
             return;
 
         if (m_isTextureDirty) {
-            destroyTextures();
             m_font.setSize(m_characterSize);
+            SDL_Surface* textSurface = SDL_CreateRGBSurfaceWithFormat(0, getSize().x, getSize().y, 32, SDL_PIXELFORMAT_ARGB32);
+            assert(textSurface && "Could not create text surface!");
 
+            SDL_Rect dstRect{ 0, 0, 0, 0 };
             for (const auto& line : m_text) {
                 if (line.empty()) continue;
 
                 SDL_Surface* surface = TTF_RenderUTF8_Blended(m_font.getHandle(), line.c_str(), { m_color.r, m_color.g, m_color.b });
-                assert(surface && "Could not render text surface!");
+                assert(surface && "Could not render line surface!");
+                
+                /*switch (m_align)
+                {
+                case Align::Left:
 
-                SDLTexture* texture = new SDLTexture{};
-                bool ret = texture->createFromSurface(surface);
-                assert(ret && "Could not create texture from text surface!");
-                m_textures.push_back(texture);
+                    break;
+                case Align::Center:
+                    rect.x = floorf(getPosition().x + states.position.x + (float)(getSize().x - texture->getSize().x) / 2.f);
+                    break;
+                case Align::Right:
+                    rect.x = ceilf(getPosition().x + states.position.x + (float)(getSize().x - texture->getSize().x));
+                    break;
+                }*/
+
+                SDL_BlitSurface(surface, nullptr, textSurface, &dstRect);
+                dstRect.y += m_lineHeight;
 
                 SDL_FreeSurface(surface);
             }
 
+            m_texture.recreateFromSurface(textSurface);
+            SDL_FreeSurface(textSurface);
             m_isTextureDirty = false;
         }
 
-        SDL_FRect rect{
-            getPosition().x + states.position.x,
-            getPosition().y + states.position.y,
-            (float)getSize().x * getScale().x * states.scale.x,
-            (float)getSize().y * getScale().y * states.scale.y
-        };
-        SDL_SetRenderDrawColor(renderer, m_color.r, m_color.g, m_color.b, m_color.a);
-        SDL_RenderDrawRectF(renderer, &rect);
+        transform *= getTransform();
+        FRect rect = transform.tranformRect({ 0, 0, (float)getSize().x, (float)getSize().y });
+        /*SDL_SetRenderDrawColor(renderer, m_color.r, m_color.g, m_color.b, m_color.a);
+        SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));*/ // DEBUG
 
-        assert(!m_textures.empty());
-        for (auto& texture : m_textures) {
-            rect.w = (float)texture->getSize().x * getScale().x * states.scale.x;
-            rect.h = (float)texture->getSize().y * getScale().y * states.scale.y;
-            switch (m_align)
-            {
-            case Align::Left:
-
-                break;
-            case Align::Center:
-                rect.x = floorf(getPosition().x + states.position.x + (float)(getSize().x - texture->getSize().x) / 2.f);
-                break;
-            case Align::Right:
-                rect.x = ceilf(getPosition().x + states.position.x + (float)(getSize().x - texture->getSize().x));
-                break;
-            }
-            SDL_RenderCopyF(renderer, texture->getHandle(), nullptr, &rect);
-            rect.y += m_lineHeight;
-        }
-    }
-
-    void SDLText::destroyTextures()
-    {
-        for (auto tex : m_textures)
-            delete tex;
-
-        m_textures.clear();
+        SDL_RenderCopyF(renderer, m_texture.getHandle(), nullptr, reinterpret_cast<SDL_FRect*>(&rect));
     }
 
 } // namespace EmuCommon

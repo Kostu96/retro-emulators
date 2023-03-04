@@ -15,7 +15,7 @@ namespace EmuCommon {
             m_size{ size },
             m_color{ color } {}
 
-        void render(SDL_Renderer* renderer, const RenderStates& states = {}) override;
+        void render(SDL_Renderer* renderer, Transform transform = {}) override;
 
         void setSize(Vec2f size) { m_size = size; }
         Vec2f getSize() const { return m_size; }

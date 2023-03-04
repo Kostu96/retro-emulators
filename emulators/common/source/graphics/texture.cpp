@@ -19,15 +19,17 @@ namespace EmuCommon {
         if (surface == nullptr)
             return false;
         
-        bool ret = createFromSurface(surface);
+        bool ret = recreateFromSurface(surface);
         
         SDL_FreeSurface(surface);
         return ret;
     }
 
-    bool SDLTexture::createFromSurface(SDL_Surface* surface)
+    bool SDLTexture::recreateFromSurface(SDL_Surface* surface)
     {
-        assert(m_handle == nullptr);
+        if (m_handle)
+            SDL_DestroyTexture(m_handle);
+
         m_handle = SDL_CreateTextureFromSurface(Application::get().getSDLRenderer(), surface);
         if (m_handle == nullptr)
             return false;

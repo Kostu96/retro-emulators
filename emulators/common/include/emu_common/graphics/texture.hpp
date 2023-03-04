@@ -21,7 +21,7 @@ namespace EmuCommon {
 
 		SDL_Texture* getHandle() const { return m_handle; }
 	private:
-		bool createFromSurface(SDL_Surface* surface);
+		bool recreateFromSurface(SDL_Surface* surface);
 
 		SDL_Texture* m_handle = nullptr;
 		Vec2u m_size;

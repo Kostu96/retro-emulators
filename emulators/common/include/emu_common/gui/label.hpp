@@ -12,7 +12,7 @@ namespace EmuCommon::GUI {
             m_text{ font, text }
         {}
 
-        void render(SDL_Renderer* renderer, const RenderStates& states = {}) override { m_text.render(renderer, states); }
+        void render(SDL_Renderer* renderer, Transform transform = {}) override { m_text.render(renderer, transform); }
     private:
         SDLText m_text;
     };

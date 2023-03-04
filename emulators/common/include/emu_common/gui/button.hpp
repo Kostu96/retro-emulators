@@ -30,7 +30,7 @@ namespace EmuCommon::GUI {
     public:
         explicit InvisibleButton(Vec2f size = {}) { setSize(size); }
 
-        void render(SDL_Renderer* /*renderer*/, const RenderStates& /*states*/) override {}
+        void render(SDL_Renderer* /*renderer*/, Transform /*transform*/) override {}
 
         void setSize(Vec2f size) { m_size = size; }
     };
@@ -47,7 +47,7 @@ namespace EmuCommon::GUI {
             m_size.y = float(m_text.getSize().y + 2 * DEFAULT_PADDING);
         }
 
-        void render(SDL_Renderer* renderer, const RenderStates& states) override;
+        void render(SDL_Renderer* renderer, Transform transform) override;
     private:
         static constexpr int DEFAULT_PADDING = 4;
 

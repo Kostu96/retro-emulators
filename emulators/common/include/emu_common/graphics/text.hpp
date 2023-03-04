@@ -23,24 +23,22 @@ namespace EmuCommon {
 
 		void setText(const char* text);
 		void setCharacterSize(unsigned int size);
-		void setColor(Color color) { m_color = color; }
-		void setAlign(Align align) { m_align = align; }
+		void setColor(Color color);
+		void setAlign(Align align);
 		Color getColor() const { return m_color; }
 		Align getAlign() const { return m_align; }
 		Vec2u getSize();
 
-		void render(SDL_Renderer* renderer, const RenderStates& states = {}) override;
+		void render(SDL_Renderer* renderer, Transform transform = {}) override;
 	private:
-		void destroyTextures();
-
 		const SDLFont& m_font;
 		unsigned int m_characterSize{ 14 };
-		float m_lineHeight;
+		unsigned int m_lineHeight;
 		Color m_color;
 		Align m_align{ Align::Left };
 		Vec2u m_size;
 		std::vector<std::string> m_text;
-		std::vector<SDLTexture*> m_textures;
+		SDLTexture m_texture;
 		bool m_isTextureDirty = true;
 		bool m_isSizeDirty = true;
 	};
