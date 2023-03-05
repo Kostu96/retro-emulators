@@ -30,7 +30,6 @@ namespace EmuCommon {
 		float m_rotation{ 0.f };
 		mutable Transform m_transform;
 		mutable bool m_isTransformDirty{ true };
-
 	};
 
 } // namespace EmuCommon

@@ -5,6 +5,14 @@
 
 namespace EmuCommon {
 
+	SDLSprite::SDLSprite(const SDLTexture& texture) :
+		m_texture{ &texture },
+		m_textureRect{ 0, 0, (int)texture.getSize().x, (int)texture.getSize().y } {}
+
+	SDLSprite::SDLSprite(const SDLTexture& texture, const IRect& rect) :
+		m_texture{ &texture },
+		m_textureRect{ rect } {}
+
 	void SDLSprite::setTexture(const SDLTexture& texture, bool resetRect)
 	{
 		m_texture = &texture;

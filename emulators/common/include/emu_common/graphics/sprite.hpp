@@ -13,6 +13,8 @@ namespace EmuCommon {
 	{
 	public:
 		SDLSprite() = default;
+		SDLSprite(const SDLTexture& texture);
+		SDLSprite(const SDLTexture& texture, const IRect& rect);
 
 		void setTexture(const SDLTexture& texture, bool resetRect = false);
 		void setTextureRect(const IRect& rect) { m_textureRect = rect; }

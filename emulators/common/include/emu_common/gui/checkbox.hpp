@@ -3,10 +3,14 @@
 
 namespace EmuCommon::GUI{
 
-	class Checkbox
+	class Checkbox :
+		public Widget
 	{
 	public:
+		Checkbox() = default;
 
+		void onEvent(const SDL_Event& e);
+		void handleMousePos(Vec2i position);
 	private:
 
 	};

@@ -1,6 +1,7 @@
 #include "altair.hpp"
 #include "constants.hpp"
 #include "gui.hpp"
+#include "entities/led_group.hpp"
 #include "entities/logo.hpp"
 
 #include "emu_common/application.hpp"
@@ -10,6 +11,8 @@
 #include <SDL.h>
 #include <iostream>
 #include <thread>
+
+static const char* s_DataLabels[8] = { "D7", "D6", "D5", "D4", "D3", "D2", "D1", "D0" };
 
 class Emulator :
     public EmuCommon::Application
@@ -27,6 +30,7 @@ public:
             ALTAIR_GRAY_COLOR
         },
         m_logo{ m_256bytesFont },
+        m_dataLEDs{ m_labelFont, m_ledTexture, 8, s_DataLabels, 20.f },
         m_INTE{ "INTE", m_labelFont, m_ledTexture },
         m_PROT{ "PROT", m_labelFont, m_ledTexture },
         m_MEMR{ "MEMR", m_labelFont, m_ledTexture },
@@ -38,14 +42,14 @@ public:
         m_WO{ "WO", m_labelFont, m_ledTexture },
         m_INT{ "INT", m_labelFont, m_ledTexture },
         m_STATUSText{ m_labelFont, "STATUS" },
-        m_D7{ "D7", m_labelFont, m_ledTexture },
+        /*m_D7{ "D7", m_labelFont, m_ledTexture },
         m_D6{ "D6", m_labelFont, m_ledTexture },
         m_D5{ "D5", m_labelFont, m_ledTexture },
         m_D4{ "D4", m_labelFont, m_ledTexture },
         m_D3{ "D3", m_labelFont, m_ledTexture },
         m_D2{ "D2", m_labelFont, m_ledTexture },
         m_D1{ "D1", m_labelFont, m_ledTexture },
-        m_D0{ "D0", m_labelFont, m_ledTexture },
+        m_D0{ "D0", m_labelFont, m_ledTexture },*/
         m_A15{ "A15", m_labelFont, m_ledTexture },
         m_A14{ "A14", m_labelFont, m_ledTexture },
         m_A13{ "A13", m_labelFont, m_ledTexture },
@@ -84,16 +88,16 @@ public:
         }
         m_STATUSText.setColor({ 0xF2, 0xF1, 0xED }); m_STATUSText.setPosition({ 287, 70 });
 
-        int idx = 7;
+        /*int idx = 7;
         for (auto* i : { &m_D7, &m_D6, &m_D5, &m_D4, &m_D3, &m_D2, &m_D1, &m_D0 }) {
             static unsigned int x = 580;
             unsigned int off = (maxWidth + 3 - i->getSize().x) / 2;
             i->setPosition({ x + off, 20 });
             x += maxWidth + 3 + (idx % 3 == 0 ? 20 : 0);
             idx--;
-        }
+        }*/
 
-        idx = 15;
+        int idx = 15;
         for (auto* i : { &m_A15, &m_A14, &m_A13, &m_A12, &m_A11, &m_A10, &m_A9, &m_A8, &m_A7, &m_A6, &m_A5, &m_A4, &m_A3, &m_A2, &m_A1, &m_A0 }) {
             static unsigned int x = 184;
             unsigned int off = (maxWidth + 3 - i->getSize().x) / 2;
@@ -143,14 +147,16 @@ protected:
         m_WO.render(renderer);
         m_INT.render(renderer);
 
-        m_D7.render(renderer);
+        m_dataLEDs.render(renderer);
+
+        /*m_D7.render(renderer);
         m_D6.render(renderer); 
         m_D5.render(renderer);
         m_D4.render(renderer);
         m_D3.render(renderer);
         m_D2.render(renderer);
         m_D1.render(renderer);
-        m_D0.render(renderer);
+        m_D0.render(renderer);*/
 
         m_A15.render(renderer);
         m_A14.render(renderer);
@@ -210,11 +216,12 @@ private:
 
     EmuCommon::RectShape m_background;
     Logo m_logo;
+    LEDGroup m_dataLEDs;
 
     LabeledLED m_INTE, m_PROT, m_MEMR, m_INP, m_MI,
                m_OUT, m_HLTA, m_STACK, m_WO, m_INT;
     EmuCommon::SDLText m_STATUSText;
-    LabeledLED m_D7, m_D6, m_D5, m_D4, m_D3, m_D2, m_D1, m_D0;
+    //LabeledLED m_D7, m_D6, m_D5, m_D4, m_D3, m_D2, m_D1, m_D0;
     LabeledLED m_A15, m_A14, m_A13, m_A12, m_A11, m_A10, m_A9, m_A8, m_A7, m_A6, m_A5, m_A4, m_A3, m_A2, m_A1, m_A0;
     TwoWayButton m_stopRunBtn;
     TwoWayButton m_stepBtn;
