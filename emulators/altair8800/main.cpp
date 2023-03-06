@@ -2,6 +2,7 @@
 #include "constants.hpp"
 #include "gui.hpp"
 #include "entities/led_group.hpp"
+#include "entities/led_single.hpp"
 #include "entities/logo.hpp"
 
 #include "emu_common/application.hpp"
@@ -30,8 +31,8 @@ public:
         m_switchTexture{ "assets/altair/switch.png" },
         m_background{ { float(WINDOW_WIDTH - 2 * ALTAIR_OUTLINE_SIZE), float(WINDOW_HEIGHT - 2 * ALTAIR_OUTLINE_SIZE) }, ALTAIR_GRAY_COLOR },
         m_logo{ m_256bytesFont },
-        m_INTE{ "INTE", m_labelFont, m_ledTexture },
-        m_PROT{ "PROT", m_labelFont, m_ledTexture },
+        m_INTELED{ m_labelFont, m_ledTexture, "INTE" },
+        m_PROTLED{ m_labelFont, m_ledTexture, "PROT" },
         m_statusLEDs{ m_labelFont, m_ledTexture, 8, s_StatusLabels, 44.f },
         m_STATUSText{ m_labelFont, "STATUS" },
         m_dataLEDs{ m_labelFont, m_ledTexture, 8, s_DataLabels, 44.f, 16.f },
@@ -55,18 +56,7 @@ public:
         m_dataLEDs.setPosition({ 500, 20 });
         m_addressLEDs.setPosition({ 100, 100 });
 
-        unsigned int maxWidth = m_INTE.getSize().x;
-        for (const auto& i : { m_PROT })
-            if (i.getSize().x > maxWidth) maxWidth = i.getSize().x;
-        
-        for (auto* i : { &m_INTE, &m_PROT }) {
-            static unsigned int x = 56;
-            unsigned int off = (maxWidth + 3 - i->getSize().x) / 2;
-            i->setPosition({ x + off, 20 });
-            x += maxWidth + 3;
-        }
-
-        maxWidth = m_stopRunBtn.getWidth();
+        unsigned int maxWidth = m_stopRunBtn.getWidth();
         for (const auto& i : { m_stepBtn, m_examineBtn, m_depositBtn, m_rstClrBtn, m_protectBtn })
             if (unsigned int(i.getWidth()) > maxWidth) maxWidth = i.getWidth();
 
@@ -95,6 +85,8 @@ protected:
         m_background.render(renderer);
         m_logo.render(renderer);
 
+        m_INTELED.render(renderer);
+        m_PROTLED.render(renderer);
         m_statusLEDs.render(renderer);
 
         // TODO: chnage to RectShape
@@ -143,7 +135,8 @@ private:
 
     EmuCommon::RectShape m_background;
     Logo m_logo;
-    LabeledLED m_INTE, m_PROT;
+    LEDSingle m_INTELED;
+    LEDSingle m_PROTLED;
     LEDGroup m_statusLEDs;
     EmuCommon::SDLText m_STATUSText;
     LEDGroup m_dataLEDs;
