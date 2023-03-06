@@ -115,13 +115,14 @@ namespace EmuCommon {
 
         transform *= getTransform();
         FRect rect = transform.tranformRect({ 0, 0, (float)getSize().x, (float)getSize().y });
+        const SDL_Rect iRect{ (int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height };
 
-#if 1 // DEBUG
+#if 0 // DEBUG
         SDL_SetRenderDrawColor(renderer, m_color.r, m_color.g, m_color.b, m_color.a);
-        SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));
+        SDL_RenderDrawRect(renderer, &iRect);
 #endif
 
-        SDL_RenderCopyF(renderer, m_texture.getHandle(), nullptr, reinterpret_cast<SDL_FRect*>(&rect));
+        SDL_RenderCopy(renderer, m_texture.getHandle(), nullptr, &iRect);
     }
 
 } // namespace EmuCommon

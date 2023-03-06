@@ -24,9 +24,8 @@ namespace EmuCommon {
 	{
 		transform *= getTransform();
 		FRect rect = transform.tranformRect({ 0, 0, (float)m_textureRect.width, (float)m_textureRect.height });
-
-		SDL_RenderCopyF(renderer, m_texture->getHandle(),
-			reinterpret_cast<SDL_Rect*>(&m_textureRect), reinterpret_cast<SDL_FRect*>(&rect));
+		const SDL_Rect iRect{ (int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height };
+		SDL_RenderCopy(renderer, m_texture->getHandle(), reinterpret_cast<SDL_Rect*>(&m_textureRect), &iRect);
 	}
 
 } // EmuCommon
