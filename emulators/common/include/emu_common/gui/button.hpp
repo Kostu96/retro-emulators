@@ -19,9 +19,9 @@ namespace EmuCommon::GUI {
     protected:
         std::function<void()> m_pressedCallback;
         std::function<void()> m_releasedCallback;
+        Vec2f m_size;
         bool m_isHovered = false;
         bool m_isPressed = false;
-        Vec2f m_size;
     };
 
     class InvisibleButton :

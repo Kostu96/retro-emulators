@@ -4,6 +4,7 @@
 #include "entities/led_group.hpp"
 #include "entities/led_single.hpp"
 #include "entities/logo.hpp"
+#include "entities/switch_group.hpp"
 
 #include "emu_common/application.hpp"
 #include "emu_common/graphics/font.hpp"
@@ -17,6 +18,8 @@ static const char* s_StatusLabels[8] = { "MEMR", "INP", "MI", "OUT", "HLTA", "ST
 static const char* s_DataLabels[8] = { "D7", "D6", "D5", "D4", "D3", "D2", "D1", "D0" };
 static const char* s_AddressLabels[16] = { "A15", "A14", "A13", "A12", "A11", "A10", "A9", "A8",
                                            "A7", "A6", "A5", "A4", "A3", "A2", "A1", "A0" };
+static const char* s_SwitchLabels[16] = { "15", "14", "13", "12", "11", "10", "9", "8",
+                                          "7", "6", "5", "4", "3", "2", "1", "0" };
 
 class Emulator :
     public EmuCommon::Application
@@ -33,12 +36,13 @@ public:
         m_logo{ m_256bytesFont },
         m_INTELED{ m_labelFont, m_ledTexture, "INTE" },
         m_PROTLED{ m_labelFont, m_ledTexture, "PROT" },
-        m_statusLEDs{ m_labelFont, m_ledTexture, 8, s_StatusLabels, 44.f },
+        m_statusLEDs{ m_labelFont, m_ledTexture, 8, s_StatusLabels, ALTAIR_GRID_SPACING },
         m_STATUSText{ m_labelFont, "STATUS" },
-        m_dataLEDs{ m_labelFont, m_ledTexture, 8, s_DataLabels, 44.f, 16.f, 3 },
+        m_dataLEDs{ m_labelFont, m_ledTexture, 8, s_DataLabels, ALTAIR_GRID_SPACING, ALTAIR_TRIPLET_SPACING, 3, 7 },
         m_WAITLED{ m_labelFont, m_ledTexture, "WAIT" },
         m_HLDALED{ m_labelFont, m_ledTexture, "HLDA" },
-        m_addressLEDs{ m_labelFont, m_ledTexture, 16, s_AddressLabels, 44.f, 16.f, 4 },
+        m_addressLEDs{ m_labelFont, m_ledTexture, 16, s_AddressLabels, ALTAIR_GRID_SPACING, ALTAIR_TRIPLET_SPACING, 4, 15 },
+        m_switches{ m_labelFont, m_switchTexture, 16, s_SwitchLabels, ALTAIR_GRID_SPACING, ALTAIR_TRIPLET_SPACING, 15 },
         m_stopRunBtn{ "STOP", "RUN", m_labelFont, m_switchTexture },
         m_stepBtn{ "SINGLE\nSTEP", "", m_labelFont, m_switchTexture },
         m_examineBtn{ "EXAMINE", "EXAMINE\nNEXT", m_labelFont, m_switchTexture },
@@ -49,20 +53,22 @@ public:
         m_background.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(ALTAIR_OUTLINE_SIZE) });
         m_logo.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(WINDOW_HEIGHT) - m_logo.getSize().y - 30 });
 
-        m_INTELED.setPosition({ 48, 20 });
-        m_PROTLED.setPosition({ 92, 20 });
-        m_statusLEDs.setPosition({ 136, 20 });
+        m_INTELED.setPosition({ ALTAIR_GRID_COL0, ALTAIR_GRID_ROW0 });
+        m_PROTLED.setPosition({ ALTAIR_GRID_COL1, ALTAIR_GRID_ROW0 });
+        m_statusLEDs.setPosition({ ALTAIR_GRID_COL2, ALTAIR_GRID_ROW0 });
         m_STATUSText.setColor({ 0xF2, 0xF1, 0xED });
         m_STATUSText.setOrigin({ m_STATUSText.getSize().x / 2.f, 0 });
-        m_STATUSText.setPosition({ m_statusLEDs.getPosition().x + m_statusLEDs.getSize().x / 2.f,
+        m_STATUSText.setPosition({ m_statusLEDs.getPosition().x - m_statusLEDs.getOrigin().x + m_statusLEDs.getSize().x / 2.f,
             m_statusLEDs.getPosition().y + m_statusLEDs.getSize().y + 4 });
 
-        m_dataLEDs.setPosition({ 600, 20 });
+        m_dataLEDs.setPosition({ ALTAIR_GRID_COL_LAST, ALTAIR_GRID_ROW0 });
 
-        m_WAITLED.setPosition({ m_INTELED.getPosition().x, 110});
-        m_HLDALED.setPosition({ m_PROTLED.getPosition().x, 110});
+        m_WAITLED.setPosition({ m_INTELED.getPosition().x, ALTAIR_GRID_ROW1 });
+        m_HLDALED.setPosition({ m_PROTLED.getPosition().x, ALTAIR_GRID_ROW1 });
 
-        m_addressLEDs.setPosition({ 200, 110 });
+        m_addressLEDs.setPosition({ ALTAIR_GRID_COL_LAST, ALTAIR_GRID_ROW1 });
+
+        m_switches.setPosition({ ALTAIR_GRID_COL_LAST + 2, ALTAIR_GRID_ROW2 });
 
         unsigned int maxWidth = m_stopRunBtn.getWidth();
         for (const auto& i : { m_stepBtn, m_examineBtn, m_depositBtn, m_rstClrBtn, m_protectBtn })
@@ -71,14 +77,15 @@ public:
         for (auto* i : { &m_stopRunBtn, &m_stepBtn, &m_examineBtn, &m_depositBtn, &m_rstClrBtn, &m_protectBtn }) {
             static int x = 166;
             int off = (maxWidth - i->getWidth()) / 2;
-            i->setPosition({ x + off, 310 });
+            i->setPosition({ x + off, 340 });
             x += maxWidth + 7;
         }
     }
 protected:
     void onUpdate() override {
-        Vec2i mousePos;;
+        Vec2i mousePos;
         SDL_GetMouseState(&mousePos.x, &mousePos.y);
+        m_switches.handleMousePos(mousePos);
         m_stopRunBtn.handleMousePos(mousePos);
         m_stepBtn.handleMousePos(mousePos);
         m_examineBtn.handleMousePos(mousePos);
@@ -98,7 +105,8 @@ protected:
         m_statusLEDs.render(renderer);
 
         // TODO: chnage to RectShape
-        SDL_FRect rect = { m_statusLEDs.getPosition().x - 4, m_statusLEDs.getPosition().y + m_statusLEDs.getSize().y + 4,
+        SDL_FRect rect = { m_statusLEDs.getPosition().x - m_statusLEDs.getOrigin().x - 4,
+            m_statusLEDs.getPosition().y + m_statusLEDs.getSize().y + 4,
             m_statusLEDs.getSize().x + 8, 2};
         SDL_SetRenderDrawColor(renderer, 0xF2, 0xF1, 0xED, 0xFF);
         SDL_RenderFillRectF(renderer, &rect);
@@ -111,16 +119,7 @@ protected:
 
         m_addressLEDs.render(renderer);
 
-        float x = 200.f;
-        for (int i = 0; i < 16; i++) {
-            const float switchScale = 3.f;
-            const int width = m_switchTexture.getSize().x / 3;
-            const int height = m_switchTexture.getSize().y;
-            const SDL_Rect srcRect{ 2 * width, 0, width, height };
-            const SDL_FRect dstRect{ x, 220, width / switchScale, height / switchScale };
-            SDL_RenderCopyF(renderer, m_switchTexture.getHandle(), &srcRect, &dstRect);
-            x += 42.f + (i % 3 == 0 ? 20.f : 0);
-        }
+        m_switches.render(renderer);
 
         m_stopRunBtn.render(renderer);
         m_stepBtn.render(renderer);
@@ -131,6 +130,7 @@ protected:
     }
 
     void onEvent(SDL_Event& e) override {
+        m_switches.onEvent(e);
         m_stopRunBtn.onEvent(e);
         m_stepBtn.onEvent(e);
         m_examineBtn.onEvent(e);
@@ -155,6 +155,7 @@ private:
     LEDSingle m_WAITLED;
     LEDSingle m_HLDALED;
     LEDGroup m_addressLEDs;
+    SwitchGroup m_switches;
 
     TwoWayButton m_stopRunBtn;
     TwoWayButton m_stepBtn;

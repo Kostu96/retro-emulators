@@ -17,6 +17,8 @@ public:
 	void update();
 
 	//const std::vector<DisassemblyLine>& getDisassembly() const { return m_disassembly; }
+	u16 getAddressLatch() const { return m_addressLatch; }
+	u8 getDataLatch() const { return m_dataLatch; }
 private:
 	u8 memoryRead(u16 address);
 	void memoryWrite(u16 address, u8 data);
@@ -24,6 +26,8 @@ private:
 	CPUx80<CPUx80Mode::Intel8080> m_CPU;
 	u8* m_RAM;
 	bool m_isStopped = true;
+	u16 m_addressLatch;
+	u8 m_dataLatch;
 
 	//std::vector<DisassemblyLine> m_disassembly;
 };

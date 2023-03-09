@@ -16,7 +16,8 @@ class LEDGroup :
 {
 public:
     LEDGroup(const EmuCommon::SDLFont& font, const EmuCommon::SDLTexture& texture,
-             u8 count, const char** labels, float spacing, float tripletSpacing = 0, u8 spacerLinesCount = 0) :
+             u8 count, const char** labels, float spacing,
+             float tripletSpacing = 0, u8 spacerLinesCount = 0, u8 originAtIndex = 0) :
         m_count{ count },
         m_spacerLinesCount{ spacerLinesCount }
     {
@@ -54,6 +55,8 @@ public:
 
         m_size.x = m_leds[count - 1].getPosition().x + extent;
         m_size.y = m_leds[0].getPosition().y + (textureSize.y * LED_SPRITE_SCALE) / 2.f;
+
+        setOrigin({ m_leds[originAtIndex].getPosition().x, 0 });
     }
 
     ~LEDGroup()
@@ -72,8 +75,13 @@ public:
         SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));
 #endif
 
-        for (unsigned int i = 0; i < m_count; i++)
+        for (u16 i = 0; i < m_count; i++)
         {
+            u16 bit = m_count - i - 1;
+            u8 isOn = (m_states >> bit) & 1;
+            EmuCommon::IRect rect = m_leds[i].getTextureRect();
+            rect.x = isOn * 100; // TODO: remove magic number
+            m_leds[i].setTextureRect(rect);
             m_leds[i].render(renderer, transform);
             m_labels[i].render(renderer, transform);
         }
@@ -82,7 +90,7 @@ public:
             for (unsigned int j = 0; j < m_spacerLinesCount; j++)
             {
                 EmuCommon::FRect rect = transform.tranformRect({
-                    m_leds[i].getPosition().x, m_leds[i].getPosition().y + 16 + j * 16,
+                    m_leds[i].getPosition().x, m_leds[i].getPosition().y + 18 + j * 16,
                     2, 8
                     });
                 SDL_SetRenderDrawColor(renderer, ALTAIR_WHITE_COLOR.r, ALTAIR_WHITE_COLOR.g, ALTAIR_WHITE_COLOR.b, ALTAIR_WHITE_COLOR.a);
@@ -90,6 +98,7 @@ public:
             }
     }
 
+    void setStates(u16 states) { m_states = states; }
     const EmuCommon::Vec2f& getSize() const { return m_size; }
 private:
     EmuCommon::SDLText* m_labels = nullptr;

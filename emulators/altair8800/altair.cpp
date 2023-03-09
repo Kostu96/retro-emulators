@@ -18,6 +18,8 @@ Altair::~Altair()
 void Altair::reset()
 {
 	m_CPU.reset();
+	m_addressLatch = 0;
+	m_dataLatch = m_RAM[m_addressLatch];
 }
 
 void Altair::update()
