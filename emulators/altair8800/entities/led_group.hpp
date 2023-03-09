@@ -16,8 +16,9 @@ class LEDGroup :
 {
 public:
     LEDGroup(const EmuCommon::SDLFont& font, const EmuCommon::SDLTexture& texture,
-             u8 count, const char** labels, float spacing, float tripletSpacing = 0) :
-        m_count{ count }
+             u8 count, const char** labels, float spacing, float tripletSpacing = 0, u8 spacerLinesCount = 0) :
+        m_count{ count },
+        m_spacerLinesCount{ spacerLinesCount }
     {
         auto textureSize = texture.getSize();
 
@@ -65,15 +66,28 @@ public:
     {
         transform *= getTransform();
 
+#if 0 // DEBUG
         EmuCommon::FRect rect = transform.tranformRect({0, 0, m_size.x, m_size.y });
         SDL_SetRenderDrawColor(renderer, 200, 255, 220, 255);
         SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));
+#endif
 
         for (unsigned int i = 0; i < m_count; i++)
         {
             m_leds[i].render(renderer, transform);
             m_labels[i].render(renderer, transform);
         }
+
+        for (unsigned int i = 0; i < m_count; i++)
+            for (unsigned int j = 0; j < m_spacerLinesCount; j++)
+            {
+                EmuCommon::FRect rect = transform.tranformRect({
+                    m_leds[i].getPosition().x, m_leds[i].getPosition().y + 16 + j * 16,
+                    2, 8
+                    });
+                SDL_SetRenderDrawColor(renderer, ALTAIR_WHITE_COLOR.r, ALTAIR_WHITE_COLOR.g, ALTAIR_WHITE_COLOR.b, ALTAIR_WHITE_COLOR.a);
+                SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));
+            }
     }
 
     const EmuCommon::Vec2f& getSize() const { return m_size; }
@@ -83,4 +97,5 @@ private:
     EmuCommon::Vec2f m_size;
     u16 m_states = 0;
     u8 m_count;
+    u8 m_spacerLinesCount;
 };

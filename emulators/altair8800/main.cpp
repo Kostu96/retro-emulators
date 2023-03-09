@@ -35,8 +35,10 @@ public:
         m_PROTLED{ m_labelFont, m_ledTexture, "PROT" },
         m_statusLEDs{ m_labelFont, m_ledTexture, 8, s_StatusLabels, 44.f },
         m_STATUSText{ m_labelFont, "STATUS" },
-        m_dataLEDs{ m_labelFont, m_ledTexture, 8, s_DataLabels, 44.f, 16.f },
-        m_addressLEDs{ m_labelFont, m_ledTexture, 16, s_AddressLabels, 44.f, 16.f },
+        m_dataLEDs{ m_labelFont, m_ledTexture, 8, s_DataLabels, 44.f, 16.f, 3 },
+        m_WAITLED{ m_labelFont, m_ledTexture, "WAIT" },
+        m_HLDALED{ m_labelFont, m_ledTexture, "HLDA" },
+        m_addressLEDs{ m_labelFont, m_ledTexture, 16, s_AddressLabels, 44.f, 16.f, 4 },
         m_stopRunBtn{ "STOP", "RUN", m_labelFont, m_switchTexture },
         m_stepBtn{ "SINGLE\nSTEP", "", m_labelFont, m_switchTexture },
         m_examineBtn{ "EXAMINE", "EXAMINE\nNEXT", m_labelFont, m_switchTexture },
@@ -47,14 +49,20 @@ public:
         m_background.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(ALTAIR_OUTLINE_SIZE) });
         m_logo.setPosition({ float(ALTAIR_OUTLINE_SIZE), float(WINDOW_HEIGHT) - m_logo.getSize().y - 30 });
 
-        m_statusLEDs.setPosition({ 64, 20 });
+        m_INTELED.setPosition({ 48, 20 });
+        m_PROTLED.setPosition({ 92, 20 });
+        m_statusLEDs.setPosition({ 136, 20 });
         m_STATUSText.setColor({ 0xF2, 0xF1, 0xED });
         m_STATUSText.setOrigin({ m_STATUSText.getSize().x / 2.f, 0 });
         m_STATUSText.setPosition({ m_statusLEDs.getPosition().x + m_statusLEDs.getSize().x / 2.f,
             m_statusLEDs.getPosition().y + m_statusLEDs.getSize().y + 4 });
 
-        m_dataLEDs.setPosition({ 500, 20 });
-        m_addressLEDs.setPosition({ 100, 100 });
+        m_dataLEDs.setPosition({ 600, 20 });
+
+        m_WAITLED.setPosition({ m_INTELED.getPosition().x, 110});
+        m_HLDALED.setPosition({ m_PROTLED.getPosition().x, 110});
+
+        m_addressLEDs.setPosition({ 200, 110 });
 
         unsigned int maxWidth = m_stopRunBtn.getWidth();
         for (const auto& i : { m_stepBtn, m_examineBtn, m_depositBtn, m_rstClrBtn, m_protectBtn })
@@ -90,16 +98,20 @@ protected:
         m_statusLEDs.render(renderer);
 
         // TODO: chnage to RectShape
-        SDL_FRect rect = { m_statusLEDs.getPosition().x - 5, m_statusLEDs.getPosition().y + m_statusLEDs.getSize().y + 4,
-            m_statusLEDs.getSize().x + 10, 2};
+        SDL_FRect rect = { m_statusLEDs.getPosition().x - 4, m_statusLEDs.getPosition().y + m_statusLEDs.getSize().y + 4,
+            m_statusLEDs.getSize().x + 8, 2};
         SDL_SetRenderDrawColor(renderer, 0xF2, 0xF1, 0xED, 0xFF);
         SDL_RenderFillRectF(renderer, &rect);
         m_STATUSText.render(renderer);
 
         m_dataLEDs.render(renderer);
+
+        m_WAITLED.render(renderer);
+        m_HLDALED.render(renderer);
+
         m_addressLEDs.render(renderer);
 
-        float x = 188.f;
+        float x = 200.f;
         for (int i = 0; i < 16; i++) {
             const float switchScale = 3.f;
             const int width = m_switchTexture.getSize().x / 3;
@@ -140,6 +152,8 @@ private:
     LEDGroup m_statusLEDs;
     EmuCommon::SDLText m_STATUSText;
     LEDGroup m_dataLEDs;
+    LEDSingle m_WAITLED;
+    LEDSingle m_HLDALED;
     LEDGroup m_addressLEDs;
 
     TwoWayButton m_stopRunBtn;

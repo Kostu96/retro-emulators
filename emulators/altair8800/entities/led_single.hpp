@@ -21,6 +21,13 @@ public:
         m_label.setColor(ALTAIR_WHITE_COLOR);
         m_label.setOrigin({ labelSize.x / 2.f, 0 });
 
+        auto textureSize = texture.getSize();
+        float xPos = std::max((textureSize.x * LED_SPRITE_SCALE) / 4.f, labelSize.x / 2.f);
+
+        m_label.setPosition({ xPos, 0 });
+
+        m_led.setOrigin({ textureSize.x / 4.f, textureSize.y / 2.f});
+        m_led.setPosition({ xPos, (textureSize.y * LED_SPRITE_SCALE) / 2.f + labelSize.y + 2.f });
         m_led.setScale({ LED_SPRITE_SCALE, LED_SPRITE_SCALE });
     }
 
