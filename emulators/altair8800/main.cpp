@@ -80,6 +80,8 @@ public:
             i->setPosition({ x + off, 340 });
             x += maxWidth + 7;
         }
+
+        m_examineBtn;
     }
 protected:
     void onUpdate() override {
