@@ -1,6 +1,4 @@
 #pragma once
-#include "emu_common/graphics/transformable.hpp"
-#include "emu_common/graphics/renderable.hpp"
 #include "emu_common/graphics/sprite.hpp"
 #include "emu_common/graphics/text.hpp"
 #include "emu_common/gui/checkbox.hpp"

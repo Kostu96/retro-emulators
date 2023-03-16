@@ -36,6 +36,8 @@ set(ALTAIR_APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/entities/logo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/entities/switch_group.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/entities/switch_group.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/entities/twoway_button.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/entities/twoway_button.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gui.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui_helper.cpp
