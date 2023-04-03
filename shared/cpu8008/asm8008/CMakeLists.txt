@@ -20,5 +20,5 @@ target_link_libraries(${ASM8008_LIB_TARGET_NAME} PUBLIC
 )
 
 set_target_properties(${ASM8008_LIB_TARGET_NAME} PROPERTIES
-    FOLDER shared/8008
+    FOLDER shared/i8008
 )

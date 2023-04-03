@@ -22,5 +22,5 @@ target_link_libraries(${ASM40XX_LIB_TARGET_NAME} PUBLIC
 )
 
 set_target_properties(${ASM40XX_LIB_TARGET_NAME} PROPERTIES
-    FOLDER shared/40xx
+    FOLDER shared/i40xx
 )

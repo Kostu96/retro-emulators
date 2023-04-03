@@ -97,49 +97,49 @@ void CPUx80<CPUx80Mode::GameBoy>::clock()
 template <>
 u8 CPUx80<CPUx80Mode::GameBoy>::getCarryFlag()
 {
-    return m_state.F.gb.Carry;
+    return m_state.F.Carry;
 }
 
 template <>
 void CPUx80<CPUx80Mode::GameBoy>::setCarryFlag(u8 value)
 {
-    m_state.F.gb.Carry = value;
+    m_state.F.Carry = value;
 }
 
 template <>
 u8 CPUx80<CPUx80Mode::GameBoy>::getHalfCarryFlag()
 {
-    return m_state.F.gb.HalfCarry;
+    return m_state.F.HalfCarry;
 }
 
 template <>
 void CPUx80<CPUx80Mode::GameBoy>::setHalfCarryFlag(u8 value)
 {
-    m_state.F.gb.HalfCarry = value;
+    m_state.F.HalfCarry = value;
 }
 
 template <>
 u8 CPUx80<CPUx80Mode::GameBoy>::getSubtractFlag()
 {
-    return m_state.F.gb.Subtract;
+    return m_state.F.Subtract;
 }
 
 template <>
 void CPUx80<CPUx80Mode::GameBoy>::setSubtractFlag(u8 value)
 {
-    m_state.F.gb.Subtract = value;
+    m_state.F.Subtract = value;
 }
 
 template <>
 u8 CPUx80<CPUx80Mode::GameBoy>::getZeroFlag()
 {
-    return m_state.F.gb.Zero;
+    return m_state.F.Zero;
 }
 
 template <>
 void CPUx80<CPUx80Mode::GameBoy>::setZeroFlag(u8 value)
 {
-    m_state.F.gb.Zero = value;
+    m_state.F.Zero = value;
 }
 
 template <>

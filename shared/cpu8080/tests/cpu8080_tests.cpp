@@ -1,29 +1,29 @@
-#include "cpu_x80.hpp"
+#include "cpu8080.hpp"
 
 #include <gtest/gtest.h>
 
-struct CPUMockI8080 :
-    public CPUx80<CPUx80Mode::Intel8080>
-{
-    using CPUx80Base::State;
-    using CPUx80Base::m_state;
-
-    CPUMockI8080() : CPUx80<CPUx80Mode::Intel8080>{ CPUx80Mode::Intel8080 } {}
-};
-
-struct CPUx80ModeI8080Tests :
+struct CPU8080Tests :
     public testing::Test
 {
     static constexpr u16 ROM_SIZE = 0x10;
     static constexpr u16 RAM_SIZE = 0x10;
 
+    struct State {
+        u16 PC;
+        u16 SP;
+        u16 AF;
+        u16 BC;
+        u16 DE;
+        u16 HL;
+    };
+
     u8 rom[ROM_SIZE]{};
     u8 ram[RAM_SIZE]{};
 
-    CPUMockI8080 cpu;
-    CPUMockI8080::State referenceCPUState;
+    CPU8080 cpu;
+    State referenceState;
 
-    CPUx80ModeI8080Tests()
+    CPU8080Tests()
     {
         cpu.mapReadMemoryCallback([&](u16 address)
             {
@@ -42,21 +42,21 @@ struct CPUx80ModeI8080Tests :
     {
         cpu.reset();
 
-        std::memcpy(&referenceCPUState, &cpu.m_state, sizeof(CPUMockI8080::State));
+        referenceState.PC = cpu
     }
 
     void TearDown() override
     {
-        EXPECT_EQ(referenceCPUState.PC, cpu.getPC());
-        EXPECT_EQ(referenceCPUState.SP, cpu.getSP());
-        EXPECT_EQ(referenceCPUState.AF, cpu.getAF());
-        EXPECT_EQ(referenceCPUState.BC, cpu.getBC());
-        EXPECT_EQ(referenceCPUState.DE, cpu.getDE());
-        EXPECT_EQ(referenceCPUState.HL, cpu.getHL());
+        EXPECT_EQ(referenceState.PC, cpu.getPC());
+        EXPECT_EQ(referenceState.SP, cpu.getSP());
+        EXPECT_EQ(referenceState.AF, cpu.getAF());
+        EXPECT_EQ(referenceState.BC, cpu.getBC());
+        EXPECT_EQ(referenceState.DE, cpu.getDE());
+        EXPECT_EQ(referenceState.HL, cpu.getHL());
     }
 };
 
-TEST_F(CPUx80ModeI8080Tests, NOPTest)
+TEST_F(CPU8080Tests, NOPTest)
 {
     rom[0x0] = 0x00; // NOP
 
@@ -67,7 +67,7 @@ TEST_F(CPUx80ModeI8080Tests, NOPTest)
     referenceCPUState.PC = 0x0001;
 }
 
-TEST_F(CPUx80ModeI8080Tests, JMPTest)
+TEST_F(CPU8080Tests, JMPTest)
 {
     rom[0x0] = 0xC3;
     rom[0x1] = 0xAD;
@@ -80,7 +80,7 @@ TEST_F(CPUx80ModeI8080Tests, JMPTest)
     referenceCPUState.PC = 0xDEAD;
 }
 
-TEST_F(CPUx80ModeI8080Tests, LXITest)
+TEST_F(CPU8080Tests, LXITest)
 {
     rom[0x0] = 0x01;
     rom[0x1] = 0x23;

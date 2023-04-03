@@ -20,5 +20,5 @@ target_link_libraries(${CPU8008_LIB_TARGET_NAME} PUBLIC
 )
 
 set_target_properties(${CPU8008_LIB_TARGET_NAME} PROPERTIES
-    FOLDER shared/8008
+    FOLDER shared/i8008
 )

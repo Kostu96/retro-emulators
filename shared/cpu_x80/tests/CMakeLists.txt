@@ -8,7 +8,6 @@ set(CPUX80_TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80_gameboy_mode_logic_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80_gameboy_mode_misc_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80_gameboy_mode_transfer_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_x80_mode_i8080_tests.cpp
 )
 
 add_executable(${CPUX80_TESTS_TARGET_NAME} ${CPUX80_TESTS_SOURCES})
