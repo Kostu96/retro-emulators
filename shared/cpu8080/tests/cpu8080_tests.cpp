@@ -11,10 +11,31 @@ struct CPU8080Tests :
     struct State {
         u16 PC;
         u16 SP;
-        u16 AF;
-        u16 BC;
-        u16 DE;
-        u16 HL;
+        union {
+            struct {
+                u8 F;
+                u8 A;
+            };
+            u16 AF;
+        };
+        union {
+            struct {
+                u8 C, B;
+            };
+            u16 BC;
+        };
+        union {
+            struct {
+                u8 E, D;
+            };
+            u16 DE;
+        };
+        union {
+            struct {
+                u8 L, H;
+            };
+            u16 HL;
+        };
     };
 
     u8 rom[ROM_SIZE]{};
@@ -42,7 +63,12 @@ struct CPU8080Tests :
     {
         cpu.reset();
 
-        referenceState.PC = cpu
+        referenceState.PC = cpu.getPC();
+        referenceState.SP = cpu.getSP();
+        referenceState.AF = cpu.getAF();
+        referenceState.BC = cpu.getBC();
+        referenceState.DE = cpu.getDE();
+        referenceState.HL = cpu.getHL();
     }
 
     void TearDown() override
@@ -64,7 +90,7 @@ TEST_F(CPU8080Tests, NOPTest)
     while (clocks--)
         cpu.clock();
 
-    referenceCPUState.PC = 0x0001;
+    referenceState.PC = 0x0001;
 }
 
 TEST_F(CPU8080Tests, JMPTest)
@@ -77,7 +103,7 @@ TEST_F(CPU8080Tests, JMPTest)
     while (clocks--)
         cpu.clock();
 
-    referenceCPUState.PC = 0xDEAD;
+    referenceState.PC = 0xDEAD;
 }
 
 TEST_F(CPU8080Tests, LXITest)
@@ -102,14 +128,14 @@ TEST_F(CPU8080Tests, LXITest)
     while (clocks--)
         cpu.clock();
 
-    referenceCPUState.BC = 0x0123;
-    referenceCPUState.DE = 0x4567;
-    referenceCPUState.HL = 0x89AB;
-    referenceCPUState.SP = 0xCDEF;
-    referenceCPUState.PC = 0x000C;
+    referenceState.BC = 0x0123;
+    referenceState.DE = 0x4567;
+    referenceState.HL = 0x89AB;
+    referenceState.SP = 0xCDEF;
+    referenceState.PC = 0x000C;
 }
 
-TEST_F(CPUx80ModeI8080Tests, MVITest)
+TEST_F(CPU8080Tests, MVITest)
 {
     rom[0x0] = 0x06;
     rom[0x1] = 0x01; // MVI B, 0x01
@@ -139,11 +165,11 @@ TEST_F(CPUx80ModeI8080Tests, MVITest)
     while (clocks--)
         cpu.clock();
 
-    referenceCPUState.BC = 0x0123;
-    referenceCPUState.DE = 0x4567;
-    referenceCPUState.HL = 0x8001;
-    referenceCPUState.A = 0xEF;
-    referenceCPUState.PC = 0x0010;
+    referenceState.BC = 0x0123;
+    referenceState.DE = 0x4567;
+    referenceState.HL = 0x8001;
+    referenceState.A = 0xEF;
+    referenceState.PC = 0x0010;
 
     EXPECT_EQ(ram[1], 0xCD);
 }

@@ -145,17 +145,17 @@ struct CPUx80GameBoyModeJumpRelConTests :
 TEST_P(CPUx80GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 {
 	rom[0x0] = GetParam().opcode;
-	rom[0x1] = 0x42; // JR NZ 0x42 (66)
+	rom[0x1] = 0x42; // JR CON 0x42 (66)
 	rom[0x2] = GetParam().opcode;
-	rom[0x3] = 0xFC; // JR NZ 0xFC (-4)
+	rom[0x3] = 0xFC; // JR CON 0xFC (-4)
 
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero  = 1; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero  = 0; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero  = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero  = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
@@ -170,10 +170,10 @@ TEST_P(CPUx80GameBoyModeJumpRelConTests, JR_CON_Imm8Test)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero  = 0; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero  = 1; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero  = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero  = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 1; break;
 	}
 
 	preExecutionState = captureCPUState();
@@ -222,10 +222,10 @@ TEST_P(CPUx80GameBoyModeRetConTests, RET_CONTest)
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
@@ -240,10 +240,10 @@ TEST_P(CPUx80GameBoyModeRetConTests, RET_CONTest)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 1; break;
 	}
 
 	preExecutionState = captureCPUState();
@@ -280,10 +280,10 @@ TEST_P(CPUx80GameBoyModeJumpConTests, JP_CONTest)
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
@@ -298,10 +298,10 @@ TEST_P(CPUx80GameBoyModeJumpConTests, JP_CONTest)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 1; break;
 	}
 
 	cpu.m_state.PC = 0x0000;
@@ -341,10 +341,10 @@ TEST_P(CPUx80GameBoyModeCallConTests, CALL_CONTest)
 	// Condition false
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 1; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 0; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero = 1; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero = 0; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 1; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 0; break;
 	}
 
 	auto preExecutionState = captureCPUState();
@@ -359,10 +359,10 @@ TEST_P(CPUx80GameBoyModeCallConTests, CALL_CONTest)
 	// Condition true
 	switch (GetParam().con)
 	{
-	case TestParam::Condition::NotZero:  cpu.m_state.F.gb.Zero = 0; break;
-	case TestParam::Condition::Zero:     cpu.m_state.F.gb.Zero = 1; break;
-	case TestParam::Condition::NotCarry: cpu.m_state.F.gb.Carry = 0; break;
-	case TestParam::Condition::Carry:    cpu.m_state.F.gb.Carry = 1; break;
+	case TestParam::Condition::NotZero:  cpu.m_state.F.Zero = 0; break;
+	case TestParam::Condition::Zero:     cpu.m_state.F.Zero = 1; break;
+	case TestParam::Condition::NotCarry: cpu.m_state.F.Carry = 0; break;
+	case TestParam::Condition::Carry:    cpu.m_state.F.Carry = 1; break;
 	}
 
 	cpu.m_state.PC = 0x0000;

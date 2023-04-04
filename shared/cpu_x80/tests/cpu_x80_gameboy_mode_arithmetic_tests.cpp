@@ -150,7 +150,7 @@ TEST_F(CPUx80GameBoyModeArithmeticTests, ADD_SP_Imm8Test)
 
 	preExecutionState.PC = 0x0004;
 	preExecutionState.SP = 0xDE00;
-	preExecutionState.F.gb.HalfCarry = 1;
-	preExecutionState.F.gb.Carry = 1;
+	preExecutionState.F.HalfCarry = 1;
+	preExecutionState.F.Carry = 1;
 	compareCPUStates(preExecutionState, postExecutionState);
 }

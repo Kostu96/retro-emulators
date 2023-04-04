@@ -1,7 +1,6 @@
 #include "altair.hpp"
 
 Altair::Altair() :
-	m_CPU{ CPUx80Mode::Intel8080 },
 	m_RAM{ new u8[0x100] }
 {
 	m_CPU.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });

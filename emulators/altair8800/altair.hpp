@@ -1,6 +1,5 @@
 #pragma once
-#include "cpu_x80.hpp"
-//#include "../../shared/disassembly_line.hpp"
+#include "cpu8080.hpp"
 
 #include <ccl/non_copyable.h>
 
@@ -23,7 +22,7 @@ private:
 	u8 memoryRead(u16 address);
 	void memoryWrite(u16 address, u8 data);
 
-	CPUx80<CPUx80Mode::Intel8080> m_CPU;
+	CPU8080 m_CPU;
 	u8* m_RAM;
 	bool m_isStopped = true;
 	u16 m_addressLatch;

@@ -18,6 +18,13 @@ public:
     void reset();
     bool interrupt(u8 vector);
     void clock();
+
+    u16 getPC() const { return PC; }
+    u16 getSP() const { return SP; }
+    u16 getAF() const { return AF; }
+    u16 getBC() const { return BC; }
+    u16 getDE() const { return DE; }
+    u16 getHL() const { return HL; }
 private:
     union Flags {
         struct {
