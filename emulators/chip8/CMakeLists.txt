@@ -25,5 +25,5 @@ target_link_libraries(${CHIP8_TARGET_NAME} PRIVATE
 set_target_properties(${CHIP8_TARGET_NAME}
     PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${CHIP8_TARGET_NAME}>
-    FOLDER emulators/chip8
+    FOLDER emulators
 )
