@@ -49,7 +49,6 @@ private:
     void push16(u16 data) { store16(SP - 2, data); SP -= 2; }
     u8 pop8() { return load8(SP++); }
     u16 pop16() { SP += 2; return load16(SP - 2); }
-    void add8(u8 value, u8 carry, u16& result, u8& result4bit);
     void add16(u16 value, u32& result, u16& result12bit);
     void subtract8(u8 value, u8 carry, u16& result, u8& result4bit);
     void compare8(u8 value, u16& result, u8& result4bit);

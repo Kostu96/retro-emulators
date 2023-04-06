@@ -1,4 +1,5 @@
 #include "cpu8080.hpp"
+#include "cpu_operations.hpp"
 
 #include <bitset>
 #include <cassert>
@@ -62,13 +63,6 @@ void CPU8080::clock()
             m_conditionalTaken = false;
         }
     }
-}
-
-void CPU8080::add8(u8 value, u8 carry, u16& result, u8& result4bit)
-{
-    result = A + value + carry;
-    result4bit = (A & 0xF) + (value & 0xF) + carry;
-    A = result;
 }
 
 void CPU8080::add16(u16 value, u32& result, u16& result12bit)
@@ -388,7 +382,8 @@ void CPU8080::ADD(u8 value)
 {
     u16 result;
     u8 result4bit;
-    add8(value, 0, result, result4bit);
+    add8(A, value, 0, result, result4bit);
+    A = result;
 
     F.Zero = (A == 0);
     F.HalfCarry = (result4bit >> 4);
@@ -401,7 +396,8 @@ void CPU8080::ADC(u8 value)
 {
     u16 result;
     u8 result4bit;
-    add8(value, F.Carry, result, result4bit);
+    add8(A, value, F.Carry, result, result4bit);
+    A = result;
 
     F.Zero = (A == 0);
     F.HalfCarry = (result4bit >> 4);

@@ -1,4 +1,5 @@
 #include "cpu_x80_base.inl"
+#include "cpu_operations.hpp"
 
 static const u8 standardCycleCounts[256]{
     1, 3, 2, 2, 1, 1, 2, 1, 5, 2, 2, 2, 1, 1, 2, 1,
@@ -413,7 +414,8 @@ void CPUx80<CPUx80Mode::GameBoy>::ADD(u8 value)
 {
     u16 result;
     u8 result4bit;
-    add8(value, 0, result, result4bit);
+    add8(m_state.A, value, 0, result, result4bit);
+    m_state.A = result;
 
     setZeroFlag(m_state.A == 0);
     setHalfCarryFlag(result4bit >> 4);
@@ -426,7 +428,8 @@ void CPUx80<CPUx80Mode::GameBoy>::ADC(u8 value)
 {
     u16 result;
     u8 result4bit;
-    add8(value, getCarryFlag(), result, result4bit);
+    add8(m_state.A, value, getCarryFlag(), result, result4bit);
+    m_state.A = result;
 
     setZeroFlag(m_state.A == 0);
     setHalfCarryFlag(result4bit >> 4);

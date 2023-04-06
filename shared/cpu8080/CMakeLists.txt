@@ -17,7 +17,7 @@ target_include_directories(${CPU8080_LIB_TARGET_NAME} PUBLIC
 
 target_link_libraries(${CPU8080_LIB_TARGET_NAME} PUBLIC
     asm_common_lib
-    cpp-common-lib
+    cpu_common_lib
 )
 
 set_target_properties(${CPU8080_LIB_TARGET_NAME} PROPERTIES

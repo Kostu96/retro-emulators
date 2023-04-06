@@ -52,7 +52,7 @@ target_compile_options(${GAMEBOY_APP_TARGET_NAME} PRIVATE
 
 target_link_libraries(${GAMEBOY_APP_TARGET_NAME} PRIVATE
     ${GAMEBOY_LIB_TARGET_NAME}
-    emulators_common_lib
+    emu_common_lib
 )
 
 set_target_properties(${GAMEBOY_APP_TARGET_NAME} PROPERTIES

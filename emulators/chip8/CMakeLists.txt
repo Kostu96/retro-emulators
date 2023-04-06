@@ -19,7 +19,7 @@ target_compile_options(${CHIP8_TARGET_NAME} PRIVATE
 )
 
 target_link_libraries(${CHIP8_TARGET_NAME} PRIVATE
-    emulators_common_lib
+    emu_common_lib
 )
 
 set_target_properties(${CHIP8_TARGET_NAME}

@@ -15,6 +15,7 @@ target_include_directories(${CPU6502_TARGET_NAME} PUBLIC
 
 target_link_libraries(${CPU6502_TARGET_NAME} PUBLIC
     cpp-common-lib
+    cpu_common_lib
 )
 
 set_target_properties(${CPU6502_TARGET_NAME} PROPERTIES

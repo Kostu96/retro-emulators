@@ -55,9 +55,7 @@ target_compile_options(${ALTAIR_APP_TARGET_NAME} PRIVATE
 
 target_link_libraries(${ALTAIR_APP_TARGET_NAME} PRIVATE
     ${ALTAIR_LIB_TARGET_NAME}
-    emulators_common_lib
-    SDL2-static
-    SDL2main
+    emu_common_lib
 )
 
 set_target_properties(${ALTAIR_APP_TARGET_NAME} PROPERTIES

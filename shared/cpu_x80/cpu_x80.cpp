@@ -33,13 +33,6 @@ bool CPUx80Base::interrupt(u8 vector)
     return ret;
 }
 
-void CPUx80Base::add8(u8 value, u8 carry, u16& result, u8& result4bit)
-{
-    result = m_state.A + value + carry;
-    result4bit = (m_state.A & 0xF) + (value & 0xF) + carry;
-    m_state.A = result;
-}
-
 void CPUx80Base::add16(u16 value, u32& result, u16& result12bit)
 {
     result = m_state.HL + value;

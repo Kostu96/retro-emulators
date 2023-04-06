@@ -1,5 +1,5 @@
 #include "gameboy.hpp"
-#include "../../shared/address_range.hpp"
+#include "address_range.hpp"
 
 #include <cassert>
 #include <fstream>

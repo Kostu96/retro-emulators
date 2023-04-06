@@ -16,7 +16,7 @@ target_include_directories(${CPU8008_LIB_TARGET_NAME} PUBLIC
 )
 
 target_link_libraries(${CPU8008_LIB_TARGET_NAME} PUBLIC
-    cpp-common-lib
+    cpu_common_lib
 )
 
 set_target_properties(${CPU8008_LIB_TARGET_NAME} PROPERTIES

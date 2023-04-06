@@ -16,7 +16,7 @@ target_include_directories(${CPU40XX_LIB_TARGET_NAME} PUBLIC
 )
 
 target_link_libraries(${CPU40XX_LIB_TARGET_NAME} PUBLIC
-    cpp-common-lib
+    cpu_common_lib
 )
 
 set_target_properties(${CPU40XX_LIB_TARGET_NAME} PROPERTIES

@@ -17,7 +17,7 @@ target_include_directories(${CPUX80_LIB_TARGET_NAME} PUBLIC
 
 target_link_libraries(${CPUX80_LIB_TARGET_NAME} PUBLIC
     asm_common_lib
-    cpp-common-lib
+    cpu_common_lib
 )
 
 set_target_properties(${CPUX80_LIB_TARGET_NAME} PROPERTIES

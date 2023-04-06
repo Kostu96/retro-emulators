@@ -5,11 +5,19 @@ include(scripts/cmake/base_configuration.cmake)
 include(scripts/cmake/compiler_warnings.cmake)
 
 add_subdirectory(third_party)
-add_subdirectory(shared)
-add_subdirectory(assembler_app)
 
-add_subdirectory(emulators/common)
+add_subdirectory(shared/asm_common)
+add_subdirectory(shared/cpu_common)
+add_subdirectory(shared/cpu_x80)
+add_subdirectory(shared/cpu40xx)
+add_subdirectory(shared/cpu6502)
+add_subdirectory(shared/cpu8008)
+add_subdirectory(shared/cpu8080)
+
+add_subdirectory(emulators/emu_common)
 add_subdirectory(emulators/altair8800)
 add_subdirectory(emulators/chip8)
 add_subdirectory(emulators/gameboy)
 add_subdirectory(emulators/space_invaders)
+
+add_subdirectory(assembler_app)

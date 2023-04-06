@@ -1,5 +1,5 @@
 #include "invaders.hpp"
-#include "../../shared/address_range.hpp"
+#include "address_range.hpp"
 
 #include <ccl/helper_functions.h>
 
