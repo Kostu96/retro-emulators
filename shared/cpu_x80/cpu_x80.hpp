@@ -82,17 +82,6 @@ protected:
     CPUx80Base() = default;
     virtual ~CPUx80Base() = default;
 
-    void add16(u16 value, u32& result, u16& result12bit);
-    void subtract(u8 value, u8 carry, u16& result, u8& result4bit);
-    void compare(u8 value, u16& result, u8& result4bit);
-    void rotateLeft(u8& reg, u8& newCarry);
-    void rotateLeftWithCarry(u8& reg, u8 carry, u8& newCarry);
-    void rotateRight(u8& reg, u8& newCarry);
-    void rotateRightWithCarry(u8& reg, u8 carry, u8& newCarry);
-    void shiftLeftArithmetic(u8& reg, u8& newCarry);
-    void shiftRightArithmetic(u8& reg, u8& newCarry);
-    void shiftRightLogic(u8& reg, u8& newCarry);
-
     ReadMemoryCallback load8 = nullptr;
     WriteMemoryCallback store8 = nullptr;
     u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }

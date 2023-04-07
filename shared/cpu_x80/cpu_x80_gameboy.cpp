@@ -442,7 +442,8 @@ void CPUx80<CPUx80Mode::GameBoy>::ADDHL(u16 value)
 {
     u32 result;
     u16 result12bit;
-    add16(value, result, result12bit);
+    add16(m_state.HL, value, result, result12bit);
+    m_state.HL = result;
     
     setCarryFlag(result >> 16);
     setHalfCarryFlag(result12bit >> 12);
@@ -454,7 +455,8 @@ void CPUx80<CPUx80Mode::GameBoy>::SUB(u8 value)
 {
     u16 result;
     u8 result4bit;
-    subtract(value, 0, result, result4bit);
+    sub8(m_state.A, value, 0, result, result4bit);
+    m_state.A = result;
     
     setZeroFlag(m_state.A == 0);
     setHalfCarryFlag(result4bit >> 4);
@@ -467,7 +469,8 @@ void CPUx80<CPUx80Mode::GameBoy>::SBB(u8 value)
 {
     u16 result;
     u8 result4bit;
-    subtract(value, getCarryFlag(), result, result4bit);
+    sub8(m_state.A, value, getCarryFlag(), result, result4bit);
+    m_state.A = result;
 
     setZeroFlag(m_state.A == 0);
     setHalfCarryFlag(result4bit >> 4);
@@ -480,7 +483,7 @@ void CPUx80<CPUx80Mode::GameBoy>::CMP(u8 value)
 {
     u16 result;
     u8 result4bit;
-    compare(value, result, result4bit);
+    sub8(m_state.A, value, 0, result, result4bit);
     
     setZeroFlag(result == 0);
     setHalfCarryFlag(result4bit >> 4);
@@ -641,7 +644,7 @@ template <>
 void CPUx80<CPUx80Mode::GameBoy>::SLA(u8& reg)
 {
     u8 newCarry;
-    shiftLeftArithmetic(reg, newCarry);
+    shiftLeft(reg, newCarry);
 
     setCarryFlag(newCarry);
     setZeroFlag(reg == 0);

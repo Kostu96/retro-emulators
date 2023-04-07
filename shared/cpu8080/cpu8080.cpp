@@ -65,54 +65,6 @@ void CPU8080::clock()
     }
 }
 
-void CPU8080::add16(u16 value, u32& result, u16& result12bit)
-{
-    result = HL + value;
-    result12bit = (HL & 0xFFF) + (value & 0xFFF);
-    HL = result;
-}
-
-void CPU8080::subtract8(u8 value, u8 carry, u16& result, u8& result4bit)
-{
-    result = (s16)A - (s16)value - carry;
-    result4bit = (s8)(A & 0xF) - (s8)(value & 0xF) - carry;
-    A = result;
-}
-
-void CPU8080::compare8(u8 value, u16& result, u8& result4bit)
-{
-    result = (s16)A - (s16)value;
-    result4bit = (s8)(A & 0xF) - (s8)(value & 0xF);
-}
-
-void CPU8080::rotateLeft(u8& reg, u8& newCarry)
-{
-    newCarry = reg >> 7;
-    reg <<= 1;
-    reg |= newCarry;
-}
-
-void CPU8080::rotateLeftWithCarry(u8& reg, u8 carry, u8& newCarry)
-{
-    newCarry = reg >> 7;
-    reg <<= 1;
-    reg |= carry;
-}
-
-void CPU8080::rotateRight(u8& reg, u8& newCarry)
-{
-    newCarry = reg & 1;
-    reg >>= 1;
-    reg |= newCarry << 7;
-}
-
-void CPU8080::rotateRightWithCarry(u8& reg, u8 carry, u8& newCarry)
-{
-    newCarry = reg & 1;
-    reg >>= 1;
-    reg |= carry << 7;
-}
-
 void CPU8080::executeInstruction(u8 opcode)
 {
     switch (opcode)
@@ -410,7 +362,8 @@ void CPU8080::ADDHL(u16 value)
 {
     u32 result;
     u16 result12bit;
-    add16(value, result, result12bit);
+    add16(HL, value, result, result12bit);
+    HL = result;
 
     F.Carry = (result >> 16);
 }
@@ -438,7 +391,7 @@ void CPU8080::CMP(u8 value)
 {
     u16 result;
     u8 result4bit;
-    compare8(value, result, result4bit);
+    sub8(A, value, 0, result, result4bit);
 
     F.Zero = (result == 0);
     F.HalfCarry = (result4bit >> 4);
@@ -569,7 +522,8 @@ void CPU8080::SUB(u8 value)
 {
     u16 result;
     u8 result4bit;
-    subtract8(value, 0, result, result4bit);
+    sub8(A, value, 0, result, result4bit);
+    A = result;
 
     F.Zero = (A == 0);
     F.HalfCarry = (result4bit >> 4);
@@ -582,7 +536,8 @@ void CPU8080::SBB(u8 value)
 {
     u16 result;
     u8 result4bit;
-    subtract8(value, F.Carry, result, result4bit);
+    sub8(A, value, F.Carry, result, result4bit);
+    A = result;
 
     F.Zero = (A == 0);
     F.HalfCarry = (result4bit >> 4);
