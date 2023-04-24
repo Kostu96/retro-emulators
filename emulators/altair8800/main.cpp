@@ -81,7 +81,7 @@ public:
             x += maxWidth + 7;
         }
 
-        m_examineBtn;
+        //m_examineBtn;
     }
 protected:
     void onUpdate() override {

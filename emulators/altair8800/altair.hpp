@@ -16,6 +16,7 @@ public:
 	void update();
 
 	//const std::vector<DisassemblyLine>& getDisassembly() const { return m_disassembly; }
+	void setAddressLatch(u16 address) { m_addressLatch = address; }
 	u16 getAddressLatch() const { return m_addressLatch; }
 	u8 getDataLatch() const { return m_dataLatch; }
 private:
