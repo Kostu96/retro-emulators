@@ -1,11 +1,11 @@
 #pragma once
-#include "address_range.hpp"
-
+#include <ccl/non_copyable.h>
 #include <ccl/types.hpp>
 
 #include <vector>
 
-class CPU8008
+class CPU8008 :
+    public ccl::NonCopyable
 {
 public:
 union Flags
@@ -20,19 +20,12 @@ union Flags
         u8 byte;
     };
 
-    template <Mapable Device>
-    void map(Device& device, AddressRange range);
-    template <ConstMapable ConstDevice>
-    void map(const ConstDevice& device, AddressRange range);
-
     void reset();
     void clock();
 
     u8 load8(u16 address) const;
 
     CPU8008() = default;
-    CPU8008(const CPU8008&) = delete;
-    CPU8008& operator=(const CPU8008&) = delete;
 private:
     u16 load16(u16 address);
     void store8(u16 address, u8 data);
@@ -52,36 +45,4 @@ private:
     u8 H;
     u8 L;
     Flags F;
-
-    // Helpers:
-    std::vector<ReadMapEntry> m_readMap;
-    std::vector<WriteMapEntry> m_writeMap;
 };
-
-template<Mapable Device>
-inline void CPU8008::map(Device& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-    m_writeMap.emplace_back(
-        WriteMapEntry{
-            range,
-            [&device](u16 address, u8 data) { return device.write(address, data); }
-        }
-    );
-}
-
-template<ConstMapable ConstDevice>
-inline void CPU8008::map(const ConstDevice& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-}

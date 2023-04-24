@@ -23,6 +23,7 @@ void CPU6502::clock()
         if (m_nmi && !m_isDuringNMI) NMI();
 
         u8 instruction = load8(PC++);
+        m_cyclesLeft++;
 
         switch (instruction)
         {
@@ -185,6 +186,23 @@ void CPU6502::clock()
     m_cyclesLeft--;
 }
 
+void CPU6502::runUntilEndlessLoop()
+{
+    u16 lastPC = PC;
+    u8 counter = 0;
+    while (counter < 10)
+    {
+        clock();
+
+        if (lastPC == PC)
+            counter++;
+        else
+            counter = 0;
+
+        lastPC = PC;
+    }
+}
+
 void CPU6502::IRQ()
 {
     push16(PC);
@@ -211,99 +229,6 @@ void CPU6502::NMI()
 
     m_cyclesLeft += 3;
 }
-
-#pragma region MemoryAccess
-u8 CPU6502::load8(u16 address) const
-{
-    u8 data = 0;
-
-    for (auto& entry : m_readMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            data = entry.read(offset);
-            break;
-        }
-    }
-
-    m_cyclesLeft++;
-    return data;
-}
-
-u16 CPU6502::load16(u16 address) const
-{
-    u16 data = 0;
-
-    for (auto& entry : m_readMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            data = entry.read(offset + 1);
-            data <<= 8;
-            data |= entry.read(offset);
-            break;
-        }
-    }
-
-    m_cyclesLeft += 2;
-    return data;
-}
-
-void CPU6502::store8(u16 address, u8 data)
-{
-    for (auto& entry : m_writeMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            entry.write(offset, data);
-            break;
-        }
-    }
-
-    m_cyclesLeft++;
-}
-
-void CPU6502::store16(u16 address, u16 data)
-{
-    for (auto& entry : m_writeMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            entry.write(offset, data & 0xFF);
-            entry.write(offset + 1, data >> 8);
-            break;
-        }
-    }
-
-    m_cyclesLeft += 2;
-}
-
-void CPU6502::push8(u8 data)
-{
-    store8(0x100 + SP--, data);
-}
-
-void CPU6502::push16(u16 data)
-{
-    store16(0x100 + SP - 1, data);
-    SP -= 2;
-}
-
-u8 CPU6502::pop8()
-{
-    return load8(0x100 + ++SP);
-}
-
-u16 CPU6502::pop16()
-{
-    SP += 2;
-    return load16(0x100 + SP - 1);
-}
-#pragma endregion
 
 #pragma region AdressingModes
 void CPU6502::am_ACC()
@@ -491,6 +416,7 @@ void CPU6502::op_RTI()
 void CPU6502::op_LDA()
 {
     ACC = load8(m_absoluteAddress);
+    m_cyclesLeft++;
     F.bits.Z = (ACC == 0);
     F.bits.N = (ACC >> 7);
 }
@@ -498,6 +424,7 @@ void CPU6502::op_LDA()
 void CPU6502::op_LDX()
 {
     X = load8(m_absoluteAddress);
+    m_cyclesLeft++;
     F.bits.Z = (X == 0);
     F.bits.N = (X >> 7);
 }
@@ -505,6 +432,7 @@ void CPU6502::op_LDX()
 void CPU6502::op_LDY()
 {
     Y = load8(m_absoluteAddress);
+    m_cyclesLeft++;
     F.bits.Z = (Y == 0);
     F.bits.N = (Y >> 7);
 }
@@ -512,16 +440,19 @@ void CPU6502::op_LDY()
 void CPU6502::op_STA()
 {
     store8(m_absoluteAddress, ACC);
+    m_cyclesLeft++;
 }
 
 void CPU6502::op_STX()
 {
     store8(m_absoluteAddress, X);
+    m_cyclesLeft++;
 }
 
 void CPU6502::op_STY()
 {
     store8(m_absoluteAddress, Y);
+    m_cyclesLeft++;
 }
 #pragma endregion
 

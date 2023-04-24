@@ -156,6 +156,7 @@ void Gameboy::runUntilEndlessLoop()
     while (counter < 10)
     {
         update();
+
         if (lastPC == m_CPU.getPC() && !m_CPU.isHalted())
             counter++;
         else

@@ -13,6 +13,6 @@ Emulalators of microcomputers, game consoles and arcades.
  - Intel 4004
  - Intel 4040
  - Intel 8080
- - MOS 6502
+ - MOS 6502/WDC 65C02
  - Sharp LR35902 (GameBoy)
  - Zilog Z80

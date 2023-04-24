@@ -13,8 +13,6 @@ public:
     void mapReadMemoryCallback(ReadMemoryCallback callback) { load8 = callback; }
     void mapWriteMemoryCallback(WriteMemoryCallback callback) { store8 = callback; }
 
-    CPU8080() = default;
-
     void reset();
     bool interrupt(u8 vector);
     void clock();
@@ -25,6 +23,8 @@ public:
     u16 getBC() const { return BC; }
     u16 getDE() const { return DE; }
     u16 getHL() const { return HL; }
+
+    CPU8080() = default;
 private:
     union Flags {
         struct {

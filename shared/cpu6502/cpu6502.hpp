@@ -1,15 +1,18 @@
 #pragma once
-#include "address_range.hpp"
-
+#include <ccl/non_copyable.h>
 #include <ccl/types.hpp>
 
-#include <concepts>
 #include <functional>
-#include <vector>
 
-class CPU6502
+class CPU6502 :
+    public ccl::NonCopyable
 {
 public:
+    using ReadMemoryCallback = std::function<u8(u16)>;
+    using WriteMemoryCallback = std::function<void(u16, u8)>;
+    void mapReadMemoryCallback(ReadMemoryCallback callback) { load8 = callback; }
+    void mapWriteMemoryCallback(WriteMemoryCallback callback) { store8 = callback; }
+
     union Flags
     {
         struct {
@@ -25,35 +28,31 @@ public:
         u8 byte;
     };
 
-    template <Mapable Device>
-    void map(Device& device, AddressRange range);
-    template <ConstMapable ConstDevice>
-    void map(const ConstDevice& device, AddressRange range);
-
     void reset();
     void clock();
     void setIRQ(bool state) { m_irq = state; }
     void setNMI(bool state) { m_nmi = state; }
 
-    u8 load8(u16 address) const;
+    void setPC(u16 value) { PC = value; }
     u16 getPC() const { return PC; }
     Flags getFlags() const { return F; }
 
+    // test only:
+    void runUntilEndlessLoop();
+
     CPU6502() = default;
-    CPU6502(const CPU6502&) = delete;
-    CPU6502& operator=(const CPU6502&) = delete;
 private:
     void IRQ();
     void NMI();
 
-    // Memory Access:
-    u16 load16(u16 address) const;
-    void store8(u16 address, u8 data);
-    void store16(u16 address, u16 data);
-    void push8(u8 data);
-    void push16(u16 data);
-    u8 pop8();
-    u16 pop16();
+    ReadMemoryCallback load8 = nullptr;
+    WriteMemoryCallback store8 = nullptr;
+    u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }
+    void store16(u16 address, u16 data) const { store8(address, data & 0xFF); store8(address + 1, data >> 8); }
+    void push8(u8 data) { store8(0x100 + SP--, data); }
+    void push16(u16 data) { store16(0x100 + SP - 1, data); SP -= 2; }
+    u8 pop8() { return load8(0x100 + ++SP); }
+    u16 pop16() { SP += 2; return load16(0x100 + SP - 1); }
 
     // Addressing Modes:
     void am_ACC(); void am_IMM();
@@ -116,35 +115,4 @@ private:
     bool m_irq = false;
     bool m_nmi = false;
     bool m_isDuringNMI = false;
-
-    std::vector<ReadMapEntry> m_readMap;
-    std::vector<WriteMapEntry> m_writeMap;
 };
-
-template<Mapable Device>
-inline void CPU6502::map(Device& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-    m_writeMap.emplace_back(
-        WriteMapEntry{
-            range,
-            [&device](u16 address, u8 data) { return device.write(address, data); }
-        }
-    );
-}
-
-template<ConstMapable ConstDevice>
-inline void CPU6502::map(const ConstDevice& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-}

@@ -1,15 +1,27 @@
 #pragma once
-#include "address_range.hpp"
-
+#include <ccl/non_copyable.h>
 #include <ccl/types.hpp>
 
-class CPU40xx
+#include <functional>
+
+class CPU40xx :
+    public ccl::NonCopyable
 {
 public:
-    using ReadInputFunc = std::function<u8(u8)>;
-    using WriteOutputFunc = std::function<void(u8, u8)>;
-    using ReadRAMStatusFunc = std::function<u8(u8)>;
-    using WriteRAMStatusFunc = std::function<void(u8, u8)>;
+    using ReadROMCallback = std::function<u8(u8)>;
+    using ReadRAMCallback = std::function<u8(u8)>;
+    using WriteRAMCallback = std::function<void(u8, u8)>;
+    using ReadIOCallback = std::function<u8(u8)>;
+    using WriteIOCallback = std::function<void(u8, u8)>;
+    using ReadStatusCallback = std::function<u8(u8)>;
+    using WriteStatusCallback = std::function<void(u8, u8)>;
+    void mapReadROMCallback(ReadROMCallback callback) { loadROM8 = callback; }
+    void mapReadRAMCallback(ReadRAMCallback callback) { loadRAM8 = callback; }
+    void mapWriteRAMCallback(WriteRAMCallback callback) { storeRAM8 = callback; }
+    void mapReadIOCallback(ReadIOCallback callback) { loadIO8 = callback; }
+    void mapWriteIOCallback(WriteIOCallback callback) { storeIO8 = callback; }
+    void mapReadRAMStatus(ReadStatusCallback func) { loadStatus8 = func; }
+    void mapWriteRAMStatus(WriteStatusCallback func) { storeStatus8 = func; }
 
     enum class Mode : u8
     {
@@ -17,20 +29,10 @@ public:
         Intel4040
     };
 
-    template <Mapable Device>
-    void map(Device& device, AddressRange range);
-    template <ConstMapable ConstDevice>
-    void map(const ConstDevice& device, AddressRange range);
-    void mapReadROMIO(ReadInputFunc func) { m_readROMIO = func; }
-    void mapWriteROMIO(WriteOutputFunc func) { m_writeROMIO = func; }
-    void mapWriteRAMOut(WriteOutputFunc func) { m_writeRAMOut = func; }
-    void mapReadRAMStatus(ReadRAMStatusFunc func) { m_readRAMStatus = func; }
-    void mapWriteRAMStatus(WriteRAMStatusFunc func) { m_writeRAMStatus = func; }
 
     void reset();
     void clock();
 
-    u8 loadROM8(u16 address) const;
     const u8* getRegs() const { return m_regs; }
     const u16* getStack() const { return m_stack; }
     u16 getPC() const { return m_stack[getSP()] % 0xFFF; }
@@ -45,9 +47,16 @@ public:
     CPU40xx(const CPU40xx&) = delete;
     CPU40xx& operator=(const CPU40xx&) = delete;
 private:
+    ReadROMCallback loadROM8 = nullptr;
+    ReadRAMCallback loadRAM8 = nullptr;
+    WriteRAMCallback storeRAM8 = nullptr;
+    ReadIOCallback loadIO8 = nullptr;
+    WriteIOCallback storeIO8 = nullptr;
+    ReadStatusCallback loadStatus8 = nullptr;
+    WriteStatusCallback storeStatus8 = nullptr;
+
+    u8 getRAMAddress() const { return (CMRAM >> 1) | SRCReg; }
     void incPC() { m_stack[getSP()]++; }
-    u8 loadRAM4();
-    void storeRAM4(u8 data);
 
     void ADD(const u8* regs, u8 idx);
     void ADM();
@@ -111,40 +120,4 @@ private:
         u8 SRCReg;
     };
     u8 CMRAM : 4;
-
-    std::vector<ReadMapEntry> m_readMap;
-    std::vector<WriteMapEntry> m_writeMap;
-    ReadInputFunc m_readROMIO;
-    WriteOutputFunc m_writeROMIO;
-    WriteOutputFunc m_writeRAMOut;
-    ReadRAMStatusFunc m_readRAMStatus;
-    WriteRAMStatusFunc m_writeRAMStatus;
 };
-
-template<Mapable Device>
-inline void CPU40xx::map(Device& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-    m_writeMap.emplace_back(
-        WriteMapEntry{
-            range,
-            [&device](u16 address, u8 data) { return device.write(address, data); }
-        }
-    );
-}
-
-template<ConstMapable ConstDevice>
-inline void CPU40xx::map(const ConstDevice& device, AddressRange range)
-{
-    m_readMap.emplace_back(
-        ReadMapEntry{
-            range,
-            [&device](u16 address) { return device.read(address); }
-        }
-    );
-}

@@ -106,66 +106,6 @@ CPU40xx::~CPU40xx()
     delete[] m_stack;
 }
 
-u8 CPU40xx::loadROM8(u16 address) const
-{
-    u8 data = 0;
-    bool read = false;
-    for (auto& entry : m_readMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            data = entry.read(offset);
-            read = true;
-            break;
-        }
-    }
-    assert(read && "Unhandled memory read");
-    return data;
-}
-
-u8 CPU40xx::loadRAM4()
-{
-    u16 address = 0;
-    address |= CMRAM >> 1;
-    address |= SRCReg;
-
-    u8 data = 0;
-    bool read = false;
-    for (auto& entry : m_readMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            data = entry.read(offset);
-            read = true;
-            break;
-        }
-    }
-    assert(read && "Unhandled memory read");
-    return data;
-}
-
-void CPU40xx::storeRAM4(u8 data)
-{
-    u16 address = 0;
-    address |= CMRAM >> 1;
-    address |= SRCReg;
-
-    bool stored = false;
-    for (auto& entry : m_writeMap)
-    {
-        u16 offset;
-        if (entry.range.contains(address, offset))
-        {
-            entry.write(offset, data);
-            stored = true;
-            break;
-        }
-    }
-    assert(stored && "Unhandled memory read");
-}
-
 void CPU40xx::ADD(const u8* regs, u8 idx)
 {
     u8 value = regs[idx / 2];
@@ -176,7 +116,7 @@ void CPU40xx::ADD(const u8* regs, u8 idx)
 
 void CPU40xx::ADM()
 {
-    u8 temp = ACC + loadRAM4() + CY;
+    u8 temp = ACC + (loadRAM8(getRAMAddress()) & 0xF) + CY;
     ACC = temp;
     CY = temp >> 4;
 }
@@ -360,22 +300,22 @@ void CPU40xx::RAR()
 
 void CPU40xx::RDM()
 {
-    ACC = loadRAM4();
+    ACC = loadRAM8(getRAMAddress()) & 0xF;
 }
 
 void CPU40xx::RDR()
 {
-    ACC = m_readROMIO(ROMChip);
+    ACC = loadIO8(ROMChip) & 0xF;
 }
 
 void CPU40xx::RDX(u8 charIdx)
 {
-    ACC = m_readRAMStatus((RAMChip << 4) | (RAMRegIdx << 2) | charIdx);
+    ACC = loadStatus8((RAMChip << 4) | (RAMRegIdx << 2) | charIdx) & 0xF;
 }
 
 void CPU40xx::SBM()
 {
-    u8 value = ~loadRAM4() & 0xF;
+    u8 value = ~loadRAM8(getRAMAddress()) & 0xF;
     u8 temp = ACC + value + CY;
     ACC = temp;
     CY = temp >> 4;
@@ -413,22 +353,22 @@ void CPU40xx::TCS()
 
 void CPU40xx::WMP()
 {
-    m_writeRAMOut(RAMChip, ACC);
+    storeIO8(RAMChip, ACC);
 }
 
 void CPU40xx::WRM()
 {
-    storeRAM4(ACC);
+    storeRAM8(getRAMAddress(), ACC);
 }
 
 void CPU40xx::WRR()
 {
-    m_writeROMIO(ROMChip, ACC);
+    storeIO8(ROMChip, ACC);
 }
 
 void CPU40xx::WRX(u8 charIdx)
 {
-    m_writeRAMStatus((RAMChip << 4) | (RAMRegIdx << 2) | charIdx, ACC);
+    storeStatus8((RAMChip << 4) | (RAMRegIdx << 2) | charIdx, ACC);
 }
 
 void CPU40xx::XCH(u8* regs, u8 idx)
