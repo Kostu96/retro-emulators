@@ -5,6 +5,7 @@ Emulalators of microcomputers, game consoles and arcades.
 
 ### Machines:
  - Altair 8800 - WIP
+ - Apple II - WIP
  - CHIP-8 Interpreter - WIP
  - Game Boy (DMG) - WIP
  - Space Invaders Arcade - WIP
