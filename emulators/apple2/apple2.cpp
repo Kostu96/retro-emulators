@@ -5,6 +5,10 @@
 #include <cassert>
 #include <iostream>
 
+static constexpr AddressRange RAM_RANGE{ 0x0000, 0x1000 };
+static constexpr AddressRange TEXT_PAGE1_SUBRANGE{ 0x0400, 0x07FF };
+static constexpr AddressRange KEYBOARD_DATA_RANGE{ 0xC000, 0xC00F };
+static constexpr u16 SPEAKER_TOGGLE_ADDRESS = 0xC030;
 static constexpr u16 TEXT_GRAPHICS_SWITCH_ON_ADDRESS = 0xC050;
 static constexpr u16 TEXT_GRAPHICS_SWITCH_OFF_ADDRESS = 0xC051;
 static constexpr u16 MIXED_MODE_SWITCH_ON_ADDRESS = 0xC052;
@@ -13,13 +17,12 @@ static constexpr u16 PAGE_SWITCH_ON_ADDRESS = 0xC054;
 static constexpr u16 PAGE_SWITCH_OFF_ADDRESS = 0xC055;
 static constexpr u16 GRAPHICS_MODE_SWITCH_ON_ADDRESS = 0xC056;
 static constexpr u16 GRAPHICS_MODE_SWITCH_OFF_ADDRESS = 0xC057;
-static constexpr AddressRange RAM_RANGE{ 0x0000, 0x1000 };
 static constexpr AddressRange UPPER_ROM_RANGE{ 0xE000, 0xFFFF };
 
 Apple2::Apple2()
 {
-    size_t size = 0x800;
-    if (!ccl::readFile("builtin_roms/apple2/Apple II Character ROM - 341-0036.bin",
+    size_t size = 0x400;
+    if (!ccl::readFile("builtin_roms/apple2/AppleII_CharacterROM.bin",
         (char*)m_characterROM, size, true))
         std::cerr << "Could not read character ROM file!\n";
 
@@ -47,6 +50,9 @@ Apple2::Apple2()
     m_cpu.mapWriteMemoryCallback([this](u16 address, u8 data) { return memoryWrite(address, data); });
 
     m_cpu.reset();
+
+    for (auto& pixel : m_screenPixels)
+        pixel = 0xFF;
 }
 
 void Apple2::update()
@@ -56,16 +62,30 @@ void Apple2::update()
 
 u8 Apple2::memoryRead(u16 address)
 {
+    u16 offset;
+    if (RAM_RANGE.contains(address, offset)) return m_RAM[offset];
+
+    if (KEYBOARD_DATA_RANGE.contains(address, offset))
+        return 0; // TODO: keyboard
+
     if (handleSwitches(address))
         return 0;
 
-    u16 offset;
-    if (RAM_RANGE.contains(address, offset)) return m_RAM[offset];
     if (UPPER_ROM_RANGE.contains(address, offset)) return m_upperROM[offset];
 
     assert(false && "Unhandled memory read!");
     return 0;
 }
+
+#define BYTE_TO_BINARY_PATTERN " %c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  ((byte) & 0x40 ? 'X' : ' '), \
+  ((byte) & 0x20 ? 'X' : ' '), \
+  ((byte) & 0x10 ? 'X' : ' '), \
+  ((byte) & 0x08 ? 'X' : ' '), \
+  ((byte) & 0x04 ? 'X' : ' '), \
+  ((byte) & 0x02 ? 'X' : ' '), \
+  ((byte) & 0x01 ? 'X' : ' ') 
 
 void Apple2::memoryWrite(u16 address, u8 data)
 {
@@ -73,7 +93,32 @@ void Apple2::memoryWrite(u16 address, u8 data)
         return;
 
     u16 offset;
-    if (RAM_RANGE.contains(address, offset)) { m_RAM[offset] = data; return; }
+    if (RAM_RANGE.contains(address, offset))
+    {
+        m_RAM[offset] = data;
+
+        if (TEXT_PAGE1_SUBRANGE.contains(address, offset))
+        {
+            u16 charAddr = data;
+            charAddr &= 0x3F;
+            charAddr <<= 3;
+            for (u16 line = 0; line < 8; line++)
+            {
+                u8 byte = m_characterROM[charAddr + line];
+                for (s8 bit = 7; bit > 0; bit--)
+                {
+                    u16 y_coord = offset / SCREEN_WIDTH;
+                    u16 x_coord = offset % SCREEN_WIDTH;
+                    m_screenPixels[(y_coord * 8 + line) * SCREEN_WIDTH + x_coord * 8 + 7 - bit] = ((byte >> bit) & 1) ? 0xFFFFFFFF : 0xFF;
+                }
+                //printf(BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(m_characterROM[charAddr + line]));
+            }
+
+            std::cout << std::endl;
+        }
+
+        return;
+    }
 
     assert(false && "Unhandled memory write!");
 }
@@ -82,6 +127,8 @@ bool Apple2::handleSwitches(u16 address)
 {
     switch (address)
     {
+    case SPEAKER_TOGGLE_ADDRESS:
+        /* TODO: speaker */ break;
     case TEXT_GRAPHICS_SWITCH_ON_ADDRESS:  m_textGraphicsSwitch = true;  break;
     case TEXT_GRAPHICS_SWITCH_OFF_ADDRESS: m_textGraphicsSwitch = false; break;
     case MIXED_MODE_SWITCH_ON_ADDRESS:     m_mixedModeSwitch = true;     break;

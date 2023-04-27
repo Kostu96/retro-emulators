@@ -27,6 +27,7 @@ namespace EmuCommon {
 		Vec2u m_size;
 
 		friend class SDLText;
+		friend class SDLImage;
 	};
 
 } // namespace EmuCommon

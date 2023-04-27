@@ -5,6 +5,7 @@ set(EMULATORS_COMMON_SOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(EMULATORS_COMMON_HEADERS
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/color.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/font.hpp
+    ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/image.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/rect.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/rect_shape.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/graphics/renderable.hpp
@@ -24,6 +25,7 @@ set(EMULATORS_COMMON_HEADERS
 set(EMULATORS_COMMON_SOURCES
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/color.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/font.cpp
+    ${EMULATORS_COMMON_SOURCES_DIR}/graphics/image.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/rect_shape.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/sprite.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/graphics/text.cpp
