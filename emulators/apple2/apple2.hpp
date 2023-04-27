@@ -13,8 +13,10 @@ private:
     void memoryWrite(u16 address, u8 data);
     bool handleSwitches(u16 address);
 
-    CPU6502 m_cpu;
+    u8 m_upperROM[0x2000];
     u8 m_RAM[0x1000];
+    u8 m_characterROM[0x800];
+    CPU6502 m_cpu;
 
     bool m_textGraphicsSwitch = false;
     bool m_mixedModeSwitch = false;
