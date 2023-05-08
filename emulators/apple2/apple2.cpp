@@ -17,6 +17,7 @@ static constexpr u16 PAGE_SWITCH_ON_ADDRESS = 0xC054;
 static constexpr u16 PAGE_SWITCH_OFF_ADDRESS = 0xC055;
 static constexpr u16 GRAPHICS_MODE_SWITCH_ON_ADDRESS = 0xC056;
 static constexpr u16 GRAPHICS_MODE_SWITCH_OFF_ADDRESS = 0xC057;
+static constexpr AddressRange ANNUNCIATORS_RANGE{ 0xC058, 0xC05F };
 static constexpr AddressRange UPPER_ROM_RANGE{ 0xE000, 0xFFFF };
 
 Apple2::Apple2()
@@ -68,6 +69,9 @@ u8 Apple2::memoryRead(u16 address)
     if (KEYBOARD_DATA_RANGE.contains(address, offset))
         return 0; // TODO: keyboard
 
+    // TODO: temp
+    if (ANNUNCIATORS_RANGE.contains(address, offset)) return 0;
+
     if (handleSwitches(address))
         return 0;
 
@@ -77,15 +81,15 @@ u8 Apple2::memoryRead(u16 address)
     return 0;
 }
 
-#define BYTE_TO_BINARY_PATTERN " %c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  ((byte) & 0x40 ? 'X' : ' '), \
-  ((byte) & 0x20 ? 'X' : ' '), \
-  ((byte) & 0x10 ? 'X' : ' '), \
-  ((byte) & 0x08 ? 'X' : ' '), \
-  ((byte) & 0x04 ? 'X' : ' '), \
-  ((byte) & 0x02 ? 'X' : ' '), \
-  ((byte) & 0x01 ? 'X' : ' ') 
+//#define BYTE_TO_BINARY_PATTERN " %c%c%c%c%c%c%c"
+//#define BYTE_TO_BINARY(byte)  \
+//  ((byte) & 0x40 ? 'X' : ' '), \
+//  ((byte) & 0x20 ? 'X' : ' '), \
+//  ((byte) & 0x10 ? 'X' : ' '), \
+//  ((byte) & 0x08 ? 'X' : ' '), \
+//  ((byte) & 0x04 ? 'X' : ' '), \
+//  ((byte) & 0x02 ? 'X' : ' '), \
+//  ((byte) & 0x01 ? 'X' : ' ') 
 
 void Apple2::memoryWrite(u16 address, u8 data)
 {
@@ -97,21 +101,24 @@ void Apple2::memoryWrite(u16 address, u8 data)
     {
         m_RAM[offset] = data;
 
-        if (TEXT_PAGE1_SUBRANGE.contains(address, offset))
+        if (TEXT_PAGE1_SUBRANGE.contains(address, offset) && offset < 960)
         {
             u16 charAddr = data;
             charAddr &= 0x3F;
             charAddr <<= 3;
+
+            u16 y_char_coord = offset / (SCREEN_WIDTH / 8);
+            u16 x_char_coord = offset % (SCREEN_WIDTH / 8);
+
             for (u16 line = 0; line < 8; line++)
             {
                 u8 byte = m_characterROM[charAddr + line];
                 for (s8 bit = 7; bit > 0; bit--)
                 {
-                    u16 y_coord = offset / SCREEN_WIDTH;
-                    u16 x_coord = offset % SCREEN_WIDTH;
-                    m_screenPixels[(y_coord * 8 + line) * SCREEN_WIDTH + x_coord * 8 + 7 - bit] = ((byte >> bit) & 1) ? 0xFFFFFFFF : 0xFF;
+                    u16 y_pixel_coord = y_char_coord * 8 + line;
+                    u16 x_pixel_coord = x_char_coord * 8 + (7 - bit);
+                    m_screenPixels[y_pixel_coord * SCREEN_WIDTH + x_pixel_coord] = ((byte >> bit) & 1) ? 0xFFFFFFFF : 0xFF;
                 }
-                //printf(BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(m_characterROM[charAddr + line]));
             }
 
             std::cout << std::endl;
