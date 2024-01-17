@@ -19,6 +19,8 @@ add_subdirectory(emulators/altair8800)
 add_subdirectory(emulators/apple2)
 add_subdirectory(emulators/chip8)
 add_subdirectory(emulators/gameboy)
+add_subdirectory(emulators/nes)
+add_subdirectory(emulators/pet)
 add_subdirectory(emulators/space_invaders)
 
 add_subdirectory(assembler_app)
