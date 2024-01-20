@@ -2,9 +2,9 @@ set(NES_TARGET_NAME nes)
 
 set(NES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/nes.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/nes.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
 add_executable(${NES_TARGET_NAME} ${NES_SOURCES})

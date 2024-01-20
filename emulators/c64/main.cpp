@@ -1,4 +1,5 @@
-#include "pet.hpp"
+#include "c64.hpp"
+
 #include <glad/gl.h>
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
@@ -7,9 +8,11 @@
 #include <thread>
 #include <memory>
 
+constexpr u16 FRAME_WIDTH = 320;
+constexpr u16 FRAME_HEIGHT = 200;
 constexpr u16 SCALE = 2;
-constexpr u16 WINDOW_WIDTH = PET::SCREEN_WIDTH * SCALE;
-constexpr u16 WINDOW_HEIGHT = PET::SCREEN_HEIGHT * SCALE;
+constexpr u16 WINDOW_WIDTH = FRAME_WIDTH * SCALE;
+constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE;
 
 static void glfwErrorCallback(int error, const char* description)
 {
@@ -25,7 +28,7 @@ int main()
     }
 
     glfwWindowHint(GLFW_RESIZABLE, 0);
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Commodore PET emulator by Kostu96", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Commodore 64 emulaator by Kostu96", nullptr, nullptr);
     if (!window) {
         std::cerr << "GLFW window creation failed!\n";
         std::terminate();
@@ -35,25 +38,13 @@ int main()
 
     glw::init(glfwGetProcAddress);
     glw::Renderer::init();
-    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClearColor(0.f, 136.f / 255.f, 1.f, 1.f);
 
-    glw::Texture screenTexture{
-        glw::Texture::Properties{
-                glw::TextureSpecification{
-                    glw::TextureFormat::RGBA8,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureFilter::Nearest,
-                    glw::TextureWrapMode::Clamp
-                },
-                PET::SCREEN_WIDTH, PET::SCREEN_HEIGHT
-        }
-    };
-
-    std::unique_ptr<PET> pet = std::make_unique<PET>();
+    std::unique_ptr<C64> c64 = std::make_unique<C64>();
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
-                pet->clock();
+                c64->clock();
             }
         }
     };
@@ -63,11 +54,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         glw::Renderer::beginFrame();
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-        auto pixels = pet->getScreenPixels();
-        screenTexture.setData(pixels.data(), pixels.size() * sizeof(u32));
-        screenTexture.bind(0);
-        glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
-        glw::Renderer::endFrame();
+        //auto pixels = gameboy.getPPU().getScreenPixels();
+        //screenTexture.setData(pixels.data(), pixels.size() * sizeof(u32));
+        //screenTexture.bind(0);
+        //glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
+        //glw::Renderer::endFrame();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

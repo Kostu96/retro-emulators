@@ -2,9 +2,13 @@ set(PET_TARGET_NAME pet)
 
 set(PET_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pet.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pet.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pia.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pia.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/via.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/via.hpp
 )
 
 add_executable(${PET_TARGET_NAME} ${PET_SOURCES})
