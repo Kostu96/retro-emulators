@@ -7,8 +7,8 @@
 class VIC20
 {
 public:
-    static constexpr u16 TEXTMODE_WIDTH = 40;
-    static constexpr u16 TEXTMODE_HEIGHT = 25;
+    static constexpr u16 TEXTMODE_WIDTH = 22;
+    static constexpr u16 TEXTMODE_HEIGHT = 23;
     static constexpr u16 SCREEN_WIDTH = TEXTMODE_WIDTH * 8;
     static constexpr u16 SCREEN_HEIGHT = TEXTMODE_HEIGHT * 8;
 
@@ -21,12 +21,12 @@ private:
     u8 memoryRead(u16 address) const;
     void memoryWrite(u16 address, u8 data);
 
+    u8 m_LOW_RAM[0x400];
     u8 m_RAM[0x1000];
     u8 m_SCREEN[0x400];
     u8 m_BASIC[0x2000];
-    u8 m_EDITOR[0x800];
-    u8 m_KERNAL[0x1000];
-    u8 m_characters[0x800];
+    u8 m_KERNAL[0x2000];
+    u8 m_characters[0x1000];
 
     CPU6502 m_cpu{};
 

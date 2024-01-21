@@ -5,43 +5,28 @@
 #include <cassert>
 #include <iostream>
 
-static constexpr AddressRange RAM_RANGE{    0x0000, 0x0FFF };
+static constexpr AddressRange LOW_RAM_RANGE{     0x0000, 0x03FF };
+static constexpr AddressRange BLOCK1_OPEN_RANGE{ 0x0400, 0x0FFF };
+static constexpr AddressRange RAM_RANGE{         0x1000, 0x1FFF };
 
-static constexpr AddressRange SCREEN_RANGE{ 0x8000, 0x8FFF };
+static constexpr AddressRange SCREEN_RANGE{      0x1E00, 0x1FFF };
 
-static constexpr AddressRange BASIC_RANGE{  0xE000 - PET::BASIC_SIZE, 0xDFFF };
-static constexpr AddressRange EDITOR_RANGE{ 0xE000, 0xE7FF };
-static constexpr AddressRange PIA1_RANGE{   0xE810, 0xE81F };
-static constexpr AddressRange PIA2_RANGE{   0xE820, 0xE82F };
-static constexpr AddressRange VIA_RANGE{    0xE840, 0xE84F };
-static constexpr AddressRange KERNAL_RANGE{ 0xF000, 0xFFFF };
+static constexpr AddressRange BLOCK5_RANGE{      0xA000, 0xBFFF };
+static constexpr AddressRange BASIC_RANGE{       0xC000, 0xDFFF };
+static constexpr AddressRange KERNAL_RANGE{      0xE000, 0xFFFF };
 
-PET::PET()
+VIC20::VIC20()
 {
-#if BASIC_VER4
-    static constexpr const char* basicPath = "builtin_roms/pet/basic4.bin";
-    static constexpr const char* editorPath = "builtin_roms/pet/editor4n.bin";
-    static constexpr const char* kernalPath = "builtin_roms/pet/kernal4.bin";
-#else
-    static constexpr const char* basicPath = "builtin_roms/pet/basic2.bin";
-    static constexpr const char* editorPath = "builtin_roms/pet/editor2n.bin";
-    static constexpr const char* kernalPath = "builtin_roms/pet/kernal2.bin";
-#endif
+    size_t size = 0x2000;
+    if (!ccl::readFile("builtin_roms/vic20/basic2.bin", (char*)m_BASIC, size, true))
+        std::cerr << "Could not read BASIC ROM file!\n";
 
-    size_t size = PET::BASIC_SIZE;
-    if (!ccl::readFile(basicPath, (char*)m_BASIC, size, true))
-        std::cerr << "Could not read EDITOR ROM file!\n";
-
-    size = 0x800;
-    if (!ccl::readFile(editorPath, (char*)m_EDITOR, size, true))
-        std::cerr << "Could not read EDITOR ROM file!\n";
-
-    size = 0x1000;
-    if (!ccl::readFile(kernalPath, (char*)m_KERNAL, size, true))
+    size = 0x2000;
+    if (!ccl::readFile("builtin_roms/vic20/kernal_rev7.bin", (char*)m_KERNAL, size, true))
         std::cerr << "Could not read KERNAL ROM file!\n";
     
-    size = 0x800;
-    if (!ccl::readFile("builtin_roms/pet/characters2.bin", (char*)m_characters, size, true))
+    size = 0x1000;
+    if (!ccl::readFile("builtin_roms/vic20/characters.bin", (char*)m_characters, size, true))
         std::cerr << "Could not read characters ROM file!\n";
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
@@ -50,24 +35,24 @@ PET::PET()
     m_cpu.reset();
 }
 
-void PET::clock()
+void VIC20::clock()
 {
     m_cpu.clock();
 }
 
-u8 PET::memoryRead(u16 address) const
+u8 VIC20::memoryRead(u16 address) const
 {
     u16 offset;
 
-    if (RAM_RANGE.contains(address, offset)) return m_RAM[offset];
+    if (LOW_RAM_RANGE.contains(address, offset)) return m_LOW_RAM[offset];
 
-    if (BASIC_RANGE.contains(address, offset)) return m_BASIC[offset];
+    if (BLOCK1_OPEN_RANGE.contains(address, offset)) return 0xFF;
 
-    if (EDITOR_RANGE.contains(address, offset)) return m_EDITOR[offset];
+    if (RAM_RANGE.contains(address, offset)) return m_LOW_RAM[offset];
 
-    if (PIA1_RANGE.contains(address, offset)) return m_pia1.load8(offset);
+    if (BLOCK5_RANGE.contains(address, offset)) return 0xFF;
 
-    if (VIA_RANGE.contains(address, offset)) return m_via.load8(offset);
+    //if (BASIC_RANGE.contains(address, offset)) return m_BASIC[offset];
 
     if (KERNAL_RANGE.contains(address, offset)) return m_KERNAL[offset];
 
@@ -75,16 +60,23 @@ u8 PET::memoryRead(u16 address) const
     return 0;
 }
 
-void PET::memoryWrite(u16 address, u8 data)
+void VIC20::memoryWrite(u16 address, u8 data)
 {
     u16 offset;
+
+    if (LOW_RAM_RANGE.contains(address, offset)) {
+        m_LOW_RAM[offset] = data;
+        return;
+    }
+
+    if (BLOCK1_OPEN_RANGE.contains(address, offset)) return;
 
     if (RAM_RANGE.contains(address, offset)) {
         m_RAM[offset] = data;
         return;
     }
 
-    if (SCREEN_RANGE.contains(address, offset)) {
+    /*if (SCREEN_RANGE.contains(address, offset)) {
         offset &= 0x3FF;
         m_SCREEN[offset] = data;
 
@@ -107,22 +99,7 @@ void PET::memoryWrite(u16 address, u8 data)
         }
 
         return;
-    }
-
-    if (PIA1_RANGE.contains(address, offset)) {
-        m_pia1.store8(offset, data);
-        return;
-    }
-
-    if (PIA2_RANGE.contains(address, offset)) {
-        m_pia2.store8(offset, data);
-        return;
-    }
-
-    if (VIA_RANGE.contains(address, offset)) {
-        m_via.store8(offset, data);
-        return;
-    }
+    }*/
 
     assert(false);
 }

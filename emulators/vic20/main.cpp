@@ -11,8 +11,8 @@ constexpr u16 SCALE = 3;
 constexpr u16 BORDER_SIZE = 10;
 constexpr u16 VIEWPORT_X = BORDER_SIZE;
 constexpr u16 VIEWPORT_Y = BORDER_SIZE;
-constexpr u16 VIEWPORT_WIDTH = PET::SCREEN_WIDTH * SCALE;
-constexpr u16 VIEWPORT_HEIGHT = PET::SCREEN_HEIGHT * SCALE;
+constexpr u16 VIEWPORT_WIDTH = VIC20::SCREEN_WIDTH * SCALE;
+constexpr u16 VIEWPORT_HEIGHT = VIC20::SCREEN_HEIGHT * SCALE;
 constexpr u16 WINDOW_WIDTH = VIEWPORT_WIDTH + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = VIEWPORT_HEIGHT + 2 * BORDER_SIZE;
 
@@ -50,11 +50,11 @@ int main()
                     glw::TextureFilter::Nearest,
                     glw::TextureWrapMode::Clamp
                 },
-                PET::SCREEN_WIDTH, PET::SCREEN_HEIGHT
+                VIC20::SCREEN_WIDTH, VIC20::SCREEN_HEIGHT
         }
     };
 
-    std::unique_ptr<PET> vic20 = std::make_unique<PET>();
+    std::unique_ptr<VIC20> vic20 = std::make_unique<VIC20>();
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
