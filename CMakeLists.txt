@@ -23,5 +23,6 @@ add_subdirectory(emulators/gameboy)
 add_subdirectory(emulators/nes)
 add_subdirectory(emulators/pet)
 add_subdirectory(emulators/space_invaders)
+add_subdirectory(emulators/vic20)
 
 add_subdirectory(assembler_app)

@@ -28,5 +28,5 @@ target_link_libraries(${C64_TARGET_NAME} PRIVATE
 
 set_target_properties(${C64_TARGET_NAME} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${C64_TARGET_NAME}>
-    FOLDER emulators
+    FOLDER emulators/commodore
 )

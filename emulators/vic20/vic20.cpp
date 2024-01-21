@@ -1,4 +1,4 @@
-#include "pet.hpp"
+#include "vic20.hpp"
 #include "address_range.hpp"
 
 #include <ccl/helper_functions.h>

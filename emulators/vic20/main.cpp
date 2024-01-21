@@ -1,4 +1,4 @@
-#include "pet.hpp"
+#include "vic20.hpp"
 #include <glad/gl.h>
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
@@ -30,7 +30,7 @@ int main()
     }
 
     glfwWindowHint(GLFW_RESIZABLE, 0);
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Commodore PET emulator by Kostu96", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Commodore VIC-20 emulator by Kostu96", nullptr, nullptr);
     if (!window) {
         std::cerr << "GLFW window creation failed!\n";
         std::terminate();
@@ -54,12 +54,12 @@ int main()
         }
     };
 
-    std::unique_ptr<PET> pet = std::make_unique<PET>();
+    std::unique_ptr<PET> vic20 = std::make_unique<PET>();
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
                 std::this_thread::sleep_for(std::chrono::nanoseconds{ 24 }); // TODO: temp
-                pet->clock();
+                vic20->clock();
             }
         }
     };
@@ -69,7 +69,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         glw::Renderer::beginFrame();
         glViewport(VIEWPORT_X, VIEWPORT_Y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
-        auto pixels = pet->getScreenPixels();
+        auto pixels = vic20->getScreenPixels();
         screenTexture.setData(pixels.data(), pixels.size() * sizeof(u32));
         screenTexture.bind(0);
         glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
