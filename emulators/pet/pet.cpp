@@ -5,16 +5,16 @@
 #include <cassert>
 #include <iostream>
 
-static constexpr AddressRange RAM_RANGE{    0x0000, 0x0FFF };
+static constexpr AddressRange RAM_RANGE{           0x0000, PET::RAM_SIZE - 1 };
+static constexpr AddressRange RAM_EXPANSION_RANGE{ PET::RAM_SIZE, 0x7FFF };
+static constexpr AddressRange SCREEN_RANGE{        0x8000, 0x8FFF };
 
-static constexpr AddressRange SCREEN_RANGE{ 0x8000, 0x8FFF };
-
-static constexpr AddressRange BASIC_RANGE{  0xE000 - PET::BASIC_SIZE, 0xDFFF };
-static constexpr AddressRange EDITOR_RANGE{ 0xE000, 0xE7FF };
-static constexpr AddressRange PIA1_RANGE{   0xE810, 0xE81F };
-static constexpr AddressRange PIA2_RANGE{   0xE820, 0xE82F };
-static constexpr AddressRange VIA_RANGE{    0xE840, 0xE84F };
-static constexpr AddressRange KERNAL_RANGE{ 0xF000, 0xFFFF };
+static constexpr AddressRange BASIC_RANGE{         0xE000 - PET::BASIC_SIZE, 0xDFFF };
+static constexpr AddressRange EDITOR_RANGE{        0xE000, 0xE7FF };
+static constexpr AddressRange PIA1_RANGE{          0xE810, 0xE81F };
+static constexpr AddressRange PIA2_RANGE{          0xE820, 0xE82F };
+static constexpr AddressRange VIA_RANGE{           0xE840, 0xE84F };
+static constexpr AddressRange KERNAL_RANGE{        0xF000, 0xFFFF };
 
 PET::PET()
 {
@@ -45,14 +45,27 @@ PET::PET()
         std::cerr << "Could not read characters ROM file!\n";
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
-    m_cpu.mapWriteMemoryCallback([this](u16 address, u8 data) { return memoryWrite(address, data); });
+    m_cpu.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });
+
+    m_pia1.mapIRQBCallback([this](bool state) { m_cpu.setIRQ(state); });
 
     m_cpu.reset();
 }
 
 void PET::clock()
 {
+    constexpr u16 SYSTEM_TICKS = 16666; // 1MHz / 16666 = 60Hz
+
+    static u16 counter = 0;
+
+    counter++;
+
     m_cpu.clock();
+
+    if (counter == SYSTEM_TICKS) {
+        counter = 0;
+        m_pia1.CB1();
+    }
 }
 
 u8 PET::memoryRead(u16 address) const
@@ -60,6 +73,10 @@ u8 PET::memoryRead(u16 address) const
     u16 offset;
 
     if (RAM_RANGE.contains(address, offset)) return m_RAM[offset];
+
+    if (RAM_EXPANSION_RANGE.contains(address, offset)) return 0xFF;
+
+    if (SCREEN_RANGE.contains(address, offset)) return m_SCREEN[offset];
 
     if (BASIC_RANGE.contains(address, offset)) return m_BASIC[offset];
 
@@ -84,6 +101,8 @@ void PET::memoryWrite(u16 address, u8 data)
         return;
     }
 
+    if (RAM_EXPANSION_RANGE.contains(address, offset)) return;
+
     if (SCREEN_RANGE.contains(address, offset)) {
         offset &= 0x3FF;
         m_SCREEN[offset] = data;
@@ -101,7 +120,7 @@ void PET::memoryWrite(u16 address, u8 data)
             u8 charData = m_characters[charDataOffset++];
             for (s16 j = 7; j >= 0; j--)
             {
-                m_screenPixels[pixelOffset + (7 - j)] = (charData >> j) & 1 ? 0xFFFFFF : 0xFF000000;
+                m_screenPixels[pixelOffset + (7 - j)] = (charData >> j) & 1 ? 0xFF50E050 : 0xFF000000;
             }
             pixelOffset += 8 * TEXTMODE_WIDTH;
         }

@@ -17,7 +17,7 @@ void VIA::store8(u16 address, u8 data)
 {
     switch (address)
     {
-    case 0x0: m_PRB = data; return;
+    case 0x0: m_PRB = data & m_DDRB; return;
 
     case 0x2: m_DDRB = data; return;
 
@@ -25,7 +25,12 @@ void VIA::store8(u16 address, u8 data)
 
     case 0xC: m_PCR = data; return;
 
-    case 0xE: m_IER = data; return;
+    case 0xE: {
+        if (data & 0x80)
+            m_IER |= data & 0x7f;
+        else
+            m_IER &= ~(data & 0x7f);
+    } return;
     }
     assert(false);
 }

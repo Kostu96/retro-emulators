@@ -23,10 +23,11 @@ private:
 
     u8 m_LOW_RAM[0x400];
     u8 m_RAM[0x1000];
-    u8 m_SCREEN[0x400];
+
+    u8 m_CHARACTERS[0x1000];
+
     u8 m_BASIC[0x2000];
     u8 m_KERNAL[0x2000];
-    u8 m_characters[0x1000];
 
     CPU6502 m_cpu{};
 

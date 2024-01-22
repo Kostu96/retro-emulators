@@ -6,11 +6,12 @@
 #include <array>
 #include <span>
 
-#define BASIC_VER4 1
+#define BASIC_VER4 0
 
 class PET
 {
 public:
+    static constexpr u16 RAM_SIZE = 0x2000;
 #if BASIC_VER4
     static constexpr u16 BASIC_SIZE = 0x3000;
 #else
@@ -30,7 +31,7 @@ private:
     u8 memoryRead(u16 address) const;
     void memoryWrite(u16 address, u8 data);
 
-    u8 m_RAM[0x1000];
+    u8 m_RAM[RAM_SIZE];
     u8 m_SCREEN[0x400];
     u8 m_BASIC[BASIC_SIZE];
     u8 m_EDITOR[0x800];

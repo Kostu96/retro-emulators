@@ -2,6 +2,13 @@
 
 #include <cassert>
 
+#ifdef DEBUG_LOG_ENABLE
+#include <iostream>
+#define DEBUG_LOG(x) std::cout << x << '\n'
+#else
+#define DEBUG_LOG(x)
+#endif
+
 void CPU6502::reset()
 {
     m_cyclesLeft = 0;
@@ -306,12 +313,16 @@ void CPU6502::am_INY()
 
 void CPU6502::op_NOP()
 {
+    DEBUG_LOG("NOP");
+
     m_cyclesLeft++;
 }
 
 #pragma region BranchInstructions
 void CPU6502::op_JMP()
 {
+    DEBUG_LOG("JMP " << std::hex << m_absoluteAddress);
+
     PC = m_absoluteAddress;
     m_cyclesLeft++;
 }
@@ -319,6 +330,8 @@ void CPU6502::op_JMP()
 void CPU6502::op_BPL()
 {
     s8 offset = load8(PC++);
+
+    DEBUG_LOG("BPL " << std::hex << offset);
 
     if (F.bits.N == 0)
         PC += offset;
@@ -328,6 +341,8 @@ void CPU6502::op_BMI()
 {
     s8 offset = load8(PC++);
 
+    DEBUG_LOG("BMI " << std::hex << offset);
+
     if (F.bits.N == 1)
         PC += offset;
 }
@@ -335,6 +350,8 @@ void CPU6502::op_BMI()
 void CPU6502::op_BEQ()
 {
     s8 offset = load8(PC++);
+
+    DEBUG_LOG("BEQ " << std::hex << offset);
 
     if (F.bits.Z == 1)
         PC += offset;
@@ -344,6 +361,8 @@ void CPU6502::op_BNE()
 {
     s8 offset = load8(PC++);
 
+    DEBUG_LOG("BNE " << std::hex << offset);
+
     if (F.bits.Z == 0)
         PC += offset;
 }
@@ -351,6 +370,8 @@ void CPU6502::op_BNE()
 void CPU6502::op_BCS()
 {
     s8 offset = load8(PC++);
+
+    DEBUG_LOG("BCS " << std::hex << offset);
 
     if (F.bits.C == 1)
         PC += offset;
@@ -360,6 +381,8 @@ void CPU6502::op_BCC()
 {
     s8 offset = load8(PC++);
 
+    DEBUG_LOG("BCC " << std::hex << offset);
+
     if (F.bits.C == 0)
         PC += offset;
 }
@@ -367,6 +390,8 @@ void CPU6502::op_BCC()
 void CPU6502::op_BVS()
 {
     s8 offset = load8(PC++);
+
+    DEBUG_LOG("BVS " << std::hex << offset);
 
     if (F.bits.V == 1)
         PC += offset;
@@ -376,23 +401,31 @@ void CPU6502::op_BVC()
 {
     s8 offset = load8(PC++);
 
+    DEBUG_LOG("BVC " << std::hex << offset);
+
     if (F.bits.V == 0)
         PC += offset;
 }
 
 void CPU6502::op_JSR()
 {
+    DEBUG_LOG("JSR " << std::hex << m_absoluteAddress);
+
     push16(PC - 1);
     PC = m_absoluteAddress;
 }
 
 void CPU6502::op_RTS()
 {
+    DEBUG_LOG("RTS");
+
     PC = pop16() + 1;
 }
 
 void CPU6502::op_BRK()
 {
+    DEBUG_LOG("BRK");
+
     push16(PC + 1);
 
     push8(F.byte | 0x10);
@@ -405,6 +438,8 @@ void CPU6502::op_BRK()
 
 void CPU6502::op_RTI()
 {
+    DEBUG_LOG("RTI");
+
     F.byte = pop8() & 0xEF;
     PC = pop16();
 
@@ -415,6 +450,8 @@ void CPU6502::op_RTI()
 #pragma region LoadStoreInstructions
 void CPU6502::op_LDA()
 {
+    DEBUG_LOG("LDA");
+
     ACC = load8(m_absoluteAddress);
     m_cyclesLeft++;
     F.bits.Z = (ACC == 0);
@@ -423,6 +460,8 @@ void CPU6502::op_LDA()
 
 void CPU6502::op_LDX()
 {
+    DEBUG_LOG("LDX");
+
     X = load8(m_absoluteAddress);
     m_cyclesLeft++;
     F.bits.Z = (X == 0);
@@ -431,6 +470,8 @@ void CPU6502::op_LDX()
 
 void CPU6502::op_LDY()
 {
+    DEBUG_LOG("LDY");
+
     Y = load8(m_absoluteAddress);
     m_cyclesLeft++;
     F.bits.Z = (Y == 0);
@@ -439,18 +480,24 @@ void CPU6502::op_LDY()
 
 void CPU6502::op_STA()
 {
+    DEBUG_LOG("STA");
+
     store8(m_absoluteAddress, ACC);
     m_cyclesLeft++;
 }
 
 void CPU6502::op_STX()
 {
+    DEBUG_LOG("STX");
+
     store8(m_absoluteAddress, X);
     m_cyclesLeft++;
 }
 
 void CPU6502::op_STY()
 {
+    DEBUG_LOG("STY");
+
     store8(m_absoluteAddress, Y);
     m_cyclesLeft++;
 }
@@ -459,6 +506,8 @@ void CPU6502::op_STY()
 #pragma region TransferInstructions
 void CPU6502::op_TXA()
 {
+    DEBUG_LOG("TXA");
+
     ACC = X;
     F.bits.Z = (ACC == 0);
     F.bits.N = (ACC >> 7);
@@ -466,6 +515,8 @@ void CPU6502::op_TXA()
 
 void CPU6502::op_TAX()
 {
+    DEBUG_LOG("TAX");
+
     X = ACC;
     F.bits.Z = (X == 0);
     F.bits.N = (X >> 7);
@@ -473,6 +524,8 @@ void CPU6502::op_TAX()
 
 void CPU6502::op_TYA()
 {
+    DEBUG_LOG("TYA");
+
     ACC = Y;
     F.bits.Z = (ACC == 0);
     F.bits.N = (ACC >> 7);
@@ -480,6 +533,8 @@ void CPU6502::op_TYA()
 
 void CPU6502::op_TAY()
 {
+    DEBUG_LOG("TAY");
+
     Y = ACC;
     F.bits.Z = (Y == 0);
     F.bits.N = (Y >> 7);
@@ -487,6 +542,8 @@ void CPU6502::op_TAY()
 
 void CPU6502::op_TSX()
 {
+    DEBUG_LOG("TSX");
+
     X = SP;
     F.bits.Z = (X == 0);
     F.bits.N = (X >> 7);
@@ -494,6 +551,8 @@ void CPU6502::op_TSX()
 
 void CPU6502::op_TXS()
 {
+    DEBUG_LOG("TXS");
+
     SP = X;
 }
 #pragma endregion
