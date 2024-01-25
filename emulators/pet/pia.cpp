@@ -6,11 +6,14 @@ u8 PIA::load8(u16 address) const
 {
     switch (address)
     {
-    case 0x0: return 0x80 | m_PRA | m_DDRA;
+    case 0x0: return m_PRA | ~m_DDRA;
     case 0x2:
         m_CRB.C1ActiveTransitionFlag = 0;
-        m_IRQB(false);
-        return 0xFF;// m_PRB | m_DDRB;
+        if (m_IRQB) m_IRQB(false);
+
+        m_PRB &= m_DDRB;
+        m_PRB |= (m_PBIn ? m_PBIn() : 0xFF) & ~m_DDRB;
+        return m_PRB;
     }
 
     assert(false);
@@ -25,6 +28,8 @@ void PIA::store8(u16 address, u8 data)
         if (m_CRA.PortControl) {
             m_PRA &= ~m_DDRA;
             m_PRA |= data & m_DDRA;
+
+            if (m_PAOut) m_PAOut(data & m_DDRA);
         } else
             m_DDRA = data;
     } return;
@@ -45,7 +50,7 @@ void PIA::store8(u16 address, u8 data)
 void PIA::CB1()
 {
     m_CRB.C1ActiveTransitionFlag = 1;
-    if (m_CRB.C1IRQEnable) {
+    if (m_IRQB && m_CRB.C1IRQEnable) {
         m_IRQB(true);
     }
 }

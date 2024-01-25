@@ -7,6 +7,7 @@
 #include <span>
 
 #define BASIC_VER4 0
+#define PETTEST 0
 
 class PET
 {
@@ -27,6 +28,8 @@ public:
     void clock();
 
     std::span<const u32> getScreenPixels() const { return m_screenPixels; }
+    void updateKeysFromEvent(int key, bool press);
+    void updateKeysFromCodepoint(int codepoint);
 private:
     u8 memoryRead(u16 address) const;
     void memoryWrite(u16 address, u8 data);
@@ -44,4 +47,6 @@ private:
     VIA m_via{};
 
     std::array<u32, SCREEN_WIDTH * SCREEN_HEIGHT> m_screenPixels;
+    u8 m_keyRow = 0;
+    u8 m_keyRows[10];
 };

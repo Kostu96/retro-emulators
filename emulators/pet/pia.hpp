@@ -7,7 +7,12 @@ class PIA
 {
 public:
     using IRQCallback = std::function<void(bool)>;
+    using PortAOutputCallback = std::function<void(u8)>;
+    using PortBInputCallback = std::function<u8()>;
+
     void mapIRQBCallback(IRQCallback callback) { m_IRQB = callback; }
+    void mapPortAOutputCallback(PortAOutputCallback callback) { m_PAOut = callback; }
+    void mapPortBInputCallback(PortBInputCallback callback) { m_PBIn = callback; }
 
     u8 load8(u16 address) const;
     void store8(u16 address, u8 data);
@@ -33,12 +38,14 @@ private:
         u8 byte = 0;
     };
 
-    u8 m_PRA = 0;    // Port A
-    u8 m_DDRA = 0;   // Data Direction Register A
-    Control m_CRA{}; // Control Register A
-    u8 m_PRB = 0;    // Port B
-    u8 m_DDRB = 0;   // Data Direction Register B
+    u8 m_PRA = 0;            // Port A
+    u8 m_DDRA = 0;           // Data Direction Register A
+    Control m_CRA{};         // Control Register A
+    mutable u8 m_PRB = 0;    // Port B
+    u8 m_DDRB = 0;           // Data Direction Register B
     mutable Control m_CRB{}; // Control Register B
 
     IRQCallback m_IRQB = nullptr;
+    PortAOutputCallback m_PAOut = nullptr;
+    PortBInputCallback m_PBIn = nullptr;
 };

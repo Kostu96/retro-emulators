@@ -21,8 +21,22 @@ static void glfwErrorCallback(int error, const char* description)
     std::cerr << "GLFW error " << error << ": " << description << '\n';
 }
 
+static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+{
+    auto pet = reinterpret_cast<PET*>(glfwGetWindowUserPointer(window));
+    pet->updateKeysFromEvent(key, action == GLFW_PRESS);
+}
+
+static void glfwTextCallback(GLFWwindow* window, unsigned int codepoint)
+{
+    auto pet = reinterpret_cast<PET*>(glfwGetWindowUserPointer(window));
+    pet->updateKeysFromCodepoint(codepoint);
+}
+
 int main()
 {
+    std::unique_ptr<PET> pet = std::make_unique<PET>();
+
     glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit()) {
         std::cerr << "GLFW init failed!\n";
@@ -37,6 +51,10 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
+
+    glfwSetWindowUserPointer(window, pet.get());
+    glfwSetKeyCallback(window, glfwKeyCallback);
+    glfwSetCharCallback(window, glfwTextCallback);
 
     glw::init(glfwGetProcAddress);
     glw::Renderer::init();
@@ -54,11 +72,10 @@ int main()
         }
     };
 
-    std::unique_ptr<PET> pet = std::make_unique<PET>();
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
-                std::this_thread::sleep_for(std::chrono::nanoseconds{ 100 }); // TODO: temp
+                std::this_thread::sleep_for(std::chrono::nanoseconds{ 64 }); // TODO: temp
                 pet->clock();
             }
         }

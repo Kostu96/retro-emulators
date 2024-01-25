@@ -4,6 +4,9 @@
 Emulalators of microcomputers, game consoles and arcades.
 
 ### Machines:
+#### Commodore:
+ - PET 2001
+#### Others:
  - Altair 8800 - WIP
  - Apple II - WIP
  - CHIP-8 Interpreter - WIP
