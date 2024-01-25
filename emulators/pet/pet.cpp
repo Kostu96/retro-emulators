@@ -93,8 +93,8 @@ void PET::updateKeysFromEvent(int key, bool press)
         case 262: m_keyRows[0] = 0x7F; break; // arrow right
         case 264: m_keyRows[1] = 0xBF; break; // arrow down
         case 268: m_keyRows[0] = 0xBF; break; // home
-        case 340: m_keyRows[8] = 0xFE; break; // left shift
-        case 344: m_keyRows[8] = 0xDF; break; // right shift
+        //case 340: m_keyRows[8] = 0xFE; break; // left shift
+        //case 344: m_keyRows[8] = 0xDF; break; // right shift
         }
     }
 }
