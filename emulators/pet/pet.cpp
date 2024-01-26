@@ -78,7 +78,7 @@ void PET::clock()
     }
 }
 
-void PET::updateKeysFromEvent(int key, bool press)
+void PET::updateKeysFromEvent(int key, bool press, bool ctrl)
 {
     if (!press) {
         for (size_t i = 0; i < 10; i++)
@@ -93,8 +93,14 @@ void PET::updateKeysFromEvent(int key, bool press)
         case 262: m_keyRows[0] = 0x7F; break; // arrow right
         case 264: m_keyRows[1] = 0xBF; break; // arrow down
         case 268: m_keyRows[0] = 0xBF; break; // home
-        //case 340: m_keyRows[8] = 0xFE; break; // left shift
-        //case 344: m_keyRows[8] = 0xDF; break; // right shift
+        case 340:
+            if (ctrl)
+                m_keyRows[8] = 0xFE;  // left shift
+            break;
+        case 344:
+            if (ctrl)
+                m_keyRows[8] = 0xDF; // right shift
+            break;
         }
     }
 }

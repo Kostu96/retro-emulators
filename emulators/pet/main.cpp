@@ -3,6 +3,7 @@
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
 
+#include <chrono>
 #include <iostream>
 #include <thread>
 #include <memory>
@@ -21,10 +22,10 @@ static void glfwErrorCallback(int error, const char* description)
     std::cerr << "GLFW error " << error << ": " << description << '\n';
 }
 
-static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int mods)
 {
     auto pet = reinterpret_cast<PET*>(glfwGetWindowUserPointer(window));
-    pet->updateKeysFromEvent(key, action == GLFW_PRESS);
+    pet->updateKeysFromEvent(key, action != GLFW_RELEASE, mods & GLFW_MOD_CONTROL);
 }
 
 static void glfwTextCallback(GLFWwindow* window, unsigned int codepoint)
@@ -35,6 +36,7 @@ static void glfwTextCallback(GLFWwindow* window, unsigned int codepoint)
 
 int main()
 {
+    char title[] = "Commodore PET emulator by Kostu96 | XXXXXXXXXXX MHz";
     std::unique_ptr<PET> pet = std::make_unique<PET>();
 
     glfwSetErrorCallback(glfwErrorCallback);
@@ -44,7 +46,7 @@ int main()
     }
 
     glfwWindowHint(GLFW_RESIZABLE, 0);
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Commodore PET emulator by Kostu96", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title, nullptr, nullptr);
     if (!window) {
         std::cerr << "GLFW window creation failed!\n";
         std::terminate();
@@ -72,17 +74,36 @@ int main()
         }
     };
 
+    size_t tickPerSecond = 0;
     std::thread emuThread{
         [&]() {
+            size_t ticks = 0;
+            std::chrono::duration<long long, std::nano> timer{};
+
             while (!glfwWindowShouldClose(window)) {
-                std::this_thread::sleep_for(std::chrono::nanoseconds{ 64 }); // TODO: temp
+                auto t1 = std::chrono::steady_clock().now();
+                //std::this_thread::sleep_for(std::chrono::nanoseconds{ 10 }); // TODO: temp
                 pet->clock();
+                ticks++;
+
+                auto t2 = std::chrono::steady_clock().now();
+                auto dt = t2 - t1;
+                timer += dt;
+                if (timer > std::chrono::milliseconds(500)) {
+                    timer -= std::chrono::milliseconds(500);
+                    t1 = t2;
+                    tickPerSecond = ticks * 2;
+                    ticks = 0;
+                }
             }
         }
     };
 
     while (!glfwWindowShouldClose(window))
     {
+        sprintf_s(title, "Commodore PET emulator by Kostu96 | %zu kHz", tickPerSecond / 1'000);
+        glfwSetWindowTitle(window, title);
+
         glClear(GL_COLOR_BUFFER_BIT);
         glw::Renderer::beginFrame();
         glViewport(VIEWPORT_X, VIEWPORT_Y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);

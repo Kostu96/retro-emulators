@@ -28,7 +28,7 @@ public:
     void clock();
 
     std::span<const u32> getScreenPixels() const { return m_screenPixels; }
-    void updateKeysFromEvent(int key, bool press);
+    void updateKeysFromEvent(int key, bool press, bool ctrl);
     void updateKeysFromCodepoint(int codepoint);
 private:
     u8 memoryRead(u16 address) const;
