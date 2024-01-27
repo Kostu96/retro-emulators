@@ -78,8 +78,10 @@ void PET::clock()
     }
 }
 
-void PET::updateKeysFromEvent(int key, bool press, bool ctrl)
+void PET::updateKeysFromEvent(int key, bool press, bool shift)
 {
+    static bool shiftFlag = false;
+
     if (!press) {
         for (size_t i = 0; i < 10; i++)
             m_keyRows[i] = 0xFF;
@@ -93,16 +95,15 @@ void PET::updateKeysFromEvent(int key, bool press, bool ctrl)
         case 262: m_keyRows[0] = 0x7F; break; // arrow right
         case 264: m_keyRows[1] = 0xBF; break; // arrow down
         case 268: m_keyRows[0] = 0xBF; break; // home
-        case 340:
-            if (ctrl)
-                m_keyRows[8] = 0xFE;  // left shift
-            break;
-        case 344:
-            if (ctrl)
-                m_keyRows[8] = 0xDF; // right shift
-            break;
+        //case 340: if (ctrl) m_keyRows[8] = 0xFE; break; // left shift
+        //case 344: if (ctrl) m_keyRows[8] = 0xDF; break; // right shift
         }
     }
+
+    if (shift) {
+        shiftFlag = !shiftFlag;
+    }
+    if (shiftFlag) m_keyRows[8] = 0xFE; // left shift
 }
 
 void PET::updateKeysFromCodepoint(int codepoint)
@@ -219,8 +220,12 @@ void PET::memoryWrite(u16 address, u8 data)
 
         if (offset > 999) return;
 
+        // data bits 0-6 are used as address bits 3-9
+        // data bit 7 is used as a signal to characted inverter
+        // bit 10 of the address is taken from VIA CA2
         u16 charDataOffset = data;
         charDataOffset <<= 3;
+        charDataOffset &= 0x3FF;
 
         u16 pixelX = (offset % TEXTMODE_WIDTH) * 8;
         u16 pixelY = (offset / TEXTMODE_WIDTH) * 8;
