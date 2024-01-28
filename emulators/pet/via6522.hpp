@@ -1,10 +1,10 @@
 #pragma once
 #include <ccl/types.hpp>
 
-class VIA
+class VIA6522
 {
 public:
-    VIA() = default;
+    VIA6522() = default;
 
     u8 load8(u16 address) const;
     void store8(u16 address, u8 data);

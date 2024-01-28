@@ -1,8 +1,8 @@
-#include "pia.hpp"
+#include "pia6520.hpp"
 
 #include <cassert>
 
-u8 PIA::load8(u16 address) const
+u8 PIA6520::load8(u16 address) const
 {
     switch (address)
     {
@@ -20,7 +20,7 @@ u8 PIA::load8(u16 address) const
     return 0;
 }
 
-void PIA::store8(u16 address, u8 data)
+void PIA6520::store8(u16 address, u8 data)
 {
     switch (address)
     {
@@ -47,7 +47,7 @@ void PIA::store8(u16 address, u8 data)
     assert(false);
 }
 
-void PIA::CB1()
+void PIA6520::CB1()
 {
     m_CRB.C1ActiveTransitionFlag = 1;
     if (m_IRQB && m_CRB.C1IRQEnable) {

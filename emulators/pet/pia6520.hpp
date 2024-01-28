@@ -3,7 +3,7 @@
 
 #include <functional>
 
-class PIA
+class PIA6520
 {
 public:
     using IRQCallback = std::function<void(bool)>;
@@ -19,7 +19,7 @@ public:
 
     void CB1();
 
-    PIA() = default;
+    PIA6520() = default;
 private:
     union Control
     {

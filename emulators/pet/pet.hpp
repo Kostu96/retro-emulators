@@ -1,7 +1,7 @@
 #pragma once
 #include "cpu6502.hpp"
-#include "pia.hpp"
-#include "via.hpp"
+#include "pia6520.hpp"
+#include "via6522.hpp"
 
 #include <array>
 #include <span>
@@ -42,9 +42,9 @@ private:
     u8 m_characters[0x800];
 
     CPU6502 m_cpu{};
-    PIA m_pia1{};
-    PIA m_pia2{};
-    VIA m_via{};
+    PIA6520 m_pia1{};
+    PIA6520 m_pia2{};
+    VIA6522 m_via{};
 
     std::array<u32, SCREEN_WIDTH * SCREEN_HEIGHT> m_screenPixels;
     u8 m_keyRow = 0;

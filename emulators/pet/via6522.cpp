@@ -1,8 +1,8 @@
-#include "via.hpp"
+#include "via6522.hpp"
 
 #include <cassert>
 
-u8 VIA::load8(u16 address) const
+u8 VIA6522::load8(u16 address) const
 {
     switch (address)
     {
@@ -13,7 +13,7 @@ u8 VIA::load8(u16 address) const
     return 0;
 }
 
-void VIA::store8(u16 address, u8 data)
+void VIA6522::store8(u16 address, u8 data)
 {
     switch (address)
     {
