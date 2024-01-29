@@ -24,3 +24,9 @@ set_target_properties(${KIM1_TARGET_NAME} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${KIM1_TARGET_NAME}>
     FOLDER emulators/commodore
 )
+
+add_custom_command(
+    TARGET ${KIM1_TARGET_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/rom $<TARGET_FILE_DIR:${KIM1_TARGET_NAME}>/rom/kim1
+)

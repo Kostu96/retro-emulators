@@ -4,7 +4,7 @@
 #include <array>
 #include <span>
 
-class VIC20
+class KIM1
 {
 public:
     static constexpr u16 TEXTMODE_WIDTH = 22;
@@ -12,7 +12,7 @@ public:
     static constexpr u16 SCREEN_WIDTH = TEXTMODE_WIDTH * 8;
     static constexpr u16 SCREEN_HEIGHT = TEXTMODE_HEIGHT * 8;
 
-    VIC20();
+    KIM1();
 
     void clock();
 
@@ -21,15 +21,17 @@ private:
     u8 memoryRead(u16 address) const;
     void memoryWrite(u16 address, u8 data);
 
-    u8 m_LOW_RAM[0x400];
-    u8 m_RAM[0x1000];
-
-    u8 m_CHARACTERS[0x1000];
-
-    u8 m_BASIC[0x2000];
-    u8 m_KERNAL[0x2000];
+    u8 m_RAM[0x400];
+    u8 m_RAM_HIGH[0x80];
+    u8 m_FIRMWARE[0x800];
 
     CPU6502 m_cpu{};
+
+    // RRIOT 2
+    u8 m_PA2 = 0;
+    u8 m_DDRA2 = 0;
+    u8 m_PB2 = 0;
+    u8 m_DDRB2 = 0;
 
     std::array<u32, SCREEN_WIDTH * SCREEN_HEIGHT> m_screenPixels;
 };
