@@ -71,7 +71,7 @@ void KIM1::memoryWrite(u16 address, u8 data)
     }
 
     if (RRIOT1_RANGE.contains(address, offset)) {
-        
+        assert(false);
         return;
     }
 
