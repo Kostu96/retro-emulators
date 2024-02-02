@@ -1,7 +1,7 @@
 #pragma once
 #include "../../shared/disassembly_line.hpp"
 
-#include <ccl/types.hpp>
+#include "../../shared/types.hpp"
 
 #include <span>
 #include <vector>

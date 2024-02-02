@@ -1,7 +1,7 @@
 #include "apple2.hpp"
-#include "address_range.hpp"
+#include "../../address_range.hpp"
+#include "../../file_io.hpp"
 
-#include <ccl/helper_functions.h>
 #include <cassert>
 #include <iostream>
 
@@ -23,27 +23,27 @@ static constexpr AddressRange UPPER_ROM_RANGE{ 0xE000, 0xFFFF };
 Apple2::Apple2()
 {
     size_t size = 0x400;
-    if (!ccl::readFile("builtin_roms/apple2/AppleII_CharacterROM.bin",
+    if (!readFile("builtin_roms/apple2/AppleII_CharacterROM.bin",
         (char*)m_characterROM, size, true))
         std::cerr << "Could not read character ROM file!\n";
 
     size = 0x800;
-    if (!ccl::readFile("builtin_roms/apple2/Apple II ROM Pages E0-E7 - 341-0001 - Integer BASIC.bin",
+    if (!readFile("builtin_roms/apple2/Apple II ROM Pages E0-E7 - 341-0001 - Integer BASIC.bin",
         (char*)m_upperROM, size, true))
         std::cerr << "Could not read Integer BASIC ROM 1 file!\n";
 
     size = 0x800;
-    if (!ccl::readFile("builtin_roms/apple2/Apple II ROM Pages E8-EF - 341-0002 - Integer BASIC.bin",
+    if (!readFile("builtin_roms/apple2/Apple II ROM Pages E8-EF - 341-0002 - Integer BASIC.bin",
         (char*)(m_upperROM + 0x800), size, true))
         std::cerr << "Could not read Integer BASIC ROM 2 file!\n";
 
     size = 0x800;
-    if (!ccl::readFile("builtin_roms/apple2/Apple II ROM Pages F0-F7 - 341-0003 - Integer BASIC.bin",
+    if (!readFile("builtin_roms/apple2/Apple II ROM Pages F0-F7 - 341-0003 - Integer BASIC.bin",
         (char*)(m_upperROM + 0x1000), size, true))
         std::cerr << "Could not read Integer BASIC ROM 3 file!\n";
 
     size = 0x800;
-    if (!ccl::readFile("builtin_roms/apple2/Apple II ROM Pages F8-FF - 341-0004 - Original Monitor.bin",
+    if (!readFile("builtin_roms/apple2/Apple II ROM Pages F8-FF - 341-0004 - Original Monitor.bin",
         (char*)(m_upperROM + 0x1800), size, true))
         std::cerr << "Could not read Origianl Monitor ROM file!\n";
 

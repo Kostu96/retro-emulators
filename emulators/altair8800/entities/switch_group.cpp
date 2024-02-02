@@ -6,11 +6,11 @@
 
 SwitchGroup::SwitchGroup(const EmuCommon::SDLFont& font,
                          const EmuCommon::SDLTexture& texture,
-                         u8 count,
+                         uint8_t count,
                          const char** labels,
                          float spacing,
                          float tripletSpacing,
-                         u8 originAtIndex) :
+                         uint8_t originAtIndex) :
     m_count{ count }
 {
     auto textureSize = texture.getSize();

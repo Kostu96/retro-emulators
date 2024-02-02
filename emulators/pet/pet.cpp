@@ -1,7 +1,7 @@
 #include "pet.hpp"
-#include "address_range.hpp"
+#include "../../address_range.hpp"
+#include "../../file_io.hpp"
 
-#include <ccl/helper_functions.h>
 #include <cassert>
 #include <iostream>
 
@@ -34,19 +34,19 @@ PET::PET()
 #endif
 
     size_t size = PET::BASIC_SIZE;
-    if (!ccl::readFile(basicPath, (char*)m_BASIC, size, true))
+    if (!readFile(basicPath, (char*)m_BASIC, size, true))
         std::cerr << "Could not read EDITOR ROM file!\n";
 
     size = 0x800;
-    if (!ccl::readFile(editorPath, (char*)m_EDITOR, size, true))
+    if (!readFile(editorPath, (char*)m_EDITOR, size, true))
         std::cerr << "Could not read EDITOR ROM file!\n";
 
     size = 0x1000;
-    if (!ccl::readFile(kernalPath, (char*)m_KERNAL, size, true))
+    if (!readFile(kernalPath, (char*)m_KERNAL, size, true))
         std::cerr << "Could not read KERNAL ROM file!\n";
     
     size = 0x800;
-    if (!ccl::readFile("builtin_roms/pet/characters2.bin", (char*)m_characters, size, true))
+    if (!readFile("builtin_roms/pet/characters2.bin", (char*)m_characters, size, true))
         std::cerr << "Could not read characters ROM file!\n";
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });

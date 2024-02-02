@@ -1,5 +1,5 @@
 #pragma once
-#include <ccl/types.hpp>
+#include "../../types.hpp"
 
 union Instruction
 {

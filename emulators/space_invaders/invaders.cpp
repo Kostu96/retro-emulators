@@ -1,7 +1,6 @@
 #include "invaders.hpp"
-#include "address_range.hpp"
-
-#include <ccl/helper_functions.h>
+#include "../address_range.hpp"
+#include "../file_io.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -98,7 +97,7 @@ Invaders::Invaders()
         })
     {
         size_t size = ROM_SIZE;
-        [[maybe_unused]] bool ret = ccl::readFile(filename, (char*)(m_ROM + offset), size, true);
+        [[maybe_unused]] bool ret = readFile(filename, (char*)(m_ROM + offset), size, true);
         assert(ret && "File read failed!");
         offset += ROM_SIZE;
     }

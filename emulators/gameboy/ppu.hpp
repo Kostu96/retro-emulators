@@ -1,8 +1,7 @@
 #pragma once
 #include "bit_fifo.hpp"
 
-#include <ccl/non_copyable.h>
-#include <ccl/types.hpp>
+#include "../types.hpp"
 
 #include <functional>
 #include <span>
@@ -11,8 +10,7 @@ namespace glw {
 	class Texture;
 }
 
-class PPU :
-	public ccl::NonCopyable
+class PPU
 {
 public:
 	static constexpr u16 LCD_WIDTH = 160;
@@ -45,6 +43,9 @@ public:
 	std::span<u8> getTileMap0() const { return { m_VRAM + 0x1800, 0x400 }; }
 	std::span<u8> getTileMap1() const { return { m_VRAM + 0x1C00, 0x400 }; }
 	bool getTileDataAddressingMode() const { return m_LCDControl.WinBGTileData; }
+
+	PPU(const PPU&) = delete;
+	PPU& operator=(const PPU&) = delete;
 private:
 	static constexpr u16 VRAM_SIZE = 0x2000;
 

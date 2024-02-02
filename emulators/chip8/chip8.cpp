@@ -2,7 +2,7 @@
 #include "disasm_chip8.hpp"
 #include "chip8_instruction.hpp"
 
-#include <ccl/helper_functions.h>
+#include "../../file_io.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -35,7 +35,7 @@ void CHIP8::loadProgram(const char* filename)
     std::memcpy(m_memory, charset, CHARSET_SIZE);
 
     size_t size = MAX_PROGRAM_SIZE;
-    ccl::readFile(filename, (char*)PROGRAM_START, size, true);
+    readFile(filename, (char*)PROGRAM_START, size, true);
 
     disassemble((u8*)PROGRAM_START, size, m_disassembly);
 }

@@ -1,12 +1,9 @@
 #pragma once
-#include <ccl/non_copyable.h>
-#include <ccl/types.hpp>
+#include "../types.hpp"
 
-class Cartridge :
-    public ccl::NonCopyable
+class Cartridge
 {
 public:
-    Cartridge() = default;
     ~Cartridge();
 
     u8 load8(u16 address) const;
@@ -15,6 +12,10 @@ public:
     void store8ExtRAM(u16 address, u8 data);
 
     bool loadFromFile(const char* filename, bool quiet = false);
+
+    Cartridge() = default;
+    Cartridge(const Cartridge&) = delete;
+    Cartridge& operator=(const Cartridge&) = delete;
 private:
     struct Header {
         u8 entryPoint[4];      // 0x100 - 0x103

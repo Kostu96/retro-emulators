@@ -6,12 +6,12 @@
 
 LEDGroup::LEDGroup(const EmuCommon::SDLFont& font,
                    const EmuCommon::SDLTexture& texture,
-                   u8 count,
+                   uint8_t count,
                    const char** labels,
                    float spacing,
                    float tripletSpacing,
-                   u8 spacerLinesCount,
-                   u8 originAtIndex) :
+                   uint8_t spacerLinesCount,
+                   uint8_t originAtIndex) :
     m_count{ count },
     m_spacerLinesCount{ spacerLinesCount }
 {
@@ -69,10 +69,10 @@ void LEDGroup::render(SDL_Renderer* renderer, EmuCommon::Transform transform)
     SDL_RenderDrawRectF(renderer, reinterpret_cast<SDL_FRect*>(&rect));
 #endif
 
-    for (u16 i = 0; i < m_count; i++)
+    for (uint8_t i = 0; i < m_count; i++)
     {
-        u16 bit = m_count - i - 1;
-        u8 isOn = (m_states >> bit) & 1;
+        uint8_t bit = m_count - i - 1;
+        uint8_t isOn = (m_states >> bit) & 1;
         EmuCommon::IRect rect = m_leds[i].getTextureRect();
         rect.x = isOn * 100; // TODO: remove magic number
         m_leds[i].setTextureRect(rect);

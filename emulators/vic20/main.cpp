@@ -1,4 +1,6 @@
 #include "vic20.hpp"
+#include "emu_common/application.hpp"
+
 #include <glad/gl.h>
 #include <glw/glw.hpp>
 #include <GLFW/glfw3.h>
@@ -16,14 +18,9 @@ constexpr u16 VIEWPORT_HEIGHT = VIC20::SCREEN_HEIGHT * SCALE;
 constexpr u16 WINDOW_WIDTH = VIEWPORT_WIDTH + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = VIEWPORT_HEIGHT + 2 * BORDER_SIZE;
 
-static void glfwErrorCallback(int error, const char* description)
-{
-    std::cerr << "GLFW error " << error << ": " << description << '\n';
-}
-
 int main()
 {
-    glfwSetErrorCallback(glfwErrorCallback);
+    glfwSetErrorCallback(EmuCommon::glfwErrorCallback);
     if (!glfwInit()) {
         std::cerr << "GLFW init failed!\n";
         std::terminate();

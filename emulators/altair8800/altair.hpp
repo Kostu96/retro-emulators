@@ -1,10 +1,7 @@
 #pragma once
 #include "cpu8080.hpp"
 
-#include <ccl/non_copyable.h>
-
-class Altair :
-	public ccl::NonCopyable
+class Altair
 {
 public:
 	Altair();
@@ -19,6 +16,9 @@ public:
 	void setAddressLatch(u16 address) { m_addressLatch = address; }
 	u16 getAddressLatch() const { return m_addressLatch; }
 	u8 getDataLatch() const { return m_dataLatch; }
+
+	Altair(const Altair&) = delete;
+	Altair& operator=(const Altair&) = delete;
 private:
 	u8 memoryRead(u16 address);
 	void memoryWrite(u16 address, u8 data);

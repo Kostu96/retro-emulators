@@ -3,22 +3,18 @@
 #include "emu_common/graphics/text.hpp"
 #include "emu_common/gui/checkbox.hpp"
 
-#include <ccl/non_copyable.h>
-#include <ccl/types.hpp>
-
 class SwitchGroup :
     public EmuCommon::Transformable,
-    public EmuCommon::Renderable,
-    public ccl::NonCopyable
+    public EmuCommon::Renderable
 {
 public:
     SwitchGroup(const EmuCommon::SDLFont& font,
                 const EmuCommon::SDLTexture& texture,
-                u8 count,
+                uint8_t count,
                 const char** labels,
                 float spacing,
                 float tripletSpacing = 0,
-                u8 originAtIndex = 0);
+                uint8_t originAtIndex = 0);
 
     ~SwitchGroup();
 
@@ -27,11 +23,14 @@ public:
     void render(SDL_Renderer* renderer, EmuCommon::Transform transform = {}) override;
 
     const EmuCommon::Vec2f& getSize() const { return m_size; }
-    u16 getStates() const { return m_states; }
+    uint16_t getStates() const { return m_states; }
+
+    SwitchGroup(const SwitchGroup&) = delete;
+    SwitchGroup& operator=(const SwitchGroup&) = delete;
 private:
     EmuCommon::SDLText* m_labels = nullptr;
     EmuCommon::GUI::ImageCheckbox* m_switches = nullptr;
     EmuCommon::Vec2f m_size;
-    u16 m_states = 0;
-    u8 m_count;
+    uint16_t m_states = 0;
+    uint8_t m_count;
 };

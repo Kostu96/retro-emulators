@@ -17,7 +17,10 @@ set(GAMEBOY_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/timer.hpp
 )
 
-add_library(${GAMEBOY_LIB_TARGET_NAME} STATIC ${GAMEBOY_LIB_SOURCES})
+add_library(${GAMEBOY_LIB_TARGET_NAME} STATIC
+    ${GAMEBOY_LIB_SOURCES}
+    ${CMAKE_SOURCE_DIR}/shared/file_io.cpp
+)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${GAMEBOY_LIB_SOURCES})
 
 set_target_warnings(${GAMEBOY_LIB_TARGET_NAME})
@@ -26,7 +29,6 @@ target_compile_options(${GAMEBOY_LIB_TARGET_NAME} PRIVATE
 )
 
 target_link_libraries(${GAMEBOY_LIB_TARGET_NAME} PUBLIC
-    cpp-common-lib
     cpu_x80_lib
 )
 

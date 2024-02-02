@@ -4,35 +4,34 @@
 #include "emu_common/graphics/sprite.hpp"
 #include "emu_common/graphics/text.hpp"
 
-#include <ccl/non_copyable.h>
-#include <ccl/types.hpp>
-
 class LEDGroup :
     public EmuCommon::Transformable,
-    public EmuCommon::Renderable,
-    public ccl::NonCopyable
+    public EmuCommon::Renderable
 {
 public:
     LEDGroup(const EmuCommon::SDLFont& font,
              const EmuCommon::SDLTexture& texture,
-             u8 count,
+             uint8_t count,
              const char** labels,
              float spacing,
              float tripletSpacing = 0,
-             u8 spacerLinesCount = 0,
-             u8 originAtIndex = 0);
+             uint8_t spacerLinesCount = 0,
+             uint8_t originAtIndex = 0);
 
     ~LEDGroup();
 
     void render(SDL_Renderer* renderer, EmuCommon::Transform transform = {}) override;
 
-    void setStates(u16 states) { m_states = states; }
+    void setStates(uint16_t states) { m_states = states; }
     const EmuCommon::Vec2f& getSize() const { return m_size; }
+
+    LEDGroup(const LEDGroup&) = delete;
+    LEDGroup& operator=(const LEDGroup&) = delete;
 private:
     EmuCommon::SDLText* m_labels = nullptr;
     EmuCommon::SDLSprite* m_leds = nullptr;
     EmuCommon::Vec2f m_size;
-    u16 m_states = 0;
-    u8 m_count;
-    u8 m_spacerLinesCount;
+    uint16_t m_states = 0;
+    uint8_t m_count;
+    uint8_t m_spacerLinesCount;
 };

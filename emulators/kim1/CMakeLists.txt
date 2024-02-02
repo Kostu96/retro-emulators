@@ -7,7 +7,10 @@ set(KIM1_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/kim1.hpp
 )
 
-add_executable(${KIM1_TARGET_NAME} ${KIM1_SOURCES})
+add_executable(${KIM1_TARGET_NAME}
+    ${KIM1_SOURCES}
+    ${CMAKE_SOURCE_DIR}/shared/file_io.cpp
+)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${KIM1_SOURCES})
 
 set_target_warnings(${KIM1_TARGET_NAME})

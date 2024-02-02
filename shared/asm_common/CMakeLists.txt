@@ -16,10 +16,6 @@ target_include_directories(${ASM_COMMON_LIB_TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(${ASM_COMMON_LIB_TARGET_NAME} PUBLIC
-    cpp-common-lib
-)
-
 set_target_properties(${ASM_COMMON_LIB_TARGET_NAME} PROPERTIES
     FOLDER shared
 )

@@ -5,7 +5,10 @@ Emulalators of microcomputers, game consoles and arcades.
 
 ### Machines:
 #### Commodore:
+ - KIM-1
  - PET 2001
+ - VIC-20
+ - C64
 #### Others:
  - Altair 8800 - WIP
  - Apple II - WIP

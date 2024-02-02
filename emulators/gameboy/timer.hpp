@@ -1,9 +1,7 @@
 #pragma once
-#include <ccl/non_copyable.h>
-#include <ccl/types.hpp>
+#include "../types.hpp"
 
-class Timer :
-	public ccl::NonCopyable
+class Timer
 {
 public:
 	explicit Timer(u8& interruptFlagsRef) : m_interruptFlagsRef{ interruptFlagsRef } {}
@@ -13,6 +11,9 @@ public:
 
 	u8 load8(u16 address) const;
 	void store8(u16 address, u8 data);
+
+	Timer(const Timer&) = delete;
+	Timer& operator=(const Timer&) = delete;
 private:
 	u8 m_prevTriggerBit;
 	u16 m_divider;

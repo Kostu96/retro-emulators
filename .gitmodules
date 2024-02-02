@@ -10,9 +10,6 @@
 [submodule "gtest"]
 	path = third_party/googletest
 	url = https://github.com/google/googletest.git
-[submodule "cpp-common"]
-	path = third_party/cpp-common-lib
-	url = https://github.com/Kostu96/cpp-common-lib.git
 [submodule "gb-test-roms"]
 	path = third_party/gb-test-roms
 	url = https://github.com/retrio/gb-test-roms.git
