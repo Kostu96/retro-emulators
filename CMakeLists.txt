@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 
 project(emulators LANGUAGES CXX)
-include(scripts/cmake/base_configuration.cmake)
-include(scripts/cmake/compiler_warnings.cmake)
+include(cmake/base_configuration.cmake)
+include(cmake/compiler_warnings.cmake)
 
 add_subdirectory(third_party)
 

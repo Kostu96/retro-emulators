@@ -86,11 +86,32 @@ jobs:
         endif()
     
     - name: Run Tests
+      shell: cmake -P {0}
       run: |
         set(ERROR false)
         set(TEST_DIR build/output/${{matrix.config.build_type}}/bin)
         
         execute_process(COMMAND ${TEST_DIR}/cpu40xx_tests.exe RESULT_VARIABLE result)
+        if (NOT result EQUAL 0)
+          set(ERROR true)
+        endif()
+        
+        execute_process(COMMAND ${TEST_DIR}/cpu8080_tests.exe RESULT_VARIABLE result)
+        if (NOT result EQUAL 0)
+          set(ERROR true)
+        endif()
+        
+        execute_process(COMMAND ${TEST_DIR}/cpu_x80_tests.exe RESULT_VARIABLE result)
+        if (NOT result EQUAL 0)
+          set(ERROR true)
+        endif()
+        
+        execute_process(COMMAND ${TEST_DIR}/cpu6502_tests.exe RESULT_VARIABLE result)
+        if (NOT result EQUAL 0)
+          set(ERROR true)
+        endif()
+        
+        execute_process(COMMAND ${TEST_DIR}/gameboy_tests.exe RESULT_VARIABLE result)
         if (NOT result EQUAL 0)
           set(ERROR true)
         endif()
