@@ -86,4 +86,15 @@ jobs:
         endif()
     
     - name: Run Tests
-      run: ./scripts/run_all_tests.bat
+      run: |
+        set(ERROR false)
+        set(TEST_DIR build/output/${{matrix.config.build_type}}/bin)
+        
+        execute_process(COMMAND ${TEST_DIR}/cpu40xx_tests.exe RESULT_VARIABLE result)
+        if (NOT result EQUAL 0)
+          set(ERROR true)
+        endif()
+        
+        if (ERROR)
+          message(FATAL_ERROR "Some tests failed")
+        endif()
