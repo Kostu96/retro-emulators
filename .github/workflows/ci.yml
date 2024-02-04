@@ -88,44 +88,26 @@ jobs:
     - name: Run Tests
       shell: cmake -P {0}
       run: |
+        set(TESTS
+          cpu40xx_tests.exe
+          cpu8080_tests.exe
+          cpu_x80_tests.exe
+          cpu6502_tests.exe
+          gameboy_tests.exe
+        )
         set(ERROR false)
         set(TEST_DIR build/output/${{matrix.config.build_type}}/bin)
         
-        execute_process(COMMAND ${TEST_DIR}/cpu40xx_tests.exe
-                        WORKING_DIRECTORY ${TEST_DIR}
-                        RESULT_VARIABLE result)
-        if (NOT result EQUAL 0)
-          set(ERROR true)
-        endif()
-        
-        execute_process(COMMAND ${TEST_DIR}/cpu8080_tests.exe
-                        WORKING_DIRECTORY ${TEST_DIR}
-                        RESULT_VARIABLE result)
-        if (NOT result EQUAL 0)
-          set(ERROR true)
-        endif()
-        
-        execute_process(COMMAND ${TEST_DIR}/cpu_x80_tests.exe
-                        WORKING_DIRECTORY ${TEST_DIR}
-                        RESULT_VARIABLE result)
-        if (NOT result EQUAL 0)
-          set(ERROR true)
-        endif()
-        
-        execute_process(COMMAND ${TEST_DIR}/cpu6502_tests.exe
-                        WORKING_DIRECTORY ${TEST_DIR}
-                        RESULT_VARIABLE result)
-        if (NOT result EQUAL 0)
-          set(ERROR true)
-        endif()
-        
-        execute_process(COMMAND ${TEST_DIR}/gameboy_tests.exe
-                        WORKING_DIRECTORY ${TEST_DIR}
-                        RESULT_VARIABLE result)
-        if (NOT result EQUAL 0)
-          set(ERROR true)
-        endif()
+        foreach(TEST ${TESTS})
+          execute_process(COMMAND ${TEST}
+                          WORKING_DIRECTORY ${TEST_DIR}
+                          RESULT_VARIABLE result)
+          if (NOT result EQUAL 0)
+            set(ERROR true)
+            message(ERROR "${TEST} has failed!")
+          endif()
+        endforeach()
         
         if (ERROR)
-          message(FATAL_ERROR "Some tests failed")
+          message(FATAL_ERROR "Some tests failed!")
         endif()
