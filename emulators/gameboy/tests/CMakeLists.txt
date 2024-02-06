@@ -1,6 +1,12 @@
 set(GAMEBOY_TESTS_TARGET_NAME ${GAMEBOY_TARGET_NAME}_tests)
 set(GAMEBOY_TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_arithmetic_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_branch_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_logic_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_misc_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_tests_fixture.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_transfer_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/rom_tests.cpp
 )
 

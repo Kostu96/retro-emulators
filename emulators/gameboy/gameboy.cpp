@@ -27,7 +27,6 @@ static std::ofstream s_log;
 #endif
 
 Gameboy::Gameboy() :
-    m_CPU{ CPUx80Mode::GameBoy },
     m_PPU{ m_interruptFlags },
     m_WRAM{ new u8[0x2000] },
     m_timer{ m_interruptFlags },
@@ -151,28 +150,28 @@ void Gameboy::loadCartridge(const char* filename, bool quiet)
 
 void Gameboy::runUntilEndlessLoop()
 {
-    u16 lastPC = m_CPU.getPC();
+    u16 lastPC = m_CPU.getState().PC;
     u8 counter = 0;
     while (counter < 10)
     {
         update();
 
-        if (lastPC == m_CPU.getPC() && !m_CPU.isHalted())
+        if (lastPC == m_CPU.getState().PC && !m_CPU.getState().IsHalted)
             counter++;
         else
             counter = 0;
 
-        lastPC = m_CPU.getPC();
+        lastPC = m_CPU.getState().PC;
     }
 }
 
 void Gameboy::runUntilDebugBreak()
 {
-    u8 nextInstr = memoryRead(m_CPU.getPC());
+    u8 nextInstr = memoryRead(m_CPU.getState().PC);
     while (nextInstr != 0x40)
     {
         update();
-        nextInstr = memoryRead(m_CPU.getPC());
+        nextInstr = memoryRead(m_CPU.getState().PC);
     }
 }
 

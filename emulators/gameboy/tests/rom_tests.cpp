@@ -60,9 +60,9 @@ TEST_P(MooneyeTests, givenTestROMExpectRunSuccess)
 {
 	gb.runUntilDebugBreak();
 
-	EXPECT_EQ(gb.m_CPU.getBC(), 0x0305); // 3 5
-	EXPECT_EQ(gb.m_CPU.getDE(), 0x080D); // 8 13
-	EXPECT_EQ(gb.m_CPU.getHL(), 0x1522); // 21 34
+	EXPECT_EQ(gb.m_CPU.getState().BC, 0x0305); // 3 5
+	EXPECT_EQ(gb.m_CPU.getState().DE, 0x080D); // 8 13
+	EXPECT_EQ(gb.m_CPU.getState().HL, 0x1522); // 21 34
 }
 
 INSTANTIATE_TEST_SUITE_P(Param, MooneyeTests,

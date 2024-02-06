@@ -9,6 +9,8 @@ set(GAMEBOY_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/bit_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cartridge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameboy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameboy.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ppu.cpp

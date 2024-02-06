@@ -1,5 +1,5 @@
 #pragma once
-#include "cpu_x80.hpp"
+#include "cpu.hpp"
 #include "apu.hpp"
 #include "cartridge.hpp"
 #include "ppu.hpp"
@@ -14,8 +14,6 @@
 class Gameboy
 {
 public:
-    using CPU = CPUx80<CPUx80Mode::GameBoy>;
-
     Gameboy();
     ~Gameboy();
 
