@@ -22,6 +22,7 @@ add_subdirectory(emulators/gameboy)
 add_subdirectory(emulators/kim1)
 add_subdirectory(emulators/nes)
 add_subdirectory(emulators/pet)
+add_subdirectory(emulators/psx)
 add_subdirectory(emulators/space_invaders)
 add_subdirectory(emulators/vic20)
 
