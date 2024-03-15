@@ -13,7 +13,6 @@ set(PET_SOURCES
 
 add_executable(${PET_TARGET_NAME}
     ${PET_SOURCES}
-    ${CMAKE_SOURCE_DIR}/shared/file_io.cpp
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${PET_SOURCES})
 

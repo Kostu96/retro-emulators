@@ -15,7 +15,6 @@ set(C64_SOURCES
 
 add_executable(${C64_TARGET_NAME}
     ${C64_SOURCES}
-    ${CMAKE_SOURCE_DIR}/shared/file_io.cpp
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${C64_SOURCES})
 

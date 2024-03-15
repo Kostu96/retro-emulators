@@ -1,17 +1,17 @@
 #include "c64.hpp"
 #include "../../address_range.hpp"
-#include "../../file_io.hpp"
+#include "emu_common/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
 
-static constexpr AddressRange KERNAL_RANGE{ 0xE000, 0xFFFF };
-static constexpr AddressRange CIA2_RANGE{   0xDD00, 0xDDFF };
-static constexpr AddressRange CIA1_RANGE{   0xDC00, 0xDCFF };
-static constexpr AddressRange SID_RANGE{    0xD400, 0xD7FF };
-static constexpr AddressRange VIC_RANGE{    0xD000, 0xD3FF };
-static constexpr AddressRange BASIC_RANGE{  0xA000, 0xBFFF };
-static constexpr AddressRange RAM_RANGE{    0x0000, 0x9FFF };
+static constexpr AddressRange16 KERNAL_RANGE{ 0xE000, 0xFFFF };
+static constexpr AddressRange16 CIA2_RANGE{   0xDD00, 0xDDFF };
+static constexpr AddressRange16 CIA1_RANGE{   0xDC00, 0xDCFF };
+static constexpr AddressRange16 SID_RANGE{    0xD400, 0xD7FF };
+static constexpr AddressRange16 VIC_RANGE{    0xD000, 0xD3FF };
+static constexpr AddressRange16 BASIC_RANGE{  0xA000, 0xBFFF };
+static constexpr AddressRange16 RAM_RANGE{    0x0000, 0x9FFF };
 
 C64::C64()
 {

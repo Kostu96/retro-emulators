@@ -19,6 +19,7 @@ set(EMULATORS_COMMON_HEADERS
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/label.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/gui/widget.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/application.hpp
+    ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/file_io.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/imgui_helper.hpp
     ${EMULATORS_COMMON_HEADERS_DIR}/emu_common/vec2.hpp
 )
@@ -36,6 +37,7 @@ set(EMULATORS_COMMON_SOURCES
     ${EMULATORS_COMMON_SOURCES_DIR}/gui/checkbox.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/gui/label.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/application.cpp
+    ${EMULATORS_COMMON_SOURCES_DIR}/file_io.cpp
     ${EMULATORS_COMMON_SOURCES_DIR}/imgui_helper.cpp
 )
 set(EMULATORS_COMMON_3RD_PARTY

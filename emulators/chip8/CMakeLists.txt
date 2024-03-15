@@ -12,7 +12,6 @@ set(CHIP8_SOURCES
 
 add_executable(${CHIP8_TARGET_NAME}
     ${CHIP8_SOURCES}
-    ${CMAKE_SOURCE_DIR}/shared/file_io.cpp
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${CHIP8_SOURCES})
 

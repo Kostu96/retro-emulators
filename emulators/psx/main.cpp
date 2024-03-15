@@ -11,8 +11,8 @@ constexpr u16 SCALE = 3;
 constexpr u16 BORDER_SIZE = 10;
 constexpr u16 VIEWPORT_X = BORDER_SIZE;
 constexpr u16 VIEWPORT_Y = BORDER_SIZE;
-constexpr u16 VIEWPORT_WIDTH = KIM1::SCREEN_WIDTH * SCALE;
-constexpr u16 VIEWPORT_HEIGHT = KIM1::SCREEN_HEIGHT * SCALE;
+constexpr u16 VIEWPORT_WIDTH = PSX::SCREEN_WIDTH * SCALE;
+constexpr u16 VIEWPORT_HEIGHT = PSX::SCREEN_HEIGHT * SCALE;
 constexpr u16 WINDOW_WIDTH = VIEWPORT_WIDTH + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = VIEWPORT_HEIGHT + 2 * BORDER_SIZE;
 
@@ -30,7 +30,7 @@ int main()
     }
 
     glfwWindowHint(GLFW_RESIZABLE, 0);
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Commodore KIM-1 emulator by Kostu96", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "PSX emulator by Kostu96", nullptr, nullptr);
     if (!window) {
         std::cerr << "GLFW window creation failed!\n";
         std::terminate();
@@ -54,7 +54,7 @@ int main()
         }
     };
 
-    std::unique_ptr<PSX> psx = std::make_unique<PSX>();
+    std::unique_ptr<PSX::Emulator> psx = std::make_unique<PSX::Emulator>();
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
@@ -67,13 +67,13 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
-        glw::Renderer::beginFrame();
+        /*glw::Renderer::beginFrame();
         glViewport(VIEWPORT_X, VIEWPORT_Y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
         auto pixels = psx->getScreenPixels();
         screenTexture.setData(pixels.data(), pixels.size() * sizeof(u32));
         screenTexture.bind(0);
         glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
-        glw::Renderer::endFrame();
+        glw::Renderer::endFrame();*/
 
         glfwSwapBuffers(window);
         glfwPollEvents();

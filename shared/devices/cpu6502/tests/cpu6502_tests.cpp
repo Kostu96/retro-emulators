@@ -1,6 +1,6 @@
 #include "cpu6502.hpp"
 
-#include "../../file_io.hpp"
+#include "../../../shared/emu_common/include/emu_common/file_io.hpp"
 
 #include <gtest/gtest.h>
 

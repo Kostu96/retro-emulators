@@ -1,13 +1,13 @@
 #include "apple2.hpp"
 #include "../../address_range.hpp"
-#include "../../file_io.hpp"
+#include "emu_common/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
 
-static constexpr AddressRange RAM_RANGE{ 0x0000, 0x1000 };
-static constexpr AddressRange TEXT_PAGE1_SUBRANGE{ 0x0400, 0x07FF };
-static constexpr AddressRange KEYBOARD_DATA_RANGE{ 0xC000, 0xC00F };
+static constexpr AddressRange16 RAM_RANGE{ 0x0000, 0x1000 };
+static constexpr AddressRange16 TEXT_PAGE1_SUBRANGE{ 0x0400, 0x07FF };
+static constexpr AddressRange16 KEYBOARD_DATA_RANGE{ 0xC000, 0xC00F };
 static constexpr u16 SPEAKER_TOGGLE_ADDRESS = 0xC030;
 static constexpr u16 TEXT_GRAPHICS_SWITCH_ON_ADDRESS = 0xC050;
 static constexpr u16 TEXT_GRAPHICS_SWITCH_OFF_ADDRESS = 0xC051;
@@ -17,8 +17,8 @@ static constexpr u16 PAGE_SWITCH_ON_ADDRESS = 0xC054;
 static constexpr u16 PAGE_SWITCH_OFF_ADDRESS = 0xC055;
 static constexpr u16 GRAPHICS_MODE_SWITCH_ON_ADDRESS = 0xC056;
 static constexpr u16 GRAPHICS_MODE_SWITCH_OFF_ADDRESS = 0xC057;
-static constexpr AddressRange ANNUNCIATORS_RANGE{ 0xC058, 0xC05F };
-static constexpr AddressRange UPPER_ROM_RANGE{ 0xE000, 0xFFFF };
+static constexpr AddressRange16 ANNUNCIATORS_RANGE{ 0xC058, 0xC05F };
+static constexpr AddressRange16 UPPER_ROM_RANGE{ 0xE000, 0xFFFF };
 
 Apple2::Apple2()
 {

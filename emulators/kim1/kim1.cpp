@@ -1,17 +1,17 @@
 #include "kim1.hpp"
 #include "../../address_range.hpp"
-#include "../../file_io.hpp"
+#include "emu_common/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
 
-static constexpr AddressRange RAM_RANGE{      0x0000, 0x03FF };
+static constexpr AddressRange16 RAM_RANGE{      0x0000, 0x03FF };
 
-static constexpr AddressRange RRIOT1_RANGE{   0x1700, 0x173F };
-static constexpr AddressRange RRIOT2_RANGE{   0x1740, 0x177F };
-static constexpr AddressRange RAM_HIGH_RANGE{ 0x1780, 0x17FF };
+static constexpr AddressRange16 RRIOT1_RANGE{   0x1700, 0x173F };
+static constexpr AddressRange16 RRIOT2_RANGE{   0x1740, 0x177F };
+static constexpr AddressRange16 RAM_HIGH_RANGE{ 0x1780, 0x17FF };
 
-static constexpr AddressRange FIRMWARE_RANGE{ 0x1800, 0x1FFF };
+static constexpr AddressRange16 FIRMWARE_RANGE{ 0x1800, 0x1FFF };
 
 KIM1::KIM1()
 {

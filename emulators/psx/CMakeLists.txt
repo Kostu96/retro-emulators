@@ -19,10 +19,6 @@ target_compile_options(${PSX_LIB_TARGET_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/MP /fp:fast /external:anglebrackets /external:W1>
 )
 
-target_link_libraries(${PSX_LIB_TARGET_NAME} PUBLIC
-    cpp-common-lib
-)
-
 set_target_properties(${PSX_LIB_TARGET_NAME} PROPERTIES
     FOLDER ${PSX_FOLDER_NAME}
 )

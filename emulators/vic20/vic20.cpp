@@ -1,19 +1,19 @@
 #include "vic20.hpp"
 #include "../../address_range.hpp"
-#include "../../file_io.hpp"
+#include "emu_common/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
 
-static constexpr AddressRange LOW_RAM_RANGE{     0x0000, 0x03FF };
-static constexpr AddressRange BLOCK0_OPEN_RANGE{ 0x0400, 0x0FFF };
-static constexpr AddressRange RAM_RANGE{         0x1000, 0x1FFF };
-static constexpr AddressRange BLOCKS1_3_RANGE{   0x2000, 0x7FFF };
-static constexpr AddressRange CHARACTERS_RANGE{  0x8000, 0x8FFF };
+static constexpr AddressRange16 LOW_RAM_RANGE{     0x0000, 0x03FF };
+static constexpr AddressRange16 BLOCK0_OPEN_RANGE{ 0x0400, 0x0FFF };
+static constexpr AddressRange16 RAM_RANGE{         0x1000, 0x1FFF };
+static constexpr AddressRange16 BLOCKS1_3_RANGE{   0x2000, 0x7FFF };
+static constexpr AddressRange16 CHARACTERS_RANGE{  0x8000, 0x8FFF };
 
-static constexpr AddressRange BLOCK5_RANGE{      0xA000, 0xBFFF };
-static constexpr AddressRange BASIC_RANGE{       0xC000, 0xDFFF };
-static constexpr AddressRange KERNAL_RANGE{      0xE000, 0xFFFF };
+static constexpr AddressRange16 BLOCK5_RANGE{      0xA000, 0xBFFF };
+static constexpr AddressRange16 BASIC_RANGE{       0xC000, 0xDFFF };
+static constexpr AddressRange16 KERNAL_RANGE{      0xE000, 0xFFFF };
 
 VIC20::VIC20()
 {

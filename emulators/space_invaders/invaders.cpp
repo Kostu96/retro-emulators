@@ -1,6 +1,6 @@
 #include "invaders.hpp"
 #include "../address_range.hpp"
-#include "../file_io.hpp"
+#include "emu_common/file_io.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -9,8 +9,8 @@
 
 //#define CPU_DIAG
 
-static const AddressRange ROM_RANGE{ 0x0000, 0x1FFF };
-static const AddressRange RAM_RANGE{ 0x2000, 0x4000 };
+static const AddressRange16 ROM_RANGE{ 0x0000, 0x1FFF };
+static const AddressRange16 RAM_RANGE{ 0x2000, 0x4000 };
 
 //void Invaders::handleKey(int key, int action)
 //{

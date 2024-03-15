@@ -8,19 +8,19 @@
 
 #define GB_DOCTOR_LOG 0
 
-static const AddressRange ROM_RANGE{       0x0000, 0x7FFF };
-static const AddressRange VRAM_RANGE{      0x8000, 0x9FFF };
-static const AddressRange EXTRAM_RANGE{    0xA000, 0xBFFF };
-static const AddressRange WRAM_RANGE{      0xC000, 0xDFFF };
-static const AddressRange OAM_RANGE{       0xFE00, 0xFE9F };
-static const AddressRange UNUSED1_RANGE{   0xFEA0, 0xFEFF };
-static const AddressRange SERIAL_RANGE{    0xFF01, 0xFF02 };
-static const AddressRange TIMER_RANGE{     0xFF04, 0xFF07 };
-static const AddressRange APU_RANGE{       0xFF10, 0xFF26 };
-static const AddressRange UNUSED2_RANGE{   0xFF27, 0xFF3F };
-static const AddressRange PPU_RANGE{       0xFF40, 0xFF4B };
-static const AddressRange UNUSED3_RANGE{   0xFF7F, 0xFF7F };
-static const AddressRange HRAM_RANGE{      0xFF80, 0xFFFE };
+static const AddressRange16 ROM_RANGE{       0x0000, 0x7FFF };
+static const AddressRange16 VRAM_RANGE{      0x8000, 0x9FFF };
+static const AddressRange16 EXTRAM_RANGE{    0xA000, 0xBFFF };
+static const AddressRange16 WRAM_RANGE{      0xC000, 0xDFFF };
+static const AddressRange16 OAM_RANGE{       0xFE00, 0xFE9F };
+static const AddressRange16 UNUSED1_RANGE{   0xFEA0, 0xFEFF };
+static const AddressRange16 SERIAL_RANGE{    0xFF01, 0xFF02 };
+static const AddressRange16 TIMER_RANGE{     0xFF04, 0xFF07 };
+static const AddressRange16 APU_RANGE{       0xFF10, 0xFF26 };
+static const AddressRange16 UNUSED2_RANGE{   0xFF27, 0xFF3F };
+static const AddressRange16 PPU_RANGE{       0xFF40, 0xFF4B };
+static const AddressRange16 UNUSED3_RANGE{   0xFF7F, 0xFF7F };
+static const AddressRange16 HRAM_RANGE{      0xFF80, 0xFFFE };
 
 #if GB_DOCTOR_LOG == 1
 static std::ofstream s_log;

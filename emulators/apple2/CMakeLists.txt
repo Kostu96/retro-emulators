@@ -9,7 +9,6 @@ set(APPLE2_SOURCES
 
 add_executable(${APPLE2_TARGET_NAME}
     ${APPLE2_SOURCES}
-    ${CMAKE_SOURCE_DIR}/shared/file_io.cpp
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${APPLE2_SOURCES})
 

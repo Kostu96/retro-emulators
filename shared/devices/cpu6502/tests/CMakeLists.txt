@@ -7,7 +7,7 @@ set(CPU6502_TESTS_SOURCES
 
 add_executable(${CPU6502_TESTS_TARGET_NAME}
     ${CPU6502_TESTS_SOURCES}
-    ${CMAKE_SOURCE_DIR}/shared/file_io.cpp
+    ${CMAKE_SOURCE_DIR}/shared/emu_common/source/file_io.cpp
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${CPU6502_TESTS_SOURCES})
 

@@ -2,7 +2,7 @@
 #include "disasm_chip8.hpp"
 #include "chip8_instruction.hpp"
 
-#include "../../file_io.hpp"
+#include "emu_common/file_io.hpp"
 
 #include <cassert>
 #include <cstring>

@@ -1,21 +1,21 @@
 #include "pet.hpp"
 #include "../../address_range.hpp"
-#include "../../file_io.hpp"
+#include "emu_common/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
 
-static constexpr AddressRange RAM_RANGE{           0x0000, PET::RAM_SIZE - 1 };
-static constexpr AddressRange RAM_EXPANSION_RANGE{ PET::RAM_SIZE, 0x7FFF };
-static constexpr AddressRange SCREEN_RANGE{        0x8000, 0x8FFF };
+static constexpr AddressRange16 RAM_RANGE{           0x0000, PET::RAM_SIZE - 1 };
+static constexpr AddressRange16 RAM_EXPANSION_RANGE{ PET::RAM_SIZE, 0x7FFF };
+static constexpr AddressRange16 SCREEN_RANGE{        0x8000, 0x8FFF };
 
-static constexpr AddressRange BASIC_RANGE{         0xE000 - PET::BASIC_SIZE, 0xDFFF };
-static constexpr AddressRange EDITOR_RANGE{        0xE000, 0xE7FF };
-static constexpr AddressRange PIA1_RANGE{          0xE810, 0xE81F };
-static constexpr AddressRange PIA2_RANGE{          0xE820, 0xE82F };
-static constexpr AddressRange VIA_RANGE{           0xE840, 0xE84F };
-static constexpr AddressRange CRTC_RANGE{          0xE880, 0xE88F };
-static constexpr AddressRange KERNAL_RANGE{        0xF000, 0xFFFF };
+static constexpr AddressRange16 BASIC_RANGE{         0xE000 - PET::BASIC_SIZE, 0xDFFF };
+static constexpr AddressRange16 EDITOR_RANGE{        0xE000, 0xE7FF };
+static constexpr AddressRange16 PIA1_RANGE{          0xE810, 0xE81F };
+static constexpr AddressRange16 PIA2_RANGE{          0xE820, 0xE82F };
+static constexpr AddressRange16 VIA_RANGE{           0xE840, 0xE84F };
+static constexpr AddressRange16 CRTC_RANGE{          0xE880, 0xE88F };
+static constexpr AddressRange16 KERNAL_RANGE{        0xF000, 0xFFFF };
 
 PET::PET()
 {
