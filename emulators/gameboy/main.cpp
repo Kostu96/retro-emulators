@@ -58,7 +58,7 @@ int main()
     std::thread emuThread{
         [&]() {
             while (!glfwWindowShouldClose(window)) {
-                std::this_thread::sleep_for(std::chrono::nanoseconds{ 24 }); // TODO: temp
+                //std::this_thread::sleep_for(std::chrono::nanoseconds{ 24 }); // TODO: temp
                 gameboy.update();
             }
         }

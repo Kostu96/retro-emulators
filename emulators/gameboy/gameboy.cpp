@@ -54,6 +54,7 @@ Gameboy::Gameboy() :
 Gameboy::~Gameboy()
 {
 #if GB_DOCTOR_LOG == 1
+    s_log.flush();
     s_log.close();
 #endif
 
@@ -92,6 +93,28 @@ void Gameboy::reset()
 void Gameboy::update()
 {
     if (m_hasCartridge && m_isRunning) {
+
+#if GB_DOCTOR_LOG == 1
+        if (m_unmapBootloader & 1 && m_CPU.getCyclesLeft() == 1) {
+            auto& state = m_CPU.getState();
+            s_log << "A:" << std::setw(2) << std::hex << (u16)state.A;
+            s_log << " F:" << std::setw(2) << std::hex << (u16)state.F.byte;
+            s_log << " B:" << std::setw(2) << std::hex << (u16)state.B;
+            s_log << " C:" << std::setw(2) << std::hex << (u16)state.C;
+            s_log << " D:" << std::setw(2) << std::hex << (u16)state.D;
+            s_log << " E:" << std::setw(2) << std::hex << (u16)state.E;
+            s_log << " H:" << std::setw(2) << std::hex << (u16)state.H;
+            s_log << " L:" << std::setw(2) << std::hex << (u16)state.L;
+            s_log << " SP:" << std::setw(4) << std::hex << state.SP;
+            s_log << " PC:" << std::setw(4) << std::hex << state.PC;
+            s_log << " PCMEM:" << std::setw(2) << std::hex << (u16)memoryRead(state.PC) << ',';
+            s_log << std::setw(2) << std::hex << (u16)memoryRead(state.PC + 1) << ',';
+            s_log << std::setw(2) << std::hex << (u16)memoryRead(state.PC + 2) << ',';
+            s_log << std::setw(2) << std::hex << (u16)memoryRead(state.PC + 3);
+            s_log << '\n';
+        }
+#endif
+
         m_timer.clock();
         m_PPU.clock();
         m_CPU.clock();
@@ -117,27 +140,6 @@ void Gameboy::update()
                     m_interruptFlags &= ~0x10;
             }
         }
-
-#if GB_DOCTOR_LOG == 1
-        if (m_unmapBootloader == 1 && m_CPU.getCyclesLeft() == 0) {
-            u16 PC = m_CPU.getPC();
-            s_log << "A:" << std::setw(2) << std::hex << (m_CPU.getAF() >> 8);
-            s_log << " F:" << std::setw(2) << std::hex << (m_CPU.getAF() & 0xFF);
-            s_log << " B:" << std::setw(2) << std::hex << (m_CPU.getBC() >> 8);
-            s_log << " C:" << std::setw(2) << std::hex << (m_CPU.getBC() & 0xFF);
-            s_log << " D:" << std::setw(2) << std::hex << (m_CPU.getDE() >> 8);
-            s_log << " E:" << std::setw(2) << std::hex << (m_CPU.getDE() & 0xFF);
-            s_log << " H:" << std::setw(2) << std::hex << (m_CPU.getHL() >> 8);
-            s_log << " L:" << std::setw(2) << std::hex << (m_CPU.getHL() & 0xFF);
-            s_log << " SP:" << std::setw(4) << std::hex << m_CPU.getSP();
-            s_log << " PC:" << std::setw(4) << std::hex << PC;
-            s_log << " PCMEM:" << std::setw(2) << std::hex << (u16)memoryRead(PC) << ',';
-            s_log << std::setw(2) << std::hex << (u16)memoryRead(PC + 1) << ',';
-            s_log << std::setw(2) << std::hex << (u16)memoryRead(PC + 2) << ',';
-            s_log << std::setw(2) << std::hex << (u16)memoryRead(PC + 3);
-            s_log << '\n';
-        }
-#endif
     }
 }
 
