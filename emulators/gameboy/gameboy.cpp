@@ -1,5 +1,5 @@
 #include "gameboy.hpp"
-#include "../address_range.hpp"
+#include "../../shared/address_range.hpp"
 
 #include <cassert>
 #include <fstream>
@@ -54,7 +54,6 @@ Gameboy::Gameboy() :
 Gameboy::~Gameboy()
 {
 #if GB_DOCTOR_LOG == 1
-    s_log.flush();
     s_log.close();
 #endif
 

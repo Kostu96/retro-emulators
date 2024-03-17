@@ -1,5 +1,5 @@
 #pragma once
-#include "../types.hpp"
+#include "../../shared/types.hpp"
 
 class APU
 {

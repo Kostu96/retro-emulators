@@ -1,7 +1,7 @@
 #pragma once
 #include "bit_fifo.hpp"
 
-#include "../types.hpp"
+#include "../../shared/types.hpp"
 
 #include <functional>
 #include <span>
