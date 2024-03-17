@@ -33,6 +33,8 @@ namespace PSX {
 
         case 0x02: op_J(inst.imm_jump()); break;
 
+        case 0x05: branch(inst.regS() != inst.regT(), inst.imm_se() << 2); break;
+
         case 0x09: op_ADDIU(inst.regT(), inst.regS(), inst.imm_se()); break;
 
         case 0x0D: op_OR(inst.regT(), inst.regS(), inst.imm()); break;
@@ -66,6 +68,14 @@ namespace PSX {
 
         m_regs[index] = value;
         m_regs[0] = 0;
+    }
+
+    void CPU::branch(bool condition, u32 offset)
+    {
+        if (condition) {
+            m_PC += offset;
+            m_PC -= 4;
+        }
     }
 
     void CPU::op_MTC0(u32 copIndex, u32 cpuIndex)

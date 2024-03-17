@@ -47,6 +47,7 @@ namespace PSX {
         Write8MemoryCallback store8 = nullptr;
         Write32MemoryCallback store32 = nullptr;
         void setReg(u32 index, u32 value);
+        void branch(bool condition, u32 offset);
 
         void op_MTC0(u32 copIndex, u32 cpuIndex);
 
