@@ -600,7 +600,10 @@ void CPUx80<Mode>::standardInstruction(u8 opcode)
         }
     } break;
 
-    case 0xFE: CMP(load8(m_state.PC++)); break;
+    case 0xFE: {
+        if (m_state.PC == 0xC6D9) __debugbreak();
+        CMP(load8(m_state.PC++));
+    } break;
     case 0xFF: RST(7); break;
     default:
         assert(false && "Unhandled standard instruction");

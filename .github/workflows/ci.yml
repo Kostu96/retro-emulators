@@ -91,7 +91,6 @@ jobs:
         set(TESTS
           cpu40xx_tests.exe
           cpu8080_tests.exe
-          cpu_x80_tests.exe
           cpu6502_tests.exe
           gameboy_tests.exe
         )

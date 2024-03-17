@@ -74,7 +74,7 @@ void CPU::reset()
     m_prefixMode = false;
     m_conditionalTaken = false;
     m_EIRequested = false;
-    m_cyclesLeft = 0;
+    m_cyclesLeft = 1;
     m_interruptRequested = false;
 }
 
@@ -879,7 +879,7 @@ void CPU::CMP(u8 value)
     m_state.F.Carry = result >> 8;
     m_state.F.HalfCarry = result4bit >> 4;
     m_state.F.Subtract = 1;
-    m_state.F.Zero = (m_state.A == 0);
+    m_state.F.Zero = (result == 0);
 }
 
 void CPU::DAA()

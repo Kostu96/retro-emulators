@@ -8,7 +8,6 @@ add_subdirectory(third_party)
 
 add_subdirectory(shared/asm_common)
 add_subdirectory(shared/emu_common)
-add_subdirectory(shared/devices/cpu_x80)
 add_subdirectory(shared/devices/cpu40xx)
 add_subdirectory(shared/devices/cpu6502)
 add_subdirectory(shared/devices/cpu8008)
