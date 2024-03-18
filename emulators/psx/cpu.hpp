@@ -54,6 +54,7 @@ namespace PSX {
         void op_SLL(u32 dIndex, u32 tIndex, u32 shift);
         void op_OR(u32 targetIndex, u32 lhsIndex, u32 rhsValue);
         void op_J(u32 immediate);
+        void op_ADDI(u32 tIndex, u32 sIndex, u32 immediate);
         void op_ADDIU(u32 tIndex, u32 sIndex, u32 immediate);
         void op_LUI(u32 index, u32 immediate);
         void op_SW(u32 tIndex, u32 sIndex, u32 immediate);

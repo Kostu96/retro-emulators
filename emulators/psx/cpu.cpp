@@ -35,6 +35,7 @@ namespace PSX {
 
         case 0x05: branch(inst.regS() != inst.regT(), inst.imm_se() << 2); break;
 
+        case 0x08: op_ADDI(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x09: op_ADDIU(inst.regT(), inst.regS(), inst.imm_se()); break;
 
         case 0x0D: op_OR(inst.regT(), inst.regS(), inst.imm()); break;
@@ -74,7 +75,7 @@ namespace PSX {
     {
         if (condition) {
             m_PC += offset;
-            m_PC -= 4;
+            //m_PC -= 4;
         }
     }
 
@@ -96,6 +97,19 @@ namespace PSX {
     void CPU::op_J(u32 immediate)
     {
         m_PC = (m_PC & 0xF0000000) | immediate;
+    }
+
+    void CPU::op_ADDI(u32 tIndex, u32 sIndex, u32 immediate)
+    {
+        // TODO: check this code for egde cases
+        s32 a = m_regs[sIndex];
+        s32 b = (s32)immediate;
+        s32 result = a + b;
+        if (a > 0 && b > 0 && result < 0 ||
+            a < 0 && b < 0 && result > 0)
+            assert(false && "Overflow exception!");
+        else
+           setReg(tIndex, result);
     }
 
     void CPU::op_ADDIU(u32 tIndex, u32 sIndex, u32 immediate)
