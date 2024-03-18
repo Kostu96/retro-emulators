@@ -3,7 +3,7 @@
 #include "emu_common/application.hpp"
 #include "emu_common/graphics/image.hpp"
 
-#include <SDL.h>
+//#include <SDL.h>
 #include <thread>
 
 static constexpr u16 SCALE = 2;
@@ -30,8 +30,8 @@ protected:
     {
         auto renderer = getSDLRenderer();
 
-        SDL_SetRenderDrawColor(renderer, 0xDA, 0xDA, 0xDA, 0xFF);
-        SDL_RenderClear(renderer);
+        //SDL_SetRenderDrawColor(renderer, 0xDA, 0xDA, 0xDA, 0xFF);
+        //SDL_RenderClear(renderer);
 
         m_screen.render(renderer);
     }

@@ -40,24 +40,24 @@ target_link_libraries(imgui PUBLIC
     glfw
 )
 
-set(SDL_SHARED OFF CACHE BOOL "" FORCE)
-set(SDL_TEST OFF CACHE BOOL "" FORCE)
-set(SDL2_DISABLE_UNINSTALL ON CACHE BOOL "" FORCE)
-add_subdirectory(SDL2)
-set_target_properties(sdl_headers_copy SDL2main SDL2-static PROPERTIES FOLDER third_party/SDL2)
+#set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+#set(SDL_TEST OFF CACHE BOOL "" FORCE)
+#et(SDL2_DISABLE_UNINSTALL ON CACHE BOOL "" FORCE)
+#add_subdirectory(SDL2)
+#set_target_properties(sdl_headers_copy SDL2main SDL2-static PROPERTIES FOLDER third_party/SDL2)
 
-set(SDL2IMAGE_SAMPLES OFF CACHE BOOL "" FORCE)
-set(SDL2IMAGE_INSTALL OFF CACHE BOOL "" FORCE)
-add_subdirectory(SDL_image)
-set_target_properties(SDL2_image PROPERTIES FOLDER third_party/SDL2)
+#set(SDL2IMAGE_SAMPLES OFF CACHE BOOL "" FORCE)
+#set(SDL2IMAGE_INSTALL OFF CACHE BOOL "" FORCE)
+#add_subdirectory(SDL_image)
+#set_target_properties(SDL2_image PROPERTIES FOLDER third_party/SDL2)
 
-set(SDL2TTF_SAMPLES OFF CACHE BOOL "" FORCE)
-set(SDL2TTF_INSTALL OFF CACHE BOOL "" FORCE)
-set(SDL2TTF_HARFBUZZ ON CACHE BOOL "" FORCE)
-set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
-add_subdirectory(SDL_ttf)
-set_target_properties(SDL2_ttf PROPERTIES FOLDER third_party/SDL2)
-set_target_properties(freetype harfbuzz PROPERTIES FOLDER third_party/SDL2/external)
+#set(SDL2TTF_SAMPLES OFF CACHE BOOL "" FORCE)
+#set(SDL2TTF_INSTALL OFF CACHE BOOL "" FORCE)
+#set(SDL2TTF_HARFBUZZ ON CACHE BOOL "" FORCE)
+#set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
+#add_subdirectory(SDL_ttf)
+#set_target_properties(SDL2_ttf PROPERTIES FOLDER third_party/SDL2)
+#set_target_properties(freetype harfbuzz PROPERTIES FOLDER third_party/SDL2/external)
 
 set_target_properties(
     glfw

@@ -7,7 +7,7 @@
 #include <thread>
 #include <memory>
 
-constexpr u16 SCALE = 3;
+constexpr u16 SCALE = 2;
 constexpr u16 BORDER_SIZE = 10;
 constexpr u16 VIEWPORT_X = BORDER_SIZE;
 constexpr u16 VIEWPORT_Y = BORDER_SIZE;
