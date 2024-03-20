@@ -21,7 +21,7 @@ set(GAMEBOY_LIB_SOURCES
 
 add_library(${GAMEBOY_LIB_TARGET_NAME} STATIC
     ${GAMEBOY_LIB_SOURCES}
-    ${CMAKE_SOURCE_DIR}/shared/emu_common/source/file_io.cpp
+    ${CMAKE_SOURCE_DIR}/shared/source/file_io.cpp
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${GAMEBOY_LIB_SOURCES})
 
