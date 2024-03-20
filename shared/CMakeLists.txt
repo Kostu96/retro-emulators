@@ -46,7 +46,7 @@ add_library(${SHARED_LIB_TARGET_NAME} STATIC
     ${SHARED_LIB_3RD_PARTY}
 )
 
-#set_source_files_properties(${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE CXX)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/source PREFIX source FILES ${SHARED_LIB_SOURCES})
 source_group(TREE ${CMAKE_SOURCE_DIR}/third_party PREFIX third_party FILES ${SHARED_LIB_3RD_PARTY})
 
