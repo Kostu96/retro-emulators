@@ -44,7 +44,6 @@ int main()
     app.run();
     emuThread.join();
 
-    glw::Renderer::shutdown();
     glfwTerminate();
     return 0;
 }
