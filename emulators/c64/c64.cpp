@@ -16,15 +16,15 @@ static constexpr AddressRange16 RAM_RANGE{    0x0000, 0x9FFF };
 C64::C64()
 {
     size_t size = 0x2000;
-    if (!readFile("builtin_roms/c64c/kernal.bin", (char*)m_KERNAL, size, true))
+    if (!readFile("rom/c64c/kernal.bin", (char*)m_KERNAL, size, true))
         std::cerr << "Could not read KERNAL ROM file!\n";
 
     size = 0x1000;
-    if (!readFile("builtin_roms/c64c/characters.bin", (char*)m_characters, size, true))
+    if (!readFile("rom/c64c/characters.bin", (char*)m_characters, size, true))
         std::cerr << "Could not read characters ROM file!\n";
 
     size = 0x2000;
-    if (!readFile("builtin_roms/c64c/basic.bin", (char*)m_BASIC, size, true))
+    if (!readFile("rom/c64c/basic.bin", (char*)m_BASIC, size, true))
         std::cerr << "Could not read BASIC ROM file!\n";
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });

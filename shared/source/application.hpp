@@ -30,4 +30,8 @@ private:
     GLFWwindow* m_window = nullptr;
     std::unique_ptr<glw::Texture> m_screenTexture{};
     bool m_isRunning = false;
+    int m_viewportX;
+    int m_viewportY;
+    int m_viewportWidth;
+    int m_viewportHeight;
 };

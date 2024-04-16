@@ -2,13 +2,7 @@
 
 #include "shared/source/application.hpp"
 
-#include <glad/gl.h>
-#include <glw/glw.hpp>
-#include <GLFW/glfw3.h>
-
-#include <iostream>
 #include <thread>
-#include <memory>
 
 class PSXApp :
     public Application
@@ -43,7 +37,5 @@ int main()
 
     app.run();
     emuThread.join();
-
-    glfwTerminate();
     return 0;
 }

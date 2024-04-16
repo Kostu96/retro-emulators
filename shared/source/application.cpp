@@ -19,10 +19,11 @@ Application::Application(const Description& desc)
         std::terminate();
     }
 
-    const unsigned int VIEWPORT_WIDTH = desc.rendererWidth * desc.scale;
-    const unsigned int VIEWPORT_HEIGHT = desc.rendererHeight * desc.scale;
-    const int WINDOW_WIDTH = VIEWPORT_WIDTH + 2 * desc.border;
-    const int WINDOW_HEIGHT = VIEWPORT_HEIGHT + 2 * desc.border;
+    m_viewportX = m_viewportY= desc.border;
+    m_viewportWidth = desc.rendererWidth * desc.scale;
+    m_viewportHeight = desc.rendererHeight * desc.scale;
+    const int WINDOW_WIDTH = m_viewportWidth + 2 * desc.border;
+    const int WINDOW_HEIGHT = m_viewportHeight + 2 * desc.border;
 
     glfwWindowHint(GLFW_RESIZABLE, 0);
     m_window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, desc.windowTitle, nullptr, nullptr);
@@ -61,8 +62,14 @@ void Application::run()
     while (!glfwWindowShouldClose(m_window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
+        glw::Renderer::beginFrame();
+        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        //auto pixels = pet->getScreenPixels();
+        //m_screenTexture->setData(pixels.data(), pixels.size() * sizeof(u32));
+        m_screenTexture->bind(0);
+        glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
+        glw::Renderer::endFrame();
         
-
         glfwSwapBuffers(m_window);
         glfwPollEvents();
     }
