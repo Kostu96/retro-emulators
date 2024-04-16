@@ -1,7 +1,7 @@
 #include "gui.hpp"
 #include "gameboy.hpp"
 
-#include "shared/source/imgui_helper.hpp"
+#include "shared/source/imgui/imgui_helper.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -23,7 +23,7 @@ namespace GUI {
 
     void init(GLFWwindow* window)
     {
-        EmuCommon::GUI::init(window);
+        imgui::init(window);
         
         s_window = window;
 
@@ -78,7 +78,7 @@ namespace GUI {
 
         s_window = nullptr;
 
-        EmuCommon::GUI::shutdown();
+        imgui::shutdown();
     }
 
     static void drawTextureWindow(const glw::Texture& texture, float scale, const char* title, bool& show)
@@ -121,7 +121,7 @@ namespace GUI {
 
     void update(Gameboy& gb)
     {
-        EmuCommon::GUI::beginFrame();
+        imgui::beginFrame();
 
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File"))
@@ -161,7 +161,7 @@ namespace GUI {
         if (s_showMap1)
             drawTileMapWindow(s_tileMap1FB, ppu.getTileMap1(), ppu.getTileDataAddressingMode(), "Tile Map 1", s_showMap1);
 
-        EmuCommon::GUI::endFrame();
+        imgui::endFrame();
     }
 
 } // namespace GUI

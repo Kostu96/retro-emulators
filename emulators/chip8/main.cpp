@@ -1,6 +1,7 @@
 #include "chip8.hpp"
 
-#include "shared/source/imgui_helper.hpp"
+#include "shared/source/imgui/imgui_helper.hpp"
+#include "shared/source/imgui/disassembly_view.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -50,7 +51,7 @@ int main()
     glw::Renderer::init();
     glClearColor(0.8f, 0.8f, 0.7f, 1.f);
 
-    EmuCommon::GUI::init(window);
+    imgui::init(window);
 
     glw::Texture screenTexture{
         glw::Texture::Properties{
@@ -68,7 +69,7 @@ int main()
     chip8.loadProgram("C:/Users/kmisiak/myplace/retro-extras/programs/chip8/Space Invaders [David Winter].ch8");
     //chip8.loadProgram("C:/Users/Konstanty/Desktop/retro-extras/programs/chip8/Chip8 Picture.ch8");
 
-    EmuCommon::GUI::DisassemblyView disasmView;
+    imgui::DisassemblyView disasmView;
 
     std::thread emuThread{
         [&]() {
@@ -102,9 +103,9 @@ int main()
         glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
         glw::Renderer::endFrame();
 
-        EmuCommon::GUI::beginFrame();
+        imgui::beginFrame();
         disasmView.updateWindow(chip8.getDisassembly());
-        EmuCommon::GUI::endFrame();
+        imgui::endFrame();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -112,7 +113,7 @@ int main()
 
     emuThread.join();
 
-    EmuCommon::GUI::shutdown();
+    imgui::shutdown();
     glw::Renderer::shutdown();
     glfwTerminate();
 	return 0;

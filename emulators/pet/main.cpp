@@ -1,6 +1,6 @@
 #include "pet.hpp"
 
-#include "shared/source/imgui_helper.hpp"
+#include "shared/source/imgui/imgui_helper.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -65,7 +65,7 @@ int main()
     glw::Renderer::init();
     glClearColor(0.2f, 0.2f, 0.2f, 1.f);
 
-    EmuCommon::GUI::init(window);
+    imgui::init(window);
     /*bool emuSpeed50 = false;
     bool emuSpeed100 = true;
     bool emuSpeed150 = false;*/
@@ -111,7 +111,7 @@ int main()
         glw::Renderer::renderTexture(-1.f, 1.f, 1.f, -1.f, 0.f, 0.f, 1.f, 1.f);
         glw::Renderer::endFrame();
 
-        EmuCommon::GUI::beginFrame();
+        imgui::beginFrame();
 
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File"))
@@ -156,7 +156,7 @@ int main()
         }
         ImGui::EndMainMenuBar();
 
-        EmuCommon::GUI::endFrame();
+        imgui::endFrame();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -164,7 +164,7 @@ int main()
 
     emuThread.join();
 
-    EmuCommon::GUI::shutdown();
+    imgui::shutdown();
     glw::Renderer::shutdown();
     glfwTerminate();
     return 0;

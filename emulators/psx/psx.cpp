@@ -27,7 +27,7 @@ namespace PSX {
     Emulator::Emulator()
     {
         size_t size = BIOS_SIZE;
-        if (!readFile("SCPH-1001.bin", (char*)m_BIOS, size, true))
+        if (!readFile("rom/psx/SCPH-1001.bin", (char*)m_BIOS, size, true))
             std::cerr << "Could not read BIOS ROM file!\n";
 
         m_CPU.mapRead32MemoryCallback([this](u32 address) { return memoryRead32(address); });

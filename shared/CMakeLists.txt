@@ -25,12 +25,16 @@ set(SHARED_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/devices/cpu8080/cpu8080.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/devices/cpu8080/disasm8080.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/devices/cpu8080/disasm8080.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/disassembly_view.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/disassembly_view.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/imgui_helper.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/imgui_helper.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/memory_view.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/memory_view.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/address_range.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/disassembly_line.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/file_io.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/file_io.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui_helper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui_helper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/types.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/vec2.hpp
 )

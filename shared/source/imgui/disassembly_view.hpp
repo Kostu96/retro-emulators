@@ -2,14 +2,8 @@
 #include <vector>
 
 struct DisassemblyLine;
-struct GLFWwindow;
 
-namespace EmuCommon::GUI {
-
-    void init(GLFWwindow* window);
-    void shutdown();
-    void beginFrame();
-    void endFrame();
+namespace imgui {
 
     struct DisassemblyView
     {
@@ -18,4 +12,4 @@ namespace EmuCommon::GUI {
         void updateWindow(const std::vector<DisassemblyLine>& disassembly);
     };
 
-} // namespace EmuCommon::GUI
+} // namespace imgui
