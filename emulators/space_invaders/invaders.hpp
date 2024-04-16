@@ -1,6 +1,6 @@
 #pragma once
-#include "cpu8080.hpp"
-#include "disasm8080.hpp"
+#include "shared/source/devices/cpu8080/cpu8080.hpp"
+#include "shared/source/devices/cpu8080/disasm8080.hpp"
 
 class Invaders
 {

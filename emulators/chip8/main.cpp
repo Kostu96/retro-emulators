@@ -1,7 +1,6 @@
 #include "chip8.hpp"
 
-#include "emu_common/application.hpp"
-#include "emu_common/imgui_helper.hpp"
+#include "shared/source/imgui_helper.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -18,6 +17,11 @@ constexpr u16 IMGUI_MENU_BAR_HEIGHT = 0;
 constexpr u16 WINDOW_WIDTH = FRAME_WIDTH * SCALE + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = FRAME_HEIGHT * SCALE + 2 * BORDER_SIZE;
 
+static void glfwErrorCallback(int error, const char* description)
+{
+    std::cerr << "GLFW error " << error << ": " << description << '\n';
+}
+
 static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
 {
     auto chip8 = reinterpret_cast<CHIP8*>(glfwGetWindowUserPointer(window));
@@ -26,7 +30,7 @@ static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int a
 
 int main()
 {
-    glfwSetErrorCallback(EmuCommon::glfwErrorCallback);
+    glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit()) {
         std::cerr << "GLFW init failed!\n";
         std::terminate();

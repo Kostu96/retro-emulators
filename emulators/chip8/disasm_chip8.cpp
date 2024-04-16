@@ -1,7 +1,7 @@
 #include "disasm_chip8.hpp"
 #include "chip8_instruction.hpp"
-#include "../../shared/asm_common/asm_common.hpp"
-#include "../../shared/disassembly_line.hpp"
+#include "shared/source/asm/asm_common.hpp"
+#include "shared/source/disassembly_line.hpp"
 
 #include <cassert>
 #include <cstdarg>

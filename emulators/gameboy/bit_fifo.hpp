@@ -1,5 +1,5 @@
 #pragma once
-#include "../../shared/types.hpp"
+#include "shared/source/types.hpp"
 
 class BitFIFO
 {

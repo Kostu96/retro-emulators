@@ -1,6 +1,6 @@
 #include "cartridge.hpp"
 
-#include "../../shared/emu_common/include/emu_common/file_io.hpp"
+#include "shared/source/file_io.hpp"
 
 #include <cassert>
 #include <cstring>

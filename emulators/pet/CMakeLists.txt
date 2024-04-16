@@ -22,8 +22,7 @@ target_compile_options(${PET_TARGET_NAME} PRIVATE
 )
 
 target_link_libraries(${PET_TARGET_NAME} PUBLIC
-    cpu6502_lib
-    emu_common_lib
+    shared_lib
 )
 
 set_target_properties(${PET_TARGET_NAME} PROPERTIES

@@ -1,6 +1,6 @@
 #include "pet.hpp"
-#include "emu_common/application.hpp"
-#include "emu_common/imgui_helper.hpp"
+
+#include "shared/source/imgui_helper.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -21,6 +21,11 @@ constexpr u16 VIEWPORT_HEIGHT = PET::SCREEN_HEIGHT * SCALE;
 constexpr u16 WINDOW_WIDTH = VIEWPORT_WIDTH + 2 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = VIEWPORT_HEIGHT + 2 * BORDER_SIZE;
 
+static void glfwErrorCallback(int error, const char* description)
+{
+    std::cerr << "GLFW error " << error << ": " << description << '\n';
+}
+
 static void glfwKeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int mods)
 {
     auto pet = reinterpret_cast<PET*>(glfwGetWindowUserPointer(window));
@@ -37,7 +42,7 @@ int main()
 {
     std::unique_ptr<PET> pet = std::make_unique<PET>();
 
-    glfwSetErrorCallback(EmuCommon::glfwErrorCallback);
+    glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit()) {
         std::cerr << "GLFW init failed!\n";
         std::terminate();

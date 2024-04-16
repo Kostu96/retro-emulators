@@ -1,7 +1,7 @@
 #include "gui.hpp"
 #include "gameboy.hpp"
 
-#include "emu_common/imgui_helper.hpp"
+#include "shared/source/imgui_helper.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>

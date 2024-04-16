@@ -16,8 +16,7 @@ target_compile_options(${NES_TARGET_NAME} PRIVATE
 )
 
 target_link_libraries(${NES_TARGET_NAME} PRIVATE
-    emu_common_lib
-    cpu6502_lib
+    shared_lib
 )
 
 set_target_properties(${NES_TARGET_NAME} PROPERTIES

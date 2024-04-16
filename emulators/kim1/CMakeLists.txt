@@ -18,8 +18,7 @@ target_compile_options(${KIM1_TARGET_NAME} PRIVATE
 )
 
 target_link_libraries(${KIM1_TARGET_NAME} PRIVATE
-    emu_common_lib
-    cpu6502_lib
+    shared_lib
 )
 
 set_target_properties(${KIM1_TARGET_NAME} PROPERTIES

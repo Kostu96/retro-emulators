@@ -1,7 +1,7 @@
 #include "psx.hpp"
 
-#include "../../shared/emu_common/include/emu_common/file_io.hpp"
-#include "../../shared/address_range.hpp"
+#include "shared/source/address_range.hpp"
+#include "shared/source/file_io.hpp"
 
 #include <cassert>
 #include <iostream>

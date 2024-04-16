@@ -1,5 +1,4 @@
 #include "kim1.hpp"
-#include "emu_common/application.hpp"
 
 #include <glad/gl.h>
 #include <glw/glw.hpp>
@@ -14,11 +13,16 @@ constexpr u16 IMGUI_MENU_BAR_HEIGHT = 18;
 constexpr u16 WINDOW_WIDTH = 6 * 32 + 3 * BORDER_SIZE;
 constexpr u16 WINDOW_HEIGHT = 8 * 32 + 2 * BORDER_SIZE;
 
+static void glfwErrorCallback(int error, const char* description)
+{
+    std::cerr << "GLFW error " << error << ": " << description << '\n';
+}
+
 int main()
 {
     std::unique_ptr<KIM1> kim1 = std::make_unique<KIM1>();
 
-    glfwSetErrorCallback(EmuCommon::glfwErrorCallback);
+    glfwSetErrorCallback(glfwErrorCallback);
     if (!glfwInit()) {
         std::cerr << "GLFW init failed!\n";
         std::terminate();

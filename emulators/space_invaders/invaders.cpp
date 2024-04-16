@@ -1,6 +1,6 @@
 #include "invaders.hpp"
-#include "../address_range.hpp"
-#include "emu_common/file_io.hpp"
+#include "shared/source/address_range.hpp"
+#include "shared/source/file_io.hpp"
 
 #include <cassert>
 #include <cstdio>

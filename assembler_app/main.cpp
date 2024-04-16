@@ -1,5 +1,5 @@
-#include "asm40xx.hpp"
-#include "asm8008.hpp"
+#include "shared/source/devices/cpu40xx/asm40xx.hpp"
+#include "shared/source/devices/cpu8008/asm8008.hpp"
 
 #include <iostream>
 #include <fstream>
