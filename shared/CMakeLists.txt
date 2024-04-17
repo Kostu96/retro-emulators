@@ -89,3 +89,13 @@ target_link_libraries(${SHARED_LIB_TESTS_TARGET_NAME} PRIVATE
     gtest
     gtest_main
 )
+
+set_target_properties(${SHARED_LIB_TESTS_TARGET_NAME} PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${SHARED_LIB_TESTS_TARGET_NAME}>
+)
+
+add_custom_command(
+    TARGET ${SHARED_LIB_TESTS_TARGET_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/6502_test_roms $<TARGET_FILE_DIR:${SHARED_LIB_TESTS_TARGET_NAME}>/test_files/6502
+)

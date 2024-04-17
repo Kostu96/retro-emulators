@@ -89,6 +89,7 @@ jobs:
       shell: cmake -P {0}
       run: |
         set(TESTS
+          shared_lib_tests.exe
           gameboy_tests.exe
         )
         set(ERROR false)
