@@ -10,15 +10,16 @@ class C64App :
 public:
     C64App() :
         Application{ {
-                .windowTitle = "Commodore 64 emulaator by Kostu96",
+                .windowTitle = "Commodore 64 Emulator by Kostu96",
                 .rendererWidth = 320,
                 .rendererHeight = 200, // TODO: extract magic values as in PSX
                 .scale = 2,
-                .border = 10
+                .border = 10,
+                .hasMenuBar = false
         } }
     {}
 private:
-
+    std::span<const unsigned int> getScreenPixels() const override { return {}; }
 };
 
 int main()

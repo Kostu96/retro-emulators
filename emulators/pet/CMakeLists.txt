@@ -26,5 +26,6 @@ target_link_libraries(${PET_TARGET_NAME} PUBLIC
 )
 
 set_target_properties(${PET_TARGET_NAME} PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${PET_TARGET_NAME}>
     FOLDER emulators/commodore
 )

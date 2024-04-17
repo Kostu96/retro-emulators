@@ -10,7 +10,7 @@ class PSXApp :
 public:
     PSXApp() :
         Application{ {
-                .windowTitle = "PSX emulator by Kostu96",
+                .windowTitle = "PSX Emulator by Kostu96",
                 .rendererWidth = PSX::SCREEN_WIDTH,
                 .rendererHeight = PSX::SCREEN_HEIGHT,
                 .scale = 2,
@@ -18,7 +18,7 @@ public:
         } }
     {}
 private:
-
+    std::span<const unsigned int> getScreenPixels() const override { return {}; }
 };
 
 int main()

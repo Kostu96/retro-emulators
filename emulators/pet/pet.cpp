@@ -20,17 +20,17 @@ static constexpr AddressRange16 KERNAL_RANGE{        0xF000, 0xFFFF };
 PET::PET()
 {
 #if BASIC_VER4
-    static constexpr const char* basicPath = "builtin_roms/pet/basic4.bin";
+    static constexpr const char* basicPath = "rom/pet/basic4.bin";
 #if PETTEST
     static constexpr const char* editorPath = "rom/tests/PETTESTE2KV04.bin";
 #else
-    static constexpr const char* editorPath = "builtin_roms/pet/editor4n.bin";
+    static constexpr const char* editorPath = "rom/pet/editor4n.bin";
 #endif
-    static constexpr const char* kernalPath = "builtin_roms/pet/kernal4.bin";
+    static constexpr const char* kernalPath = "rom/pet/kernal4.bin";
 #else
-    static constexpr const char* basicPath = "builtin_roms/pet/basic2.bin";
-    static constexpr const char* editorPath = "builtin_roms/pet/editor2n.bin";
-    static constexpr const char* kernalPath = "builtin_roms/pet/kernal2.bin";
+    static constexpr const char* basicPath = "rom/pet/basic2.bin";
+    static constexpr const char* editorPath = "rom/pet/editor2n.bin";
+    static constexpr const char* kernalPath = "rom/pet/kernal2.bin";
 #endif
 
     size_t size = PET::BASIC_SIZE;
@@ -46,7 +46,7 @@ PET::PET()
         std::cerr << "Could not read KERNAL ROM file!\n";
     
     size = 0x800;
-    if (!readFile("builtin_roms/pet/characters2.bin", (char*)m_characters, size, true))
+    if (!readFile("rom/pet/characters2.bin", (char*)m_characters, size, true))
         std::cerr << "Could not read characters ROM file!\n";
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
