@@ -18,15 +18,15 @@ static constexpr AddressRange16 KERNAL_RANGE{      0xE000, 0xFFFF };
 VIC20::VIC20()
 {
     size_t size = 0x1000;
-    if (!readFile("builtin_roms/vic20/characters.bin", (char*)m_CHARACTERS, size, true))
+    if (!readFile("rom/vic20/characters.bin", (char*)m_CHARACTERS, size, true))
         std::cerr << "Could not read characters ROM file!\n";
 
     size = 0x2000;
-    if (!readFile("builtin_roms/vic20/basic2.bin", (char*)m_BASIC, size, true))
+    if (!readFile("rom/vic20/basic2.bin", (char*)m_BASIC, size, true))
         std::cerr << "Could not read BASIC ROM file!\n";
 
     size = 0x2000;
-    if (!readFile("builtin_roms/vic20/kernal_rev7.bin", (char*)m_KERNAL, size, true))
+    if (!readFile("rom/vic20/kernal_rev7.bin", (char*)m_KERNAL, size, true))
         std::cerr << "Could not read KERNAL ROM file!\n";
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });

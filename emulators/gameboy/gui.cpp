@@ -1,19 +1,17 @@
 #include "gui.hpp"
 #include "gameboy.hpp"
 
-#include "shared/source/imgui/imgui_helper.hpp"
+#include "shared/source/application.hpp"
 
-#include <glad/gl.h>
 #include <glw/glw.hpp>
-#include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+//#include <backends/imgui_impl_glfw.h>
+//#include <backends/imgui_impl_opengl3.h>
 #include <tinyfiledialogs.h>
 
 namespace GUI {
 
-    static GLFWwindow* s_window = nullptr;
+    static Application* s_app = nullptr;
     static glw::Texture* s_tileDataTexture = nullptr;
     static glw::Framebuffer* s_tileMap0FB = nullptr;
     static glw::Framebuffer* s_tileMap1FB = nullptr;
@@ -21,11 +19,9 @@ namespace GUI {
     static bool s_showMap0 = false;
     static bool s_showMap1 = false;
 
-    void init(GLFWwindow* window)
-    {
-        imgui::init(window);
-        
-        s_window = window;
+    void init(Application* app)
+    {       
+        s_app = app;
 
         s_tileDataTexture = new glw::Texture{
             glw::Texture::Properties{
@@ -76,9 +72,7 @@ namespace GUI {
         delete s_tileMap1FB;
         s_tileMap1FB = nullptr;
 
-        s_window = nullptr;
-
-        imgui::shutdown();
+        s_app = nullptr;
     }
 
     static void drawTextureWindow(const glw::Texture& texture, float scale, const char* title, bool& show)
@@ -121,8 +115,6 @@ namespace GUI {
 
     void update(Gameboy& gb)
     {
-        imgui::beginFrame();
-
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File"))
         {
@@ -135,7 +127,7 @@ namespace GUI {
                 }
             }
             if (ImGui::MenuItem("Reset")) gb.reset();
-            if (ImGui::MenuItem("Exit", "Alt+F4")) glfwSetWindowShouldClose(s_window, true);
+            if (ImGui::MenuItem("Exit", "Alt+F4")) s_app->stop();
 
             ImGui::EndMenu();
         }
@@ -160,8 +152,6 @@ namespace GUI {
             drawTileMapWindow(s_tileMap0FB, ppu.getTileMap0(), ppu.getTileDataAddressingMode(), "Tile Map 0", s_showMap0);
         if (s_showMap1)
             drawTileMapWindow(s_tileMap1FB, ppu.getTileMap1(), ppu.getTileDataAddressingMode(), "Tile Map 1", s_showMap1);
-
-        imgui::endFrame();
     }
 
 } // namespace GUI

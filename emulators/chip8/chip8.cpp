@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 void CHIP8::loadProgram(const char* filename)
 {
@@ -35,7 +36,10 @@ void CHIP8::loadProgram(const char* filename)
     std::memcpy(m_memory, charset, CHARSET_SIZE);
 
     size_t size = MAX_PROGRAM_SIZE;
-    readFile(filename, (char*)PROGRAM_START, size, true);
+    bool ret = readFile(filename, (char*)PROGRAM_START, size, true);
+    if (!ret) {
+        std::cerr << "Could not read ROM file: " << filename << '\n';
+    }
 
     disassemble((u8*)PROGRAM_START, size, m_disassembly);
 }

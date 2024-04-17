@@ -1,12 +1,11 @@
 #pragma once
 
-struct GLFWwindow;
-
+class Application;
 class Gameboy;
 
 namespace GUI {
 
-    void init(GLFWwindow* window);
+    void init(Application* window);
     void shutdown();
     void update(Gameboy& gb);
 
