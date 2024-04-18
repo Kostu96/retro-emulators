@@ -12,6 +12,8 @@ namespace PSX {
 	public:
 		void clock();
 
+		const CPU& getCPU() const { return m_CPU; }
+
 		Emulator();
 	private:
 		//u8 memoryRead8(u32 address) const;

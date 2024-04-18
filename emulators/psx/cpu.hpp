@@ -17,8 +17,26 @@ namespace PSX {
         void mapWrite8MemoryCallback(Write8MemoryCallback callback) { store8 = callback; }
         void mapWrite32MemoryCallback(Write32MemoryCallback callback) { store32 = callback; }
 
+        struct CPUStatus {
+            u32 PC;
+            u32 regs[32];
+        };
+
+        union COP0Status {
+            struct {
+                u32 regs0_11[12];  // 0-11
+                u32 SR;            // 12
+                u32 regs13_31[19]; // 13-31
+
+            };
+            u32 regs[32];
+        };
+
         void reset();
         void clock();
+
+        const CPUStatus& getCPUStatus() const { return m_cpuStatus; }
+        const COP0Status& getCOP0Status() const { return m_cop0Status; }
 
         CPU();
         CPU(CPU&) = delete;
@@ -59,20 +77,8 @@ namespace PSX {
         void op_LUI(u32 index, u32 immediate);
         void op_SW(u32 tIndex, u32 sIndex, u32 immediate);
 
-        // COP0:
-        union {
-            struct {
-                u32 m_regs1[12]; // 0-11
-                u32 m_SR; // 12
-                u32 m_regs2[19]; // 13-31
-
-            };
-            u32 m_copRegs[32];
-        };
-        
-        // CPU:
-        u32 m_PC;
-        u32 m_regs[32];
+        CPUStatus m_cpuStatus;
+        COP0Status m_cop0Status;
     };
 
 } // namespace PSX

@@ -5,8 +5,6 @@
 
 #include <glw/glw.hpp>
 #include <imgui.h>
-//#include <backends/imgui_impl_glfw.h>
-//#include <backends/imgui_impl_opengl3.h>
 #include <tinyfiledialogs.h>
 
 namespace GUI {
