@@ -1,12 +1,10 @@
 #include "gameboy.hpp"
+#include "gb_doctor.hpp"
 #include "shared/source/address_range.hpp"
 
 #include <cassert>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
-
-#define GB_DOCTOR_LOG 0
+#include <iomanip>
 
 static const AddressRange16 ROM_RANGE{       0x0000, 0x7FFF };
 static const AddressRange16 VRAM_RANGE{      0x8000, 0x9FFF };
@@ -21,10 +19,6 @@ static const AddressRange16 UNUSED2_RANGE{   0xFF27, 0xFF3F };
 static const AddressRange16 PPU_RANGE{       0xFF40, 0xFF4B };
 static const AddressRange16 UNUSED3_RANGE{   0xFF7F, 0xFF7F };
 static const AddressRange16 HRAM_RANGE{      0xFF80, 0xFFFE };
-
-#if GB_DOCTOR_LOG == 1
-static std::ofstream s_log;
-#endif
 
 Gameboy::Gameboy() :
     m_PPU{ m_interruptFlags },
@@ -43,19 +37,12 @@ Gameboy::Gameboy() :
     //file.close();
 
     reset();
-
-#if GB_DOCTOR_LOG == 1
-    s_log.open("gbdoctor.log");
-    assert(s_log.is_open());
-    s_log << std::setfill('0') << std::uppercase;
-#endif
+    initGBDoctor();
 }
 
 Gameboy::~Gameboy()
 {
-#if GB_DOCTOR_LOG == 1
-    s_log.close();
-#endif
+    shutdownGBDoctor();
 
     delete[] m_WRAM;
 }
@@ -92,28 +79,7 @@ void Gameboy::reset()
 void Gameboy::update()
 {
     if (m_hasCartridge && m_isRunning) {
-
-#if GB_DOCTOR_LOG == 1
-        if (m_unmapBootloader & 1 && m_CPU.getCyclesLeft() == 1) {
-            auto& state = m_CPU.getState();
-            s_log << "A:" << std::setw(2) << std::hex << (u16)state.A;
-            s_log << " F:" << std::setw(2) << std::hex << (u16)state.F.byte;
-            s_log << " B:" << std::setw(2) << std::hex << (u16)state.B;
-            s_log << " C:" << std::setw(2) << std::hex << (u16)state.C;
-            s_log << " D:" << std::setw(2) << std::hex << (u16)state.D;
-            s_log << " E:" << std::setw(2) << std::hex << (u16)state.E;
-            s_log << " H:" << std::setw(2) << std::hex << (u16)state.H;
-            s_log << " L:" << std::setw(2) << std::hex << (u16)state.L;
-            s_log << " SP:" << std::setw(4) << std::hex << state.SP;
-            s_log << " PC:" << std::setw(4) << std::hex << state.PC;
-            s_log << " PCMEM:" << std::setw(2) << std::hex << (u16)memoryRead(state.PC) << ',';
-            s_log << std::setw(2) << std::hex << (u16)memoryRead(state.PC + 1) << ',';
-            s_log << std::setw(2) << std::hex << (u16)memoryRead(state.PC + 2) << ',';
-            s_log << std::setw(2) << std::hex << (u16)memoryRead(state.PC + 3);
-            s_log << '\n';
-        }
-#endif
-
+        updateGBDoctor(m_unmapBootloader & 1, m_CPU.getCyclesLeft() == 1, m_CPU.getState(), [this](u16 address) { return memoryRead(address); });
         m_timer.clock();
         m_PPU.clock();
         m_CPU.clock();

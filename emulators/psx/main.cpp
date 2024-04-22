@@ -20,7 +20,8 @@ public:
                 .border = 10,
                 .hasMenuBar = true
         } },
-        m_psx{ psx }
+        m_psx{ psx },
+        dummyPixelData{ new unsigned int[PSX::SCREEN_WIDTH * PSX::SCREEN_HEIGHT] }
     {
         m_debugView.cpuStatusCallback = [&]() {
             ImGui::Text("CPU Registers");
@@ -38,7 +39,7 @@ public:
         };
     }
 private:
-    std::span<const unsigned int> getScreenPixels() const override { return dummyPixelData; }
+    std::span<const unsigned int> getScreenPixels() const override { return { dummyPixelData.get(), PSX::SCREEN_WIDTH * PSX::SCREEN_HEIGHT}; }
 
     void onImGUIRender() override {
         ImGui::BeginMainMenuBar();
@@ -74,7 +75,7 @@ private:
     imgui::DebugView m_debugView;
     imgui::MemoryView m_memoryView;
 
-    unsigned int dummyPixelData[PSX::SCREEN_WIDTH * PSX::SCREEN_HEIGHT];
+    std::unique_ptr<unsigned int> dummyPixelData;
 };
 
 int main()
