@@ -11,8 +11,8 @@ public:
     C64App() :
         Application{ {
                 .windowTitle = "Commodore 64 Emulator by Kostu96",
-                .rendererWidth = 320,
-                .rendererHeight = 200, // TODO: extract magic values as in PSX
+                .rendererWidth = C64::SCREEN_WIDTH,
+                .rendererHeight = C64::SCREEN_HEIGHT,
                 .scale = 2,
                 .border = 10,
                 .hasMenuBar = false
@@ -25,7 +25,7 @@ private:
 int main()
 {
     C64App app;
-    std::unique_ptr<C64> c64 = std::make_unique<C64>();
+    std::unique_ptr<C64::Emulator> c64 = std::make_unique<C64::Emulator>();
 
     std::thread emuThread{
         [&]() {
