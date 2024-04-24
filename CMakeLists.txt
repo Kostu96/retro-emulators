@@ -21,4 +21,4 @@ add_subdirectory(emulators/psx)
 add_subdirectory(emulators/space_invaders)
 add_subdirectory(emulators/vic20)
 
-add_subdirectory(assembler_app)
+#add_subdirectory(assembler_app)
