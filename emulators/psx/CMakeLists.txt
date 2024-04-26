@@ -48,3 +48,5 @@ set_target_properties(${PSX_APP_TARGET_NAME} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${PSX_APP_TARGET_NAME}>
     FOLDER ${PSX_FOLDER_NAME}
 )
+
+add_subdirectory(tests)

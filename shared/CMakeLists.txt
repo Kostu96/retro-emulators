@@ -37,6 +37,7 @@ set(SHARED_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/application.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/application.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/disassembly_line.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/emulator_base.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/file_io.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/file_io.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/types.hpp

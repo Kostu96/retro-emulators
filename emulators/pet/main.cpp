@@ -39,7 +39,7 @@ private:
                 }
             }
             if (ImGui::MenuItem("Reset")) gb.reset();*/
-            if (ImGui::MenuItem("Exit", "Alt+F4")) stop();
+            if (ImGui::MenuItem("Exit", "Alt+F4")) exit();
 
             ImGui::EndMenu();
         }

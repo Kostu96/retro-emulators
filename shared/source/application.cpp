@@ -101,7 +101,7 @@ void Application::run()
     m_isRunning = false;
 }
 
-void Application::stop()
+void Application::exit()
 {
     glfwSetWindowShouldClose(m_window, true);
 }

@@ -9,13 +9,14 @@ namespace PSX {
         m_cpuStatus.PC = 0xBFC00000;
 
         m_cop0Status.SR = 0;
+
+        m_nextInstruction = 0;
     }
 
     void CPU::clock()
     {
-        static Instruction next_instruction = 0;
-        Instruction inst = next_instruction;
-        next_instruction = load32(m_cpuStatus.PC);
+        Instruction inst = m_nextInstruction;
+        m_nextInstruction = load32(m_cpuStatus.PC);
         m_cpuStatus.PC += 4;
 
         switch (inst.opcode())
@@ -75,7 +76,7 @@ namespace PSX {
     {
         if (condition) {
             m_cpuStatus.PC += offset;
-            //m_PC -= 4;
+            m_cpuStatus.PC -= 4;
         }
     }
 

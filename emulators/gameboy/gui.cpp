@@ -125,7 +125,7 @@ namespace GUI {
                 }
             }
             if (ImGui::MenuItem("Reset")) gb.reset();
-            if (ImGui::MenuItem("Exit", "Alt+F4")) s_app->stop();
+            if (ImGui::MenuItem("Exit", "Alt+F4")) s_app->exit();
 
             ImGui::EndMenu();
         }

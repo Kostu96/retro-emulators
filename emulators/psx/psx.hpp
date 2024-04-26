@@ -1,4 +1,5 @@
 #pragma once
+#include "shared/source/emulator_base.hpp"
 #include "cpu.hpp"
 
 namespace PSX {
@@ -7,7 +8,8 @@ namespace PSX {
 	constexpr u16 SCREEN_HEIGHT = 400;
 	constexpr size_t BIOS_SIZE = 512 * 1024;
 
-	class Emulator
+	class Emulator :
+		public EmulatorBase
 	{
 	public:
 		void clock();

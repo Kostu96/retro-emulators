@@ -3,6 +3,12 @@
 
 #include <functional>
 
+#if defined(PSX_TESTS)
+#define PRIVATE public
+#else
+#define PRIVATE private
+#endif
+
 namespace PSX {
 
     class CPU
@@ -41,7 +47,7 @@ namespace PSX {
         CPU();
         CPU(CPU&) = delete;
         CPU& operator=(CPU&) = delete;
-    private:
+    PRIVATE:
         struct Instruction
         {
             u32 word;
@@ -79,6 +85,8 @@ namespace PSX {
 
         CPUStatus m_cpuStatus;
         COP0Status m_cop0Status;
+
+        Instruction m_nextInstruction = 0;
     };
 
 } // namespace PSX

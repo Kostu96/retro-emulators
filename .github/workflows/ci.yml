@@ -91,6 +91,7 @@ jobs:
         set(TESTS
           shared_lib_tests.exe
           gameboy_tests.exe
+          psx_tests.exe
         )
         set(ERROR false)
         set(TEST_DIR build/output/${{matrix.config.build_type}}/bin)
