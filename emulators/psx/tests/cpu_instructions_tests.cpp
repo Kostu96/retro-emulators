@@ -33,9 +33,17 @@ namespace PSX {
 		}
 
 		void checkSnapshot() {
-			EXPECT_EQ(memcmp(&cpuStatusBefore, &cpu.getCPUStatus(), sizeof(CPU::CPUStatus)), 0);
-			EXPECT_EQ(memcmp(&cop0StatusBefore, &cpu.getCOP0Status(), sizeof(CPU::COP0Status)), 0);
-			EXPECT_EQ(memcmp(memoryBefore, memory, MEMORY_SIZE * sizeof(u32)), 0);
+			auto& cpuStatus = cpu.getCPUStatus();
+			EXPECT_EQ(cpuStatusBefore.PC, cpuStatus.PC);
+			for (auto i = 0; i < 32; i++)
+				EXPECT_EQ(cpuStatusBefore.regs[i], cpuStatus.regs[i]);
+
+			auto& cop0Status = cpu.getCOP0Status();
+			for (auto i = 0; i < 32; i++)
+				EXPECT_EQ(cop0StatusBefore.regs[i], cop0Status.regs[i]);
+
+			for (auto i = 0; i < MEMORY_SIZE; i++)
+				EXPECT_EQ(memoryBefore[i], memory[i]);
 		}
 	};
 
