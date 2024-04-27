@@ -36,14 +36,14 @@ namespace PSX {
 			auto& cpuStatus = cpu.getCPUStatus();
 			EXPECT_EQ(cpuStatusBefore.PC, cpuStatus.PC);
 			for (auto i = 0; i < 32; i++)
-				EXPECT_EQ(cpuStatusBefore.regs[i], cpuStatus.regs[i]);
+				EXPECT_EQ(cpuStatusBefore.regs[i], cpuStatus.regs[i]) << i;
 
 			auto& cop0Status = cpu.getCOP0Status();
 			for (auto i = 0; i < 32; i++)
-				EXPECT_EQ(cop0StatusBefore.regs[i], cop0Status.regs[i]);
+				EXPECT_EQ(cop0StatusBefore.regs[i], cop0Status.regs[i]) << i;
 
 			for (auto i = 0; i < MEMORY_SIZE; i++)
-				EXPECT_EQ(memoryBefore[i], memory[i]);
+				EXPECT_EQ(memoryBefore[i], memory[i]) << i;
 		}
 	};
 
@@ -161,4 +161,38 @@ namespace PSX {
 
 		checkSnapshot();
 	}
+
+	TEST_F(CPUTests, ORTest)
+	{
+		cpu.m_cpuStatus.regs[1] = 0x12345678;
+		cpu.m_cpuStatus.regs[2] = 0x87654321;
+		memory[0] = 0x00221825; // OR $3, $1, $2
+
+		makeSnapshot();
+
+		cpu.clock(); // go over first dummy nop
+		cpu.clock();
+
+		cpuStatusBefore.regs[3] = 0x97755779;
+		cpuStatusBefore.PC += 8;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUTests, MTC0Test)
+	{
+		cpu.m_cpuStatus.regs[12] = 0xDEADBEEF;
+		memory[0] = 0x408C6000; // MTC0 $12, $cop0_sr
+
+		makeSnapshot();
+
+		cpu.clock(); // go over first dummy nop
+		cpu.clock();
+
+		cop0StatusBefore.SR = 0xDEADBEEF;
+		cpuStatusBefore.PC += 8;
+
+		checkSnapshot();
+	}
+
 } // namespace PSX
