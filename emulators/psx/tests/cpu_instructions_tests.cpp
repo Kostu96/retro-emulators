@@ -24,6 +24,8 @@ namespace PSX {
 		void SetUp() override {
 			cpu.reset();
 			cpu.m_cpuStatus.PC = 0;
+
+			memset(memory, 0xBC, MEMORY_SIZE);
 		}
 
 		void makeSnapshot() {
