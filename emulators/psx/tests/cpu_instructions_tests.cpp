@@ -25,27 +25,27 @@ namespace PSX {
 			cpu.reset();
 			cpu.m_cpuStatus.PC = 0;
 
-			memset(memory, 0xBC, MEMORY_SIZE);
+			std::memset(memory, 0xBC, MEMORY_SIZE);
 		}
 
 		void makeSnapshot() {
 			cpuStatusBefore = cpu.getCPUStatus();
 			cop0StatusBefore = cpu.getCOP0Status();
-			memcpy(memoryBefore, memory, MEMORY_SIZE);
+			std::memcpy(memoryBefore, memory, MEMORY_SIZE);
 		}
 
 		void checkSnapshot() {
 			auto& cpuStatus = cpu.getCPUStatus();
 			EXPECT_EQ(cpuStatusBefore.PC, cpuStatus.PC);
 			for (auto i = 0; i < 32; i++)
-				EXPECT_EQ(cpuStatusBefore.regs[i], cpuStatus.regs[i]) << i;
+				EXPECT_EQ(cpuStatusBefore.regs[i], cpuStatus.regs[i]) << "i == " << i;
 
 			auto& cop0Status = cpu.getCOP0Status();
 			for (auto i = 0; i < 32; i++)
-				EXPECT_EQ(cop0StatusBefore.regs[i], cop0Status.regs[i]) << i;
+				EXPECT_EQ(cop0StatusBefore.regs[i], cop0Status.regs[i]) << "i == " << i;
 
 			for (auto i = 0; i < MEMORY_SIZE; i++)
-				EXPECT_EQ(memoryBefore[i], memory[i]) << i;
+				EXPECT_EQ(memoryBefore[i], memory[i]) << "i == " << i;
 		}
 	};
 
