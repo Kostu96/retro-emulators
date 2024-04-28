@@ -24,14 +24,12 @@ namespace PSX {
 		void SetUp() override {
 			cpu.reset();
 			cpu.m_cpuStatus.PC = 0;
-
-			std::memset(memory, 0xBC, MEMORY_SIZE);
 		}
 
 		void makeSnapshot() {
 			cpuStatusBefore = cpu.getCPUStatus();
 			cop0StatusBefore = cpu.getCOP0Status();
-			std::memcpy(memoryBefore, memory, MEMORY_SIZE);
+			std::memcpy(memoryBefore, memory, MEMORY_SIZE * sizeof(u32));
 		}
 
 		void checkSnapshot() {
