@@ -34,7 +34,7 @@ namespace PSX {
 
         case 0x02: op_J(inst.imm_jump()); break;
 
-        case 0x05: branch(inst.regS() != inst.regT(), inst.imm_se() << 2); break;
+        case 0x05: branch(m_cpuStatus.regs[inst.regS()] != m_cpuStatus.regs[inst.regT()], inst.imm_se() << 2); break;
 
         case 0x08: op_ADDI(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x09: op_ADDIU(inst.regT(), inst.regS(), inst.imm_se()); break;
