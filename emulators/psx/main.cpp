@@ -29,7 +29,7 @@ public:
             ImGui::Text("PC: %08X", m_psx.getCPU().getCPUStatus().PC);
             for (auto i = 0; i < 32; i++) {
                 if (i % 8 != 0) ImGui::SameLine();
-                ImGui::Text("R%02u: %08X", i, m_psx.getCPU().getCPUStatus().regs[i]);
+                ImGui::Text("R%02u: %08X", i, m_psx.getCPU().getCPUStatus().inputRegs[i]);
             }
             ImGui::NewLine();
 
