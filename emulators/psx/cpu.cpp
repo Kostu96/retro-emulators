@@ -30,8 +30,12 @@ namespace PSX {
             {
             case 0x00: op_SLL(inst.regD(), inst.regT(), inst.shift()); break;
 
+            case 0x08: op_JR(inst.regS()); break;
+
+            case 0x20: op_ADD(inst.regD(), inst.regS(), getReg(inst.regT())); break;
             case 0x21: op_ADDU(inst.regD(), inst.regS(), getReg(inst.regT())); break;
 
+            case 0x24: op_AND(inst.regD(), inst.regS(), getReg(inst.regT())); break;
             case 0x25: op_OR(inst.regD(), inst.regS(), getReg(inst.regT())); break;
 
             case 0x2B: op_SLTU(inst.regD(), getReg(inst.regS()), getReg(inst.regT())); break;
@@ -43,9 +47,10 @@ namespace PSX {
         case 0x02: op_J(inst.imm_jump()); break;
         case 0x03: op_JAL(inst.imm_jump()); break;
 
+        case 0x04: branch(getReg(inst.regS()) == getReg(inst.regT()), inst.imm_se() << 2); break;
         case 0x05: branch(getReg(inst.regS()) != getReg(inst.regT()), inst.imm_se() << 2); break;
 
-        case 0x08: op_ADDI(inst.regT(), inst.regS(), inst.imm_se()); break;
+        case 0x08: op_ADD(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x09: op_ADDU(inst.regT(), inst.regS(), inst.imm_se()); break;
 
         case 0x0C: op_AND(inst.regT(), inst.regS(), inst.imm()); break;
@@ -55,11 +60,14 @@ namespace PSX {
         case 0x10:
             switch (inst.copfn())
             {
+            case 0x00: op_MFC0(inst.regD(), inst.regT()); break;
             case 0x04: op_MTC0(inst.regD(), inst.regT()); break;
             default:
                 assert(false && "Unhandled opcode!");
             }
             break;
+
+        case 0x20: op_LB(inst.regT(), inst.regS(), inst.imm_se()); break;
 
         case 0x23: op_LW(inst.regT(), inst.regS(), inst.imm_se()); break;
 
@@ -97,6 +105,11 @@ namespace PSX {
         }
     }
 
+    void CPU::op_MFC0(RegIndex copIndex, RegIndex cpuIndex)
+    {
+        m_pendingLoad = { cpuIndex, m_cop0Status.regs[copIndex.i] };
+    }
+
     void CPU::op_MTC0(RegIndex copIndex, RegIndex cpuIndex)
     {
         m_cop0Status.regs[copIndex.i] = getReg(cpuIndex);
@@ -128,11 +141,16 @@ namespace PSX {
         op_J(immediate);
     }
 
-    void CPU::op_ADDI(RegIndex t, RegIndex s, u32 immediate)
+    void CPU::op_JR(RegIndex s)
+    {
+        m_cpuStatus.PC = getReg(s);
+    }
+
+    void CPU::op_ADD(RegIndex t, RegIndex s, u32 rhs)
     {
         // TODO: check this code for egde cases
         s32 a = getReg(s);
-        s32 b = (s32)immediate;
+        s32 b = (s32)rhs;
         s32 result = a + b;
         if (a > 0 && b > 0 && result < 0 ||
             a < 0 && b < 0 && result > 0)
@@ -173,6 +191,15 @@ namespace PSX {
             return; // isolated cache bit is set
 
         store32(getReg(s) + immediate, getReg(t));
+    }
+
+    void CPU::op_LB(RegIndex t, RegIndex s, u32 immediate)
+    {
+        if (m_cop0Status.SR & 0x10000)
+            return; // isolated cache bit is set
+
+        s8 value = load8(getReg(s) + immediate);
+        m_pendingLoad = { t, static_cast<u32>(value) };
     }
 
     void CPU::op_LW(RegIndex t, RegIndex s, u32 immediate)

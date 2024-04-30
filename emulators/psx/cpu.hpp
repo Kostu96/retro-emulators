@@ -94,6 +94,7 @@ namespace PSX {
         u32 getReg(RegIndex index) const { return m_cpuStatus.inputRegs[index.i]; }
         void branch(bool condition, u32 offset);
 
+        void op_MFC0(RegIndex copIndex, RegIndex cpuIndex);
         void op_MTC0(RegIndex copIndex, RegIndex cpuIndex);
 
         void op_SLL(RegIndex d, RegIndex t, u32 shift);
@@ -101,12 +102,14 @@ namespace PSX {
         void op_AND(RegIndex target, RegIndex lhs, u32 rhs);
         void op_J(u32 immediate);
         void op_JAL(u32 immediate);
-        void op_ADDI(RegIndex t, RegIndex s, u32 immediate);
+        void op_JR(RegIndex s);
+        void op_ADD(RegIndex t, RegIndex s, u32 rhs);
         void op_ADDU(RegIndex t, RegIndex s, u32 rhs);
         void op_LUI(RegIndex t, u32 immediate);
         void op_SB(RegIndex t, RegIndex s, u32 immediate);
         void op_SH(RegIndex t, RegIndex s, u32 immediate);
         void op_SW(RegIndex t, RegIndex s, u32 immediate);
+        void op_LB(RegIndex t, RegIndex s, u32 immediate);
         void op_LW(RegIndex t, RegIndex s, u32 immediate);
         void op_SLTU(RegIndex d, u32 lhs, u32 rhs);
 

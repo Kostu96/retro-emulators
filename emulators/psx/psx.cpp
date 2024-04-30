@@ -30,13 +30,15 @@ namespace PSX {
 
     static constexpr AddressRange32 RAM_RANGE{ 0x00000000, 0x00000000 + RAM_SIZE - 1 };
 
+    static constexpr AddressRange32 EXPANSION1_RANGE{ 0x1F000000, 0x1F000000 + 8 * 1024 * 1024 - 1 };
+
     static constexpr AddressRange32 MEM_CTRL_RANGE{ 0x1F801000, 0x1F801023 };
 
     static constexpr AddressRange32 RAM_SIZE_RANGE{ 0x1F801060, 0x1F801063 };
 
     static constexpr AddressRange32 SPU_RANGE{ 0x1F801C00, 0x1F801E7F };
 
-    static constexpr AddressRange32 EXPANSION2_RANGE{ 0x1F802000, 0x1F802041 };
+    static constexpr AddressRange32 EXPANSION2_RANGE{ 0x1F802000, 0x1F802080 };
 
     static constexpr AddressRange32 BIOS_RANGE{ 0x1FC00000, 0x1FC00000 + BIOS_SIZE - 1 };
 
@@ -53,12 +55,29 @@ namespace PSX {
         if (!readFile("rom/psx/SCPH-1001.bin", (char*)m_BIOS, size, true))
             std::cerr << "Could not read BIOS ROM file!\n";
 
+        m_CPU.mapRead8MemoryCallback([this](u32 address) { return memoryRead8(address); });
         m_CPU.mapRead32MemoryCallback([this](u32 address) { return memoryRead32(address); });
         m_CPU.mapWrite8MemoryCallback([this](u32 address, u8 data) { memoryWrite8(address, data); });
         m_CPU.mapWrite16MemoryCallback([this](u32 address, u16 data) { memoryWrite16(address, data); });
         m_CPU.mapWrite32MemoryCallback([this](u32 address, u32 data) { memoryWrite32(address, data); });
 
         m_CPU.reset();
+    }
+
+    u8 Emulator::memoryRead8(u32 address) const
+    {
+        address = maskRegion(address);
+
+        u32 offset;
+        if (RAM_RANGE.contains(address, offset)) return m_RAM[offset];
+        
+        if (EXPANSION1_RANGE.contains(address, offset)) return 0xFF; // Full ones for no expansion implemented
+
+        if (BIOS_RANGE.contains(address, offset))  return m_BIOS[offset];
+
+        std::cerr << "Unhandled read8 from memory at address: " << HEX(address, 8) << '\n';
+        assert(false);
+        return 0;
     }
 
     u32 Emulator::memoryRead32(u32 address) const
@@ -94,6 +113,11 @@ namespace PSX {
         address = maskRegion(address);
 
         u32 offset;
+        if (RAM_RANGE.contains(address, offset)) {
+            m_RAM[offset] = data;
+            return;
+        }
+
         if (EXPANSION2_RANGE.contains(address, offset)) {
             std::cerr << "Unhandled 8 bit write to: " << HEX(address, 8) <<
                 " EXPANSION2(" << HEX(offset, 2) << "): " << HEX(data, 2) << '\n';

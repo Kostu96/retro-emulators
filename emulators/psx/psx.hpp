@@ -19,7 +19,7 @@ namespace PSX {
 
 		Emulator();
 	private:
-		//u8 memoryRead8(u32 address) const;
+		u8 memoryRead8(u32 address) const;
 		u32 memoryRead32(u32 address) const;
 		void memoryWrite8(u32 address, u8 data);
 		void memoryWrite16(u32 address, u16 data);
