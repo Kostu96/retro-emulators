@@ -3,13 +3,18 @@
 
 struct DisassemblyLine;
 
+using Disassembly = std::vector<DisassemblyLine>;
+
 namespace imgui {
 
     struct DisassemblyView
     {
-        bool open = true;
+        bool open = false;
+        const Disassembly& disassembly;
 
-        void updateWindow(const std::vector<DisassemblyLine>& disassembly);
+        void updateWindow(uint32_t pc);
+
+        DisassemblyView(const Disassembly& disassembly) : disassembly{ disassembly } {}
     };
 
 } // namespace imgui

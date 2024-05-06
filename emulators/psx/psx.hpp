@@ -1,5 +1,6 @@
 #pragma once
 #include "shared/source/emulator_base.hpp"
+#include "shared/source/imgui/disassembly_view.hpp" // TODO: to much spagetti
 #include "cpu.hpp"
 
 namespace PSX {
@@ -13,11 +14,12 @@ namespace PSX {
 		public EmulatorBase
 	{
 	public:
+		void reset();
 		void clock();
 
 		const CPU& getCPU() const { return m_CPU; }
 
-		Emulator();
+		explicit Emulator(Disassembly& disasm); // TODO: to much spagetti
 	private:
 		u8 memoryRead8(u32 address) const;
 		u32 memoryRead32(u32 address) const;
@@ -28,6 +30,8 @@ namespace PSX {
 		u8 m_RAM[RAM_SIZE];
 		u8 m_BIOS[BIOS_SIZE];
 		CPU m_CPU;
+
+		Disassembly& m_disasm;
 	};
 
 } // namespace PSX

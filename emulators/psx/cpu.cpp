@@ -1,4 +1,5 @@
 #include "cpu.hpp"
+#include "disasm.hpp"
 
 #include <cassert>
 
@@ -14,10 +15,11 @@ namespace PSX {
         m_pendingLoad = { RegIndex{ 0 }, 0 };
     }
 
-    void CPU::clock()
+    void CPU::clock(DisassemblyLine& disasmLine)
     {
         Instruction inst = m_nextInstruction;
         m_nextInstruction = load32(m_cpuStatus.PC);
+        disasm(m_cpuStatus.PC, m_nextInstruction, disasmLine);
         m_cpuStatus.PC += 4;
 
         setReg(m_pendingLoad.regIndex, m_pendingLoad.value);
@@ -30,11 +32,19 @@ namespace PSX {
             {
             case 0x00: op_SLL(inst.regD(), inst.regT(), inst.shift()); break;
 
+            case 0x03: op_SRA(inst.regD(), inst.regT(), inst.shift()); break;
+
             case 0x08: op_JR(inst.regS()); break;
+            case 0x09: op_JALR(inst.regD(), inst.regS()); break;
+
+            case 0x12: op_MFLO(inst.regD()); break;
+
+            case 0x1A: op_DIV(getReg(inst.regS()), getReg(inst.regT())); break;
 
             case 0x20: op_ADD(inst.regD(), inst.regS(), getReg(inst.regT())); break;
             case 0x21: op_ADDU(inst.regD(), inst.regS(), getReg(inst.regT())); break;
 
+            case 0x23: op_SUBU(inst.regD(), inst.regS(), getReg(inst.regT())); break;
             case 0x24: op_AND(inst.regD(), inst.regS(), getReg(inst.regT())); break;
             case 0x25: op_OR(inst.regD(), inst.regS(), getReg(inst.regT())); break;
 
@@ -43,15 +53,18 @@ namespace PSX {
                 assert(false && "Unhandled opcode!");
             }
             break;
-
+        case 0x01: op_BXX(inst.regS(), inst.imm_se_jump(), inst.word); break;
         case 0x02: op_J(inst.imm_jump()); break;
         case 0x03: op_JAL(inst.imm_jump()); break;
 
-        case 0x04: branch(getReg(inst.regS()) == getReg(inst.regT()), inst.imm_se() << 2); break;
-        case 0x05: branch(getReg(inst.regS()) != getReg(inst.regT()), inst.imm_se() << 2); break;
+        case 0x04: branch(getReg(inst.regS()) == getReg(inst.regT()), inst.imm_se_jump()); break; // BEQ
+        case 0x05: branch(getReg(inst.regS()) != getReg(inst.regT()), inst.imm_se_jump()); break; // BNE
+        case 0x06: branch(static_cast<s32>(getReg(inst.regS())) <= 0, inst.imm_se_jump()); break; // BLEZ
+        case 0x07: branch(static_cast<s32>(getReg(inst.regS())) > 0, inst.imm_se_jump()); break; // BGTZ
 
         case 0x08: op_ADD(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x09: op_ADDU(inst.regT(), inst.regS(), inst.imm_se()); break;
+        case 0x0A: op_SLTI(inst.regT(), getReg(inst.regS()), inst.imm_se()); break;
 
         case 0x0C: op_AND(inst.regT(), inst.regS(), inst.imm()); break;
         case 0x0D: op_OR(inst.regT(), inst.regS(), inst.imm()); break;
@@ -70,6 +83,7 @@ namespace PSX {
         case 0x20: op_LB(inst.regT(), inst.regS(), inst.imm_se()); break;
 
         case 0x23: op_LW(inst.regT(), inst.regS(), inst.imm_se()); break;
+        case 0x24: op_LBU(inst.regT(), inst.regS(), inst.imm_se()); break;
 
         case 0x28: op_SB(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x29: op_SH(inst.regT(), inst.regS(), inst.imm_se()); break;
@@ -115,9 +129,27 @@ namespace PSX {
         m_cop0Status.regs[copIndex.i] = getReg(cpuIndex);
     }
 
+    void CPU::op_BXX(RegIndex s, u32 immediate, u32 opcode)
+    {
+        u32 isBGEZ = (opcode >> 16) & 1;
+        bool isLink = (opcode >> 20) & 1;
+
+        u32 test = static_cast<s32>(getReg(s)) < 0;
+        test = test ^ isBGEZ;
+
+        if (isLink) setReg(RegIndex{ 31 }, m_cpuStatus.PC);
+        
+        if (test != 0) m_cpuStatus.PC = immediate;
+    }
+
     void CPU::op_SLL(RegIndex d, RegIndex t, u32 shift)
     {
         setReg(d, getReg(t) << shift);
+    }
+
+    void CPU::op_SRA(RegIndex d, RegIndex t, u32 shift)
+    {
+        setReg(d, static_cast<s32>(getReg(t)) >> shift);
     }
 
     void CPU::op_OR(RegIndex target, RegIndex lhs, u32 rhs)
@@ -146,7 +178,13 @@ namespace PSX {
         m_cpuStatus.PC = getReg(s);
     }
 
-    void CPU::op_ADD(RegIndex t, RegIndex s, u32 rhs)
+    void CPU::op_JALR(RegIndex d, RegIndex s)
+    {
+        setReg(d, m_cpuStatus.PC);
+        m_cpuStatus.PC = getReg(s);
+    }
+
+    void CPU::op_ADD(RegIndex d, RegIndex s, u32 rhs)
     {
         // TODO: check this code for egde cases
         s32 a = getReg(s);
@@ -156,12 +194,17 @@ namespace PSX {
             a < 0 && b < 0 && result > 0)
             assert(false && "Overflow exception!");
         else
-           setReg(t, result);
+           setReg(d, result);
     }
 
-    void CPU::op_ADDU(RegIndex t, RegIndex s, u32 rhs)
+    void CPU::op_ADDU(RegIndex d, RegIndex s, u32 rhs)
     {
-        setReg(t, getReg(s) + rhs);
+        setReg(d, getReg(s) + rhs);
+    }
+
+    void CPU::op_SUBU(RegIndex d, RegIndex s, u32 rhs)
+    {
+        setReg(d, getReg(s) - rhs);
     }
 
     void CPU::op_LUI(RegIndex t, u32 immediate)
@@ -202,6 +245,14 @@ namespace PSX {
         m_pendingLoad = { t, static_cast<u32>(value) };
     }
 
+    void CPU::op_LBU(RegIndex t, RegIndex s, u32 immediate)
+    {
+        if (m_cop0Status.SR & 0x10000)
+            return; // isolated cache bit is set
+
+        m_pendingLoad = { t, load8(getReg(s) + immediate) };
+    }
+
     void CPU::op_LW(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR & 0x10000)
@@ -213,6 +264,33 @@ namespace PSX {
     void CPU::op_SLTU(RegIndex d, u32 lhs, u32 rhs)
     {
         setReg(d, lhs < rhs);
+    }
+
+    void CPU::op_SLTI(RegIndex t, s32 lhs, s32 rhs)
+    {
+        setReg(t, lhs < rhs);
+    }
+
+    void CPU::op_DIV(s32 numerator, s32 denominator)
+    {
+        if (denominator == 0) {
+            // division by 0
+            m_cpuStatus.HI = numerator;
+            m_cpuStatus.LO = (numerator >= 0) ? 0xFFFFFFFF : 1;
+        }
+        else if (static_cast<u32>(numerator) == 0x80000000 && denominator == -1) {
+            m_cpuStatus.HI = 0;
+            m_cpuStatus.LO = 0x80000000;
+        }
+        else {
+            m_cpuStatus.HI = numerator % denominator;
+            m_cpuStatus.LO = numerator / denominator;
+        }
+    }
+
+    void CPU::op_MFLO(RegIndex d)
+    {
+        setReg(d, m_cpuStatus.LO);
     }
 
 } // namespace PSX

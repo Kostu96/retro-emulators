@@ -1,4 +1,5 @@
 #pragma once
+#include "shared/source/disassembly_line.hpp"
 #include "shared/source/types.hpp"
 
 #include <functional>
@@ -28,9 +29,11 @@ namespace PSX {
         static constexpr size_t REGISTER_COUNT = 32;
 
         struct CPUStatus {
-            u32 PC;
             u32 inputRegs[REGISTER_COUNT];
             u32 outputRegs[REGISTER_COUNT];
+            u32 PC;
+            u32 HI;
+            u32 LO;
         };
 
         union COP0Status {
@@ -44,7 +47,7 @@ namespace PSX {
         };
 
         void reset();
-        void clock();
+        void clock(DisassemblyLine& disasmLine);
 
         const CPUStatus& getCPUStatus() const { return m_cpuStatus; }
         const COP0Status& getCOP0Status() const { return m_cop0Status; }
@@ -75,6 +78,7 @@ namespace PSX {
             RegIndex regD() const { return RegIndex{ (word >> 11) & 0x1F }; }
             u32 imm() const { return word & 0xFFFF; }
             u32 imm_se() const { return static_cast<s16>(word & 0xFFFF); }
+            u32 imm_se_jump() const { return static_cast<s16>(word & 0xFFFF) << 2; }
             u32 imm_jump() const { return (word & 0x3FFFFFF) << 2; }
             u32 shift() const { return (word >> 6) & 0x1F; }
         };
@@ -97,27 +101,37 @@ namespace PSX {
         void op_MFC0(RegIndex copIndex, RegIndex cpuIndex);
         void op_MTC0(RegIndex copIndex, RegIndex cpuIndex);
 
+        void op_BXX(RegIndex s, u32 immediate, u32 opcode);
         void op_SLL(RegIndex d, RegIndex t, u32 shift);
+        void op_SRA(RegIndex d, RegIndex t, u32 shift);
         void op_OR(RegIndex target, RegIndex lhs, u32 rhs);
         void op_AND(RegIndex target, RegIndex lhs, u32 rhs);
         void op_J(u32 immediate);
         void op_JAL(u32 immediate);
         void op_JR(RegIndex s);
-        void op_ADD(RegIndex t, RegIndex s, u32 rhs);
-        void op_ADDU(RegIndex t, RegIndex s, u32 rhs);
+        void op_JALR(RegIndex d, RegIndex s);
+        void op_ADD(RegIndex d, RegIndex s, u32 rhs);
+        void op_ADDU(RegIndex d, RegIndex s, u32 rhs);
+        void op_SUBU(RegIndex d, RegIndex s, u32 rhs);
         void op_LUI(RegIndex t, u32 immediate);
         void op_SB(RegIndex t, RegIndex s, u32 immediate);
         void op_SH(RegIndex t, RegIndex s, u32 immediate);
         void op_SW(RegIndex t, RegIndex s, u32 immediate);
         void op_LB(RegIndex t, RegIndex s, u32 immediate);
+        void op_LBU(RegIndex t, RegIndex s, u32 immediate);
         void op_LW(RegIndex t, RegIndex s, u32 immediate);
         void op_SLTU(RegIndex d, u32 lhs, u32 rhs);
+        void op_SLTI(RegIndex t, s32 lhs, s32 rhs);
+        void op_DIV(s32 numerator, s32 denominator);
+        void op_MFLO(RegIndex d);
 
         CPUStatus m_cpuStatus;
         COP0Status m_cop0Status;
 
         Instruction m_nextInstruction = 0;
         PendingLoad m_pendingLoad{};
+
+        friend void disasm(u32 address, CPU::Instruction opcode, DisassemblyLine& output);
     };
 
 } // namespace PSX

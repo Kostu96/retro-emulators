@@ -28,6 +28,7 @@ namespace PSX {
         return address & REGION_MASK[index];
     }
 
+    // TODO: address decoding
     static constexpr AddressRange32 RAM_RANGE{ 0x00000000, 0x00000000 + RAM_SIZE - 1 };
 
     static constexpr AddressRange32 EXPANSION1_RANGE{ 0x1F000000, 0x1F000000 + 8 * 1024 * 1024 - 1 };
@@ -35,6 +36,8 @@ namespace PSX {
     static constexpr AddressRange32 MEM_CTRL_RANGE{ 0x1F801000, 0x1F801023 };
 
     static constexpr AddressRange32 RAM_SIZE_RANGE{ 0x1F801060, 0x1F801063 };
+
+    static constexpr AddressRange32 IRQ_CTRL_RANGE{ 0x1F801070, 0x1F801077 };
 
     static constexpr AddressRange32 SPU_RANGE{ 0x1F801C00, 0x1F801E7F };
 
@@ -44,12 +47,32 @@ namespace PSX {
 
     static constexpr AddressRange32 CACHE_CTRL_RANGE{ 0xFFFE0130, 0xFFFE0133 };
 
-    void Emulator::clock()
+    void Emulator::reset()
     {
-        m_CPU.clock();
+        m_CPU.reset();
     }
 
-    Emulator::Emulator()
+    void Emulator::clock()
+    {
+        DisassemblyLine line;
+        m_CPU.clock(line);
+        auto i = m_disasm.begin();
+        for (; i != m_disasm.end(); i++)
+        {
+            if (i->address >= line.address)
+                break;
+        }
+        if (m_disasm.empty() || i == m_disasm.end())
+        {
+            m_disasm.push_back(line);
+            return;
+        }
+        if (line.address == i->address) *i = line;
+        else m_disasm.insert(i, line);
+    }
+
+    Emulator::Emulator(Disassembly& disasm) :
+        m_disasm{ disasm }
     {
         size_t size = BIOS_SIZE;
         if (!readFile("rom/psx/SCPH-1001.bin", (char*)m_BIOS, size, true))
@@ -62,6 +85,7 @@ namespace PSX {
         m_CPU.mapWrite32MemoryCallback([this](u32 address, u32 data) { memoryWrite32(address, data); });
 
         m_CPU.reset();
+        clock();
     }
 
     u8 Emulator::memoryRead8(u32 address) const
@@ -176,6 +200,12 @@ namespace PSX {
         if (RAM_SIZE_RANGE.contains(address, offset)) {
             std::cerr << "Unhandled 32 bit write to: " << HEX(address, 8) <<
                 " RAM_SIZE(" << HEX(offset, 2) << "): " << HEX(data, 8) << '\n';
+            return;
+        }
+
+        if (IRQ_CTRL_RANGE.contains(address, offset)) {
+            std::cerr << "Unhandled 32 bit write to: " << HEX(address, 8) <<
+                " IRQ_CTRL(" << HEX(offset, 2) << "): " << HEX(data, 8) << '\n';
             return;
         }
 

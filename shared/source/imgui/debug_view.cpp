@@ -10,7 +10,9 @@ namespace imgui {
 
         if (ImGui::Begin("Debug Control&Status", &open, ImGuiWindowFlags_NoScrollbar))
         {
-            ImGui::Button("Start"); ImGui::SameLine(); ImGui::Button("Pause");
+            ImGui::Button("Start"); ImGui::SameLine();
+            ImGui::Button("Pause"); ImGui::SameLine();
+            if (ImGui::Button("Step") && cpuStepCallback) cpuStepCallback();
             ImGui::SeparatorText("Status");
             if (cpuStatusCallback) cpuStatusCallback();
         }

@@ -7,6 +7,8 @@ set(PSX_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/disasm.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/disasm.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/psx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/psx.hpp
 )

@@ -3,6 +3,8 @@
 
 struct DisassemblyLine
 {
-    u16 address;
-    char buffer[30];
+    static constexpr size_t BUFFER_SIZE = 28;
+
+    u32 address;
+    char buffer[BUFFER_SIZE];
 };
