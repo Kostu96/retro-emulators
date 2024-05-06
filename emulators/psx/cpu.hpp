@@ -29,8 +29,7 @@ namespace PSX {
         static constexpr size_t REGISTER_COUNT = 32;
 
         struct CPUStatus {
-            u32 inputRegs[REGISTER_COUNT];
-            u32 outputRegs[REGISTER_COUNT];
+            u32 regs[REGISTER_COUNT];
             u32 PC;
             u32 HI;
             u32 LO;
@@ -95,13 +94,13 @@ namespace PSX {
         Write16MemoryCallback store16 = nullptr;
         Write32MemoryCallback store32 = nullptr;
         void setReg(RegIndex index, u32 value);
-        u32 getReg(RegIndex index) const { return m_cpuStatus.inputRegs[index.i]; }
+        u32 getReg(RegIndex index) const { return m_cpuStatus.regs[index.i]; }
         void branch(bool condition, u32 offset);
 
         void op_MFC0(RegIndex copIndex, RegIndex cpuIndex);
         void op_MTC0(RegIndex copIndex, RegIndex cpuIndex);
 
-        void op_BXX(RegIndex s, u32 immediate, u32 opcode);
+        void op_BXX(RegIndex s, u32 offset, u32 opcode);
         void op_SLL(RegIndex d, RegIndex t, u32 shift);
         void op_SRA(RegIndex d, RegIndex t, u32 shift);
         void op_OR(RegIndex target, RegIndex lhs, u32 rhs);
@@ -128,8 +127,10 @@ namespace PSX {
         CPUStatus m_cpuStatus;
         COP0Status m_cop0Status;
 
-        Instruction m_nextInstruction = 0;
+        //Instruction m_nextInstruction = 0;
         PendingLoad m_pendingLoad{};
+        u32 m_helperCPURegs[REGISTER_COUNT];
+        u32 m_nextPC;
 
         friend void disasm(u32 address, CPU::Instruction opcode, DisassemblyLine& output);
     };

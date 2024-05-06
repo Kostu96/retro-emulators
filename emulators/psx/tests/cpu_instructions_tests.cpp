@@ -38,9 +38,7 @@ namespace PSX {
 			EXPECT_EQ(cpuStatusBefore.HI, cpuStatus.HI);
 			EXPECT_EQ(cpuStatusBefore.LO, cpuStatus.LO);
 			for (auto i = 0; i < 32; i++)
-				EXPECT_EQ(cpuStatus.outputRegs[i], cpuStatus.inputRegs[i]) << "i == " << i;
-			for (auto i = 0; i < 32; i++)
-				EXPECT_EQ(cpuStatusBefore.outputRegs[i], cpuStatus.outputRegs[i]) << "i == " << i;
+				EXPECT_EQ(cpuStatusBefore.inputRegs[i], cpuStatus.inputRegs[i]) << "i == " << i;
 
 			auto& cop0Status = cpu.getCOP0Status();
 			for (auto i = 0; i < 32; i++)

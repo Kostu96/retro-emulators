@@ -9,7 +9,7 @@ namespace imgui {
 
     struct DisassemblyView
     {
-        bool open = false;
+        bool open = true;
         const Disassembly& disassembly;
 
         void updateWindow(uint32_t pc);

@@ -8,19 +8,20 @@ namespace PSX {
     void CPU::reset()
     {
         m_cpuStatus.PC = 0xBFC00000;
+        m_nextPC = 0xBFC00004;
 
         m_cop0Status.SR = 0;
 
-        m_nextInstruction = 0;
+        //m_nextInstruction = 0;
         m_pendingLoad = { RegIndex{ 0 }, 0 };
     }
 
     void CPU::clock(DisassemblyLine& disasmLine)
     {
-        Instruction inst = m_nextInstruction;
-        m_nextInstruction = load32(m_cpuStatus.PC);
-        disasm(m_cpuStatus.PC, m_nextInstruction, disasmLine);
-        m_cpuStatus.PC += 4;
+        Instruction inst = load32(m_cpuStatus.PC);
+        disasm(m_cpuStatus.PC, inst, disasmLine);
+        m_cpuStatus.PC = m_nextPC;
+        m_nextPC += 4;
 
         setReg(m_pendingLoad.regIndex, m_pendingLoad.value);
         m_pendingLoad = { RegIndex{ 0 }, 0 };
@@ -93,7 +94,7 @@ namespace PSX {
             assert(false && "Unhandled opcode!");
         }
 
-        std::memcpy(m_cpuStatus.inputRegs, m_cpuStatus.outputRegs, REGISTER_COUNT * sizeof(u32));
+        std::memcpy(m_cpuStatus.regs, m_helperCPURegs, REGISTER_COUNT * sizeof(u32));
 
         assert(getReg(RegIndex{ 0 }) == 0 && "GPR zero value was changed!");
     }
@@ -107,15 +108,15 @@ namespace PSX {
     {
         assert(index.i < REGISTER_COUNT && "Index out of bounds!");
 
-        m_cpuStatus.outputRegs[index.i] = value;
-        m_cpuStatus.outputRegs[0] = 0;
+        m_helperCPURegs[index.i] = value;
+        m_helperCPURegs[0] = 0;
     }
 
     void CPU::branch(bool condition, u32 offset)
     {
         if (condition) {
-            m_cpuStatus.PC += offset;
-            m_cpuStatus.PC -= 4;
+            m_nextPC += offset;
+            m_nextPC -= 4;
         }
     }
 
@@ -129,7 +130,7 @@ namespace PSX {
         m_cop0Status.regs[copIndex.i] = getReg(cpuIndex);
     }
 
-    void CPU::op_BXX(RegIndex s, u32 immediate, u32 opcode)
+    void CPU::op_BXX(RegIndex s, u32 offset, u32 opcode)
     {
         u32 isBGEZ = (opcode >> 16) & 1;
         bool isLink = (opcode >> 20) & 1;
@@ -139,7 +140,7 @@ namespace PSX {
 
         if (isLink) setReg(RegIndex{ 31 }, m_cpuStatus.PC);
         
-        if (test != 0) m_cpuStatus.PC = immediate;
+        branch(test, offset);
     }
 
     void CPU::op_SLL(RegIndex d, RegIndex t, u32 shift)
@@ -164,24 +165,24 @@ namespace PSX {
 
     void CPU::op_J(u32 immediate)
     {
-        m_cpuStatus.PC = (m_cpuStatus.PC & 0xF0000000) | immediate;
+        m_nextPC = (m_cpuStatus.PC & 0xF0000000) | immediate;
     }
 
     void CPU::op_JAL(u32 immediate)
     {
-        setReg(RegIndex{ 31 }, m_cpuStatus.PC);
+        setReg(RegIndex{ 31 }, m_nextPC);
         op_J(immediate);
     }
 
     void CPU::op_JR(RegIndex s)
     {
-        m_cpuStatus.PC = getReg(s);
+        m_nextPC = getReg(s);
     }
 
     void CPU::op_JALR(RegIndex d, RegIndex s)
     {
         setReg(d, m_cpuStatus.PC);
-        m_cpuStatus.PC = getReg(s);
+        m_nextPC = getReg(s);
     }
 
     void CPU::op_ADD(RegIndex d, RegIndex s, u32 rhs)

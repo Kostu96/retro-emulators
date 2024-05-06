@@ -85,7 +85,6 @@ namespace PSX {
         m_CPU.mapWrite32MemoryCallback([this](u32 address, u32 data) { memoryWrite32(address, data); });
 
         m_CPU.reset();
-        clock();
     }
 
     u8 Emulator::memoryRead8(u32 address) const

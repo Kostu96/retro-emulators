@@ -35,12 +35,12 @@ public:
             const auto& cpuStatus = m_psx.getCPU().getCPUStatus();
             ImGui::Text("CPU Registers");
             ImGui::Separator();
-            ImGui::Text("PC: %08X", cpuStatus.PC - 4); ImGui::SameLine();
+            ImGui::Text("PC: %08X", cpuStatus.PC); ImGui::SameLine();
             ImGui::Text("HI: %08X", cpuStatus.HI); ImGui::SameLine();
             ImGui::Text("LO: %08X", cpuStatus.LO);
             for (auto i = 0; i < 32; i++) {
                 if (i % 4 != 0) ImGui::SameLine();
-                ImGui::Text("R%02u: %08X", i, cpuStatus.inputRegs[i]);
+                ImGui::Text("R%02u: %08X", i, cpuStatus.regs[i]);
             }
             ImGui::NewLine();
 
@@ -76,7 +76,7 @@ private:
         ImGui::EndMainMenuBar();
 
         m_debugView.updateWindow();
-        m_disasmView.updateWindow(m_psx.getCPU().getCPUStatus().PC - 4);
+        m_disasmView.updateWindow(m_psx.getCPU().getCPUStatus().PC);
         m_memoryView.updateWindow();
     }
 
