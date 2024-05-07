@@ -41,6 +41,7 @@ namespace PSX {
 
     static constexpr AddressRange32 IRQ_CTRL_RANGE{ 0x1F801070, 0x1F801077 };
 
+    static constexpr AddressRange32 DMA_RANGE{    0x1F801080, 0x1F8010FF };
     static constexpr AddressRange32 TIMERS_RANGE{ 0x1F801100, 0x1F80112F };
 
     static constexpr AddressRange32 SPU_RANGE{ 0x1F801C00, 0x1F801E7F };
@@ -158,18 +159,20 @@ namespace PSX {
         address = maskRegion(address);
 
         u32 offset;
-        if (IRQ_CTRL_RANGE.contains(address, offset))  return 0; // TODO: temp
-
         if (RAM_RANGE.contains(address, offset)) {
-            u32 b0 = m_RAM[offset];
+            u32 b0 = m_RAM[offset + 0];
             u32 b1 = m_RAM[offset + 1];
             u32 b2 = m_RAM[offset + 2];
             u32 b3 = m_RAM[offset + 3];
             return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
         }
 
+        if (IRQ_CTRL_RANGE.contains(address, offset))  return 0; // TODO: temp
+
+        if (DMA_RANGE.contains(address, offset))  return 0; // TODO: temp
+
         if (BIOS_RANGE.contains(address, offset)) {
-            u32 b0 = m_BIOS[offset];
+            u32 b0 = m_BIOS[offset + 0];
             u32 b1 = m_BIOS[offset + 1];
             u32 b2 = m_BIOS[offset + 2];
             u32 b3 = m_BIOS[offset + 3];
@@ -207,6 +210,12 @@ namespace PSX {
         address = maskRegion(address);
 
         u32 offset;
+        if (RAM_RANGE.contains(address, offset)) {
+            m_RAM[offset + 0] = (data >> 0) & 0xFF;
+            m_RAM[offset + 1] = (data >> 8) & 0xFF;
+            return;
+        }
+
         if (TIMERS_RANGE.contains(address, offset)) {
             PRINT_UNHANDLED_WRITE(16, TIMERS, 2, 4);
             return;
@@ -229,6 +238,14 @@ namespace PSX {
         address = maskRegion(address);
 
         u32 offset;
+        if (RAM_RANGE.contains(address, offset)) {
+            m_RAM[offset + 0] = (data >>  0) & 0xFF;
+            m_RAM[offset + 1] = (data >>  8) & 0xFF;
+            m_RAM[offset + 2] = (data >> 16) & 0xFF;
+            m_RAM[offset + 3] = (data >> 24) & 0xFF;
+            return;
+        }
+
         if (MEM_CTRL_RANGE.contains(address, offset)) {
             switch (offset) {
             case 0:
@@ -259,11 +276,8 @@ namespace PSX {
             return;
         }
 
-        if (RAM_RANGE.contains(address, offset)) {
-            m_RAM[offset] = data & 0xFF;
-            m_RAM[offset + 1] = (data >> 8) & 0xFF;
-            m_RAM[offset + 2] = (data >> 16) & 0xFF;
-            m_RAM[offset + 3] = (data >> 24) & 0xFF;
+        if (DMA_RANGE.contains(address, offset)) {
+            PRINT_UNHANDLED_WRITE(32, DMA, 2, 8);
             return;
         }
 

@@ -140,6 +140,7 @@ namespace PSX {
 
         void op_MFC0(RegIndex copIndex, RegIndex cpuIndex);
         void op_MTC0(RegIndex copIndex, RegIndex cpuIndex);
+        void op_RFE();
 
         void op_SYSCALL();
         void op_BXX(RegIndex s, u32 offset, u32 opcode);
@@ -167,7 +168,9 @@ namespace PSX {
         void op_DIV(s32 numerator, s32 denominator);
         void op_DIVU(u32 numerator, u32 denominator);
         void op_MFHI(RegIndex d);
+        void op_MTHI(RegIndex s);
         void op_MFLO(RegIndex d);
+        void op_MTLO(RegIndex s);
 
         CPUStatus m_cpuStatus;
         COP0Status m_cop0Status;
@@ -176,6 +179,8 @@ namespace PSX {
         u32 m_helperCPURegs[CPU_REGISTER_COUNT];
         u32 m_currentPC;
         u32 m_nextPC;
+        bool m_isBranch;
+        bool m_isBranchDelaySlot;
 
         friend void disasm(u32 address, CPU::Instruction opcode, DisassemblyLine& output); // TODO: temp
     };

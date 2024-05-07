@@ -72,6 +72,7 @@ namespace PSX {
             {
             case 0x00: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "MFC0   $%u, $%u", inst.regD().i, inst.regT().i); break;
             case 0x04: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "MTC0   $%u, $%u", inst.regD().i, inst.regT().i); break;
+            case 0x10: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "RFE"); break;
             default:
                 assert(false && "Unhandled opcode!");
             }

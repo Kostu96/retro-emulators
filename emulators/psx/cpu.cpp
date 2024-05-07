@@ -14,18 +14,28 @@ namespace PSX {
         m_cop0Status.SR.value = 0;
 
         m_pendingLoad = { RegIndex{ 0 }, 0 };
+        m_isBranch = false;
+        m_isBranchDelaySlot = false;
     }
 
     void CPU::clock(DisassemblyLine& disasmLine)
     {
+        m_currentPC = m_cpuStatus.PC;
+        if (m_currentPC % 4 != 0) {
+            exception(Exception::LoadAddressError);
+            return;
+        }
+
         Instruction inst = load32(m_cpuStatus.PC);
         disasm(m_cpuStatus.PC, inst, disasmLine);
-        m_currentPC = m_cpuStatus.PC;
         m_cpuStatus.PC = m_nextPC;
         m_nextPC += 4;
 
         setReg(m_pendingLoad.regIndex, m_pendingLoad.value);
         m_pendingLoad = { RegIndex{ 0 }, 0 };
+
+        m_isBranchDelaySlot = m_isBranch;
+        m_isBranch = false;
 
         switch (inst.opcode())
         {
@@ -43,8 +53,9 @@ namespace PSX {
             case 0x0C: op_SYSCALL(); break;
 
             case 0x10: op_MFHI(inst.regD()); break;
-
+            case 0x11: op_MTHI(inst.regS()); break;
             case 0x12: op_MFLO(inst.regD()); break;
+            case 0x13: op_MTLO(inst.regS()); break;
 
             case 0x1A: op_DIV(getReg(inst.regS()), getReg(inst.regT())); break;
             case 0x1B: op_DIVU(getReg(inst.regS()), getReg(inst.regT())); break;
@@ -85,6 +96,10 @@ namespace PSX {
             {
             case 0x00: op_MFC0(inst.regD(), inst.regT()); break;
             case 0x04: op_MTC0(inst.regD(), inst.regT()); break;
+            case 0x10: {
+                assert(inst.subfn() == 0x10);
+                op_RFE();
+            } break;
             default:
                 assert(false && "Unhandled opcode!");
             }
@@ -135,6 +150,11 @@ namespace PSX {
         m_cop0Status.CAUSE = static_cast<u32>(cause) << 2;
         m_cop0Status.EPC = m_currentPC;
 
+        if (m_isBranchDelaySlot) {
+            m_cop0Status.EPC = m_currentPC;
+            m_cop0Status.CAUSE |= 1 << 31; // set BD flag
+        }
+
         m_cpuStatus.PC = handler;
         m_nextPC = m_cpuStatus.PC + 4;
     }
@@ -144,6 +164,8 @@ namespace PSX {
         if (condition) {
             m_nextPC += offset;
             m_nextPC -= 4;
+
+            m_isBranch = true;
         }
     }
 
@@ -159,6 +181,11 @@ namespace PSX {
         assert(copIndex.i < COP0_REGISTER_COUNT && "Index out of bounds!");
 
         m_cop0Status.regs[copIndex.i] = getReg(cpuIndex);
+    }
+
+    void CPU::op_RFE()
+    {
+        m_cop0Status.SR.IEKUStack >>= 2;
     }
 
     void CPU::op_SYSCALL()
@@ -207,6 +234,7 @@ namespace PSX {
     void CPU::op_J(u32 immediate)
     {
         m_nextPC = (m_cpuStatus.PC & 0xF0000000) | immediate;
+        m_isBranch = true;
     }
 
     void CPU::op_JAL(u32 immediate)
@@ -218,12 +246,14 @@ namespace PSX {
     void CPU::op_JR(RegIndex s)
     {
         m_nextPC = getReg(s);
+        m_isBranch = true;
     }
 
     void CPU::op_JALR(RegIndex d, RegIndex s)
     {
         setReg(d, m_cpuStatus.PC);
         m_nextPC = getReg(s);
+        m_isBranch = true;
     }
 
     void CPU::op_ADD(RegIndex d, RegIndex s, u32 rhs)
@@ -232,11 +262,10 @@ namespace PSX {
         s32 a = getReg(s);
         s32 b = (s32)rhs;
         s32 result = a + b;
-        if (a > 0 && b > 0 && result < 0 ||
-            a < 0 && b < 0 && result > 0)
-            assert(false && "Overflow exception!");
+        if ((a > 0 && b > 0 && result < 0) || (a < 0 && b < 0 && result > 0))
+            exception(Exception::Overflow);
         else
-           setReg(d, result);
+            setReg(d, result);
     }
 
     void CPU::op_ADDU(RegIndex d, RegIndex s, u32 rhs)
@@ -267,7 +296,11 @@ namespace PSX {
         if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
-        store16(getReg(s) + immediate, getReg(t) & 0xFFFF);
+        u32 address = getReg(s) + immediate;
+        if (address % 2 == 0)
+            store16(address, getReg(t) & 0xFFFF);
+        else
+            exception(Exception::StoreAddressError);
     }
 
     void CPU::op_SW(RegIndex t, RegIndex s, u32 immediate)
@@ -275,7 +308,11 @@ namespace PSX {
         if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
-        store32(getReg(s) + immediate, getReg(t));
+        u32 address = getReg(s) + immediate;
+        if (address % 4 == 0)
+            store32(address, getReg(t));
+        else
+            exception(Exception::StoreAddressError);
     }
 
     void CPU::op_LB(RegIndex t, RegIndex s, u32 immediate)
@@ -300,7 +337,11 @@ namespace PSX {
         if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
-        m_pendingLoad = { t, load32(getReg(s) + immediate) };
+        u32 address = getReg(s) + immediate;
+        if (address % 4 == 0)
+            m_pendingLoad = { t, load32(address) };
+        else
+            exception(Exception::LoadAddressError);
     }
 
     void CPU::op_SLTU(RegIndex d, u32 lhs, u32 rhs)
@@ -348,9 +389,19 @@ namespace PSX {
         setReg(d, m_cpuStatus.HI);
     }
 
+    void CPU::op_MTHI(RegIndex s)
+    {
+        m_cpuStatus.HI = getReg(s);
+    }
+
     void CPU::op_MFLO(RegIndex d)
     {
         setReg(d, m_cpuStatus.LO);
+    }
+
+    void CPU::op_MTLO(RegIndex s)
+    {
+        m_cpuStatus.LO = getReg(s);
     }
 
 } // namespace PSX
