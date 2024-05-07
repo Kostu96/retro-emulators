@@ -9,6 +9,8 @@
 
 #define HEX(value, w) "0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(w) << (u32)value
 
+#define PRINT_UNHANDLED_WRITE(bits, label, offsetW, dataW) std::cerr << "Unhandled "#bits" bit write to: " << HEX(address, 8) << " "#label"(" << HEX(offset, offsetW) << "): " << HEX(data, dataW) << '\n'
+
 namespace PSX {
 
     static constexpr u32 REGION_MASK[] = {
@@ -39,6 +41,8 @@ namespace PSX {
 
     static constexpr AddressRange32 IRQ_CTRL_RANGE{ 0x1F801070, 0x1F801077 };
 
+    static constexpr AddressRange32 TIMERS_RANGE{ 0x1F801100, 0x1F80112F };
+
     static constexpr AddressRange32 SPU_RANGE{ 0x1F801C00, 0x1F801E7F };
 
     static constexpr AddressRange32 EXPANSION2_RANGE{ 0x1F802000, 0x1F802080 };
@@ -54,6 +58,12 @@ namespace PSX {
 
     void Emulator::clock()
     {
+        if (m_enableBIOSPatches) {
+            auto it = m_BIOSPatches.find(m_CPU.getCPUStatus().PC);
+            if (it != m_BIOSPatches.end())
+                it->second();
+        }
+
         DisassemblyLine line;
         m_CPU.clock(line);
         auto i = m_disasm.begin();
@@ -75,8 +85,46 @@ namespace PSX {
         m_disasm{ disasm }
     {
         size_t size = BIOS_SIZE;
-        if (!readFile("rom/psx/SCPH-1001.bin", (char*)m_BIOS, size, true))
+        if (!readFile("rom/psx/SCPH-1001.bin", (char*)m_BIOS, size, true)) {
             std::cerr << "Could not read BIOS ROM file!\n";
+            assert(false);
+        }
+
+        m_BIOSPatches.emplace(0xBFC02B60, [this]() {
+            auto& status = m_CPU.getCPUStatus();
+            std::cout << "BIOS memcpy detected\n"
+                << "  dst: " << std::hex << status.regs[4] << '\n'
+                << "  src: " << std::hex << status.regs[5] << '\n'
+                << "  len: " << std::hex << status.regs[6] << '\n';
+
+            bool isMemcpyValid = true;
+            u8* dstPtr = nullptr, * srcPtr = nullptr;
+            u32 dstAddress = maskRegion(status.regs[4]);
+            u32 dstOffset;
+            if (RAM_RANGE.contains(dstAddress, dstOffset)) {
+                dstPtr = m_RAM + dstOffset;
+            }
+            else {
+                std::cout << "memcpy patch could not be applied to dst address!\n";
+                isMemcpyValid = false;
+            }
+
+            u32 srcAddress = maskRegion(status.regs[5]);
+            u32 srcOffset;
+            if (BIOS_RANGE.contains(srcAddress, srcOffset)) {
+                srcPtr = m_BIOS + srcOffset;
+            }
+            else {
+                std::cout << "memcpy patch could not be applied to src address!\n";
+                isMemcpyValid = false;
+            }
+
+            if (isMemcpyValid) {
+                std::memcpy(dstPtr, srcPtr, status.regs[6]);
+                m_CPU.overrideCPURegister(6, 0);
+                std::cout << "BIOS memcpy patch successful!\n";
+            }
+        });
 
         m_CPU.mapRead8MemoryCallback([this](u32 address) { return memoryRead8(address); });
         m_CPU.mapRead32MemoryCallback([this](u32 address) { return memoryRead32(address); });
@@ -110,6 +158,8 @@ namespace PSX {
         address = maskRegion(address);
 
         u32 offset;
+        if (IRQ_CTRL_RANGE.contains(address, offset))  return 0; // TODO: temp
+
         if (RAM_RANGE.contains(address, offset)) {
             u32 b0 = m_RAM[offset];
             u32 b1 = m_RAM[offset + 1];
@@ -142,8 +192,7 @@ namespace PSX {
         }
 
         if (EXPANSION2_RANGE.contains(address, offset)) {
-            std::cerr << "Unhandled 8 bit write to: " << HEX(address, 8) <<
-                " EXPANSION2(" << HEX(offset, 2) << "): " << HEX(data, 2) << '\n';
+            PRINT_UNHANDLED_WRITE(8, EXPANSIO2, 2, 2);
             return;
         }
 
@@ -158,9 +207,14 @@ namespace PSX {
         address = maskRegion(address);
 
         u32 offset;
+        if (TIMERS_RANGE.contains(address, offset)) {
+            PRINT_UNHANDLED_WRITE(16, TIMERS, 2, 4);
+            return;
+        }
+
         if (SPU_RANGE.contains(address, offset)) {
-            std::cerr << "Unhandled 16 bit write to: " << HEX(address, 8) <<
-                " SPU(" << HEX(offset, 3) << "): " << HEX(data, 4) << '\n';
+            /*std::cerr << "Unhandled 16 bit write to: " << HEX(address, 8) <<
+                " SPU(" << HEX(offset, 3) << "): " << HEX(data, 4) << '\n';*/
             return;
         }
 
@@ -190,21 +244,18 @@ namespace PSX {
                 }
                 break;
             default:
-                std::cerr << "Unhandled 32 bit write to: " << HEX(address, 8) <<
-                    " MEM_CTRL(" << HEX(offset, 2) << "): " << HEX(data, 8) << '\n';
+                PRINT_UNHANDLED_WRITE(32, MEM_CTRL, 2, 8);
             }
             return;
         }
 
         if (RAM_SIZE_RANGE.contains(address, offset)) {
-            std::cerr << "Unhandled 32 bit write to: " << HEX(address, 8) <<
-                " RAM_SIZE(" << HEX(offset, 2) << "): " << HEX(data, 8) << '\n';
+            PRINT_UNHANDLED_WRITE(32, RAM_SIZE, 2, 8);
             return;
         }
 
         if (IRQ_CTRL_RANGE.contains(address, offset)) {
-            std::cerr << "Unhandled 32 bit write to: " << HEX(address, 8) <<
-                " IRQ_CTRL(" << HEX(offset, 2) << "): " << HEX(data, 8) << '\n';
+            PRINT_UNHANDLED_WRITE(32, IRQ_CTRL, 2, 8);
             return;
         }
 
@@ -217,8 +268,7 @@ namespace PSX {
         }
 
         if (CACHE_CTRL_RANGE.contains(address, offset)) {
-            std::cerr << "Unhandled 32 bit write to: " << HEX(address, 8) <<
-                " CACHE_CTRL(" << HEX(offset, 2) << "): " << HEX(data, 8) << '\n';
+            PRINT_UNHANDLED_WRITE(32, CACHE_CTRL, 2, 8);
             return;
         }
 

@@ -99,7 +99,7 @@ int main()
     std::thread emuThread{
         [&]() {
             while (app.isRunning()) {
-                std::this_thread::sleep_for(std::chrono::nanoseconds{ 32 }); // TODO: temp
+                //std::this_thread::sleep_for(std::chrono::nanoseconds{ 32 }); // TODO: temp
                 psx->clock();
             }
         }

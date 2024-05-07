@@ -2,6 +2,7 @@
 #include "disasm.hpp"
 
 #include <cassert>
+#include <iostream>
 
 namespace PSX {
 
@@ -10,9 +11,8 @@ namespace PSX {
         m_cpuStatus.PC = 0xBFC00000;
         m_nextPC = 0xBFC00004;
 
-        m_cop0Status.SR = 0;
+        m_cop0Status.SR.value = 0;
 
-        //m_nextInstruction = 0;
         m_pendingLoad = { RegIndex{ 0 }, 0 };
     }
 
@@ -20,6 +20,7 @@ namespace PSX {
     {
         Instruction inst = load32(m_cpuStatus.PC);
         disasm(m_cpuStatus.PC, inst, disasmLine);
+        m_currentPC = m_cpuStatus.PC;
         m_cpuStatus.PC = m_nextPC;
         m_nextPC += 4;
 
@@ -33,14 +34,20 @@ namespace PSX {
             {
             case 0x00: op_SLL(inst.regD(), inst.regT(), inst.shift()); break;
 
+            case 0x02: op_SRL(inst.regD(), inst.regT(), inst.shift()); break;
             case 0x03: op_SRA(inst.regD(), inst.regT(), inst.shift()); break;
 
             case 0x08: op_JR(inst.regS()); break;
             case 0x09: op_JALR(inst.regD(), inst.regS()); break;
 
+            case 0x0C: op_SYSCALL(); break;
+
+            case 0x10: op_MFHI(inst.regD()); break;
+
             case 0x12: op_MFLO(inst.regD()); break;
 
             case 0x1A: op_DIV(getReg(inst.regS()), getReg(inst.regT())); break;
+            case 0x1B: op_DIVU(getReg(inst.regS()), getReg(inst.regT())); break;
 
             case 0x20: op_ADD(inst.regD(), inst.regS(), getReg(inst.regT())); break;
             case 0x21: op_ADDU(inst.regD(), inst.regS(), getReg(inst.regT())); break;
@@ -49,6 +56,7 @@ namespace PSX {
             case 0x24: op_AND(inst.regD(), inst.regS(), getReg(inst.regT())); break;
             case 0x25: op_OR(inst.regD(), inst.regS(), getReg(inst.regT())); break;
 
+            case 0x2A: op_SLT(inst.regD(), getReg(inst.regS()), getReg(inst.regT())); break;
             case 0x2B: op_SLTU(inst.regD(), getReg(inst.regS()), getReg(inst.regT())); break;
             default:
                 assert(false && "Unhandled opcode!");
@@ -65,7 +73,8 @@ namespace PSX {
 
         case 0x08: op_ADD(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x09: op_ADDU(inst.regT(), inst.regS(), inst.imm_se()); break;
-        case 0x0A: op_SLTI(inst.regT(), getReg(inst.regS()), inst.imm_se()); break;
+        case 0x0A: op_SLT(inst.regT(), getReg(inst.regS()), inst.imm_se()); break;
+        case 0x0B: op_SLTU(inst.regT(), getReg(inst.regS()), inst.imm_se()); break;
 
         case 0x0C: op_AND(inst.regT(), inst.regS(), inst.imm()); break;
         case 0x0D: op_OR(inst.regT(), inst.regS(), inst.imm()); break;
@@ -94,7 +103,7 @@ namespace PSX {
             assert(false && "Unhandled opcode!");
         }
 
-        std::memcpy(m_cpuStatus.regs, m_helperCPURegs, REGISTER_COUNT * sizeof(u32));
+        std::memcpy(m_cpuStatus.regs, m_helperCPURegs, CPU_REGISTER_COUNT * sizeof(u32));
 
         assert(getReg(RegIndex{ 0 }) == 0 && "GPR zero value was changed!");
     }
@@ -106,10 +115,28 @@ namespace PSX {
 
     void CPU::setReg(RegIndex index, u32 value)
     {
-        assert(index.i < REGISTER_COUNT && "Index out of bounds!");
+        assert(index.i < CPU_REGISTER_COUNT && "Index out of bounds!");
 
         m_helperCPURegs[index.i] = value;
         m_helperCPURegs[0] = 0;
+    }
+
+    u32 CPU::getReg(RegIndex index) const
+    {
+        assert(index.i < CPU_REGISTER_COUNT && "Index out of bounds!");
+
+        return m_cpuStatus.regs[index.i];
+    }
+
+    void CPU::exception(Exception cause)
+    {
+        u32 handler = m_cop0Status.SR.BEV ? 0xBFC00180 : 0x80000080;
+        m_cop0Status.SR.IEKUStack <<= 2;
+        m_cop0Status.CAUSE = static_cast<u32>(cause) << 2;
+        m_cop0Status.EPC = m_currentPC;
+
+        m_cpuStatus.PC = handler;
+        m_nextPC = m_cpuStatus.PC + 4;
     }
 
     void CPU::branch(bool condition, u32 offset)
@@ -122,12 +149,21 @@ namespace PSX {
 
     void CPU::op_MFC0(RegIndex copIndex, RegIndex cpuIndex)
     {
+        assert(copIndex.i < COP0_REGISTER_COUNT && "Index out of bounds!");
+
         m_pendingLoad = { cpuIndex, m_cop0Status.regs[copIndex.i] };
     }
 
     void CPU::op_MTC0(RegIndex copIndex, RegIndex cpuIndex)
     {
+        assert(copIndex.i < COP0_REGISTER_COUNT && "Index out of bounds!");
+
         m_cop0Status.regs[copIndex.i] = getReg(cpuIndex);
+    }
+
+    void CPU::op_SYSCALL()
+    {
+        exception(Exception::SysCall);
     }
 
     void CPU::op_BXX(RegIndex s, u32 offset, u32 opcode)
@@ -146,6 +182,11 @@ namespace PSX {
     void CPU::op_SLL(RegIndex d, RegIndex t, u32 shift)
     {
         setReg(d, getReg(t) << shift);
+    }
+
+    void CPU::op_SRL(RegIndex d, RegIndex t, u32 shift)
+    {
+        setReg(d, getReg(t) >> shift);
     }
 
     void CPU::op_SRA(RegIndex d, RegIndex t, u32 shift)
@@ -215,7 +256,7 @@ namespace PSX {
 
     void CPU::op_SB(RegIndex t, RegIndex s, u32 immediate)
     {
-        if (m_cop0Status.SR & 0x10000)
+        if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
         store8(getReg(s) + immediate, getReg(t) & 0xFF);
@@ -223,7 +264,7 @@ namespace PSX {
 
     void CPU::op_SH(RegIndex t, RegIndex s, u32 immediate)
     {
-        if (m_cop0Status.SR & 0x10000)
+        if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
         store16(getReg(s) + immediate, getReg(t) & 0xFFFF);
@@ -231,7 +272,7 @@ namespace PSX {
 
     void CPU::op_SW(RegIndex t, RegIndex s, u32 immediate)
     {
-        if (m_cop0Status.SR & 0x10000)
+        if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
         store32(getReg(s) + immediate, getReg(t));
@@ -239,7 +280,7 @@ namespace PSX {
 
     void CPU::op_LB(RegIndex t, RegIndex s, u32 immediate)
     {
-        if (m_cop0Status.SR & 0x10000)
+        if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
         s8 value = load8(getReg(s) + immediate);
@@ -248,7 +289,7 @@ namespace PSX {
 
     void CPU::op_LBU(RegIndex t, RegIndex s, u32 immediate)
     {
-        if (m_cop0Status.SR & 0x10000)
+        if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
         m_pendingLoad = { t, load8(getReg(s) + immediate) };
@@ -256,7 +297,7 @@ namespace PSX {
 
     void CPU::op_LW(RegIndex t, RegIndex s, u32 immediate)
     {
-        if (m_cop0Status.SR & 0x10000)
+        if (m_cop0Status.SR.Isc)
             return; // isolated cache bit is set
 
         m_pendingLoad = { t, load32(getReg(s) + immediate) };
@@ -267,7 +308,7 @@ namespace PSX {
         setReg(d, lhs < rhs);
     }
 
-    void CPU::op_SLTI(RegIndex t, s32 lhs, s32 rhs)
+    void CPU::op_SLT(RegIndex t, s32 lhs, s32 rhs)
     {
         setReg(t, lhs < rhs);
     }
@@ -287,6 +328,24 @@ namespace PSX {
             m_cpuStatus.HI = numerator % denominator;
             m_cpuStatus.LO = numerator / denominator;
         }
+    }
+
+    void CPU::op_DIVU(u32 numerator, u32 denominator)
+    {
+        if (denominator == 0) {
+            // division by 0
+            m_cpuStatus.HI = numerator;
+            m_cpuStatus.LO = 0xFFFFFFFF;
+        }
+        else {
+            m_cpuStatus.HI = numerator % denominator;
+            m_cpuStatus.LO = numerator / denominator;
+        }
+    }
+
+    void CPU::op_MFHI(RegIndex d)
+    {
+        setReg(d, m_cpuStatus.HI);
     }
 
     void CPU::op_MFLO(RegIndex d)

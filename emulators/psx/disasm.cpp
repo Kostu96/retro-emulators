@@ -20,14 +20,21 @@ namespace PSX {
             {
             case 0x00: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLL    $%u, $%u, %u", inst.regD().i, inst.regT().i, inst.shift()); break;
 
+            case 0x02: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SRL    $%u, $%u, %u", inst.regD().i, inst.regT().i, inst.shift()); break;
             case 0x03: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SRA    $%u, $%u, %u", inst.regD().i, inst.regT().i, inst.shift()); break;
 
             case 0x08: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "JR     $%u", inst.regS().i); break;
             case 0x09: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "JALR   $%u, $%u", inst.regD().i, inst.regS().i); break;
 
+            case 0x0C: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SYSCALL"); break;
+
+            case 0x10: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "MFHI   $%u", inst.regD().i); break;
+            case 0x11: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "MTHI   $%u", inst.regS().i); break;
             case 0x12: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "MFLO   $%u", inst.regD().i); break;
+            case 0x13: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "MTLO   $%u", inst.regS().i); break;
 
             case 0x1A: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "DIV    $%u, $%u", inst.regS().i, inst.regT().i); break;
+            case 0x1B: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "DIVU   $%u, $%u", inst.regS().i, inst.regT().i); break;
 
             case 0x20: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ADD    $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
             case 0x21: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ADDU   $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
@@ -36,6 +43,7 @@ namespace PSX {
             case 0x24: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "AND    $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
             case 0x25: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "OR     $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
 
+            case 0x2A: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLT    $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
             case 0x2B: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLTU   $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
             default:
                 assert(false && "Unhandled opcode!");
@@ -53,6 +61,7 @@ namespace PSX {
         case 0x08: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ADDI   $%u, $%u, 0x%X", inst.regT().i, inst.regS().i, inst.imm()); break;
         case 0x09: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ADDIU  $%u, $%u, 0x%X", inst.regT().i, inst.regS().i, inst.imm()); break;
         case 0x0A: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLTI   $%u, $%u, 0x%X", inst.regT().i, inst.regS().i, inst.imm()); break;
+        case 0x0B: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLTIU  $%u, $%u, 0x%X", inst.regT().i, inst.regS().i, inst.imm()); break;
 
         case 0x0C: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ANDI   $%u, $%u, 0x%X", inst.regT().i, inst.regS().i, inst.imm()); break;
         case 0x0D: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ORI    $%u, $%u, 0x%X", inst.regT().i, inst.regS().i, inst.imm()); break;
