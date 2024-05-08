@@ -7,21 +7,20 @@ namespace PSX {
     void disasm(u32 address, CPU::Instruction inst, DisassemblyLine& output)
     {
         output.address = address;
-        
-        if (inst.word == 0) {
-            sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "NOP");
-            return;
-        }
 
         switch (inst.opcode())
         {
         case 0x00:
             switch (inst.subfn())
             {
-            case 0x00: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLL    $%u, $%u, %u", inst.regD().i, inst.regT().i, inst.shift()); break;
+            case 0x00: {
+                if (inst.word == 0) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "NOP");
+                else sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLL    $%u, $%u, %u", inst.regD().i, inst.regT().i, inst.shift());
+            } break;
 
             case 0x02: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SRL    $%u, $%u, %u", inst.regD().i, inst.regT().i, inst.shift()); break;
             case 0x03: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SRA    $%u, $%u, %u", inst.regD().i, inst.regT().i, inst.shift()); break;
+            case 0x04: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SLLV   $%u, $%u, $%u", inst.regD().i, inst.regT().i, inst.regS().i); break;
 
             case 0x08: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "JR     $%u", inst.regS().i); break;
             case 0x09: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "JALR   $%u, $%u", inst.regD().i, inst.regS().i); break;
@@ -37,7 +36,10 @@ namespace PSX {
             case 0x1B: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "DIVU   $%u, $%u", inst.regS().i, inst.regT().i); break;
 
             case 0x20: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ADD    $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
-            case 0x21: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ADDU   $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
+            case 0x21: {
+                if (inst.regT().i == 0) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "MOVE   $%u, $%u", inst.regD().i, inst.regS().i);
+                else sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "ADDU   $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i);
+            } break;
 
             case 0x23: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SUBU   $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
             case 0x24: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "AND    $%u, $%u, $%u", inst.regD().i, inst.regS().i, inst.regT().i); break;
@@ -79,9 +81,11 @@ namespace PSX {
             break;
 
         case 0x20: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "LB     $%u, 0x%X($%u)", inst.regT().i, inst.imm(), inst.regS().i); break;
+        case 0x21: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "LH     $%u, 0x%X($%u)", inst.regT().i, inst.imm(), inst.regS().i); break;
 
         case 0x23: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "LW     $%u, 0x%X($%u)", inst.regT().i, inst.imm(), inst.regS().i); break;
         case 0x24: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "LBU    $%u, 0x%X($%u)", inst.regT().i, inst.imm(), inst.regS().i); break;
+        case 0x25: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "LHU    $%u, 0x%X($%u)", inst.regT().i, inst.imm(), inst.regS().i); break;
 
         case 0x28: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SB     $%u, 0x%X($%u)", inst.regT().i, inst.imm(), inst.regS().i); break;
         case 0x29: sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, "SH     $%u, 0x%X($%u)", inst.regT().i, inst.imm(), inst.regS().i); break;

@@ -128,6 +128,7 @@ namespace PSX {
         });
 
         m_CPU.mapRead8MemoryCallback([this](u32 address) { return memoryRead8(address); });
+        m_CPU.mapRead16MemoryCallback([this](u32 address) { return memoryRead16(address); });
         m_CPU.mapRead32MemoryCallback([this](u32 address) { return memoryRead32(address); });
         m_CPU.mapWrite8MemoryCallback([this](u32 address, u8 data) { memoryWrite8(address, data); });
         m_CPU.mapWrite16MemoryCallback([this](u32 address, u16 data) { memoryWrite16(address, data); });
@@ -148,6 +149,24 @@ namespace PSX {
         if (BIOS_RANGE.contains(address, offset))  return m_BIOS[offset];
 
         std::cerr << "Unhandled read8 from memory at address: " << HEX(address, 8) << '\n';
+        assert(false);
+        return 0;
+    }
+
+    u16 Emulator::memoryRead16(u32 address) const
+    {
+        address = maskRegion(address);
+
+        u32 offset;
+        if (RAM_RANGE.contains(address, offset)) {
+            u16 b0 = m_RAM[offset + 0];
+            u16 b1 = m_RAM[offset + 1];
+            return (b1 << 8) | b0;
+        }
+
+        if (SPU_RANGE.contains(address, offset)) return 0; // TODO: temp
+
+        std::cerr << "Unhandled read16 from memory at address: " << HEX(address, 8) << '\n';
         assert(false);
         return 0;
     }
@@ -222,8 +241,7 @@ namespace PSX {
         }
 
         if (SPU_RANGE.contains(address, offset)) {
-            /*std::cerr << "Unhandled 16 bit write to: " << HEX(address, 8) <<
-                " SPU(" << HEX(offset, 3) << "): " << HEX(data, 4) << '\n';*/
+            //PRINT_UNHANDLED_WRITE(16, SPU, 3, 4);
             return;
         }
 

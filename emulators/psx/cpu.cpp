@@ -46,6 +46,7 @@ namespace PSX {
 
             case 0x02: op_SRL(inst.regD(), inst.regT(), inst.shift()); break;
             case 0x03: op_SRA(inst.regD(), inst.regT(), inst.shift()); break;
+            case 0x04: op_SLL(inst.regD(), inst.regT(), getReg(inst.regS()) & 0x1F); break; // SLLV
 
             case 0x08: op_JR(inst.regS()); break;
             case 0x09: op_JALR(inst.regD(), inst.regS()); break;
@@ -82,13 +83,13 @@ namespace PSX {
         case 0x06: branch(static_cast<s32>(getReg(inst.regS())) <= 0, inst.imm_se_jump()); break; // BLEZ
         case 0x07: branch(static_cast<s32>(getReg(inst.regS())) > 0, inst.imm_se_jump()); break; // BGTZ
 
-        case 0x08: op_ADD(inst.regT(), inst.regS(), inst.imm_se()); break;
-        case 0x09: op_ADDU(inst.regT(), inst.regS(), inst.imm_se()); break;
-        case 0x0A: op_SLT(inst.regT(), getReg(inst.regS()), inst.imm_se()); break;
-        case 0x0B: op_SLTU(inst.regT(), getReg(inst.regS()), inst.imm_se()); break;
+        case 0x08: op_ADD(inst.regT(), inst.regS(), inst.imm_se()); break; // ADDI
+        case 0x09: op_ADDU(inst.regT(), inst.regS(), inst.imm_se()); break; // ADDIU
+        case 0x0A: op_SLT(inst.regT(), getReg(inst.regS()), inst.imm_se()); break; // SLTI
+        case 0x0B: op_SLTU(inst.regT(), getReg(inst.regS()), inst.imm_se()); break; // SLTIU
 
-        case 0x0C: op_AND(inst.regT(), inst.regS(), inst.imm()); break;
-        case 0x0D: op_OR(inst.regT(), inst.regS(), inst.imm()); break;
+        case 0x0C: op_AND(inst.regT(), inst.regS(), inst.imm()); break; // ANDI
+        case 0x0D: op_OR(inst.regT(), inst.regS(), inst.imm()); break; // ORI
 
         case 0x0F: op_LUI(inst.regT(), inst.imm()); break;
         case 0x10:
@@ -109,6 +110,7 @@ namespace PSX {
 
         case 0x23: op_LW(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x24: op_LBU(inst.regT(), inst.regS(), inst.imm_se()); break;
+        case 0x25: op_LHU(inst.regT(), inst.regS(), inst.imm_se()); break;
 
         case 0x28: op_SB(inst.regT(), inst.regS(), inst.imm_se()); break;
         case 0x29: op_SH(inst.regT(), inst.regS(), inst.imm_se()); break;
@@ -330,6 +332,18 @@ namespace PSX {
             return; // isolated cache bit is set
 
         m_pendingLoad = { t, load8(getReg(s) + immediate) };
+    }
+
+    void CPU::op_LHU(RegIndex t, RegIndex s, u32 immediate)
+    {
+        if (m_cop0Status.SR.Isc)
+            return; // isolated cache bit is set
+
+        u32 address = getReg(s) + immediate;
+        if (address % 2 == 0)
+            m_pendingLoad = { t, load16(address) };
+        else
+            exception(Exception::LoadAddressError);
     }
 
     void CPU::op_LW(RegIndex t, RegIndex s, u32 immediate)

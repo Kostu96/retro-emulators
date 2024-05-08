@@ -16,11 +16,13 @@ namespace PSX {
     {
     public:
         using Read8MemoryCallback = std::function<u8(u32)>;
+        using Read16MemoryCallback = std::function<u16(u32)>;
         using Read32MemoryCallback = std::function<u32(u32)>;
         using Write8MemoryCallback = std::function<void(u32, u8)>;
         using Write16MemoryCallback = std::function<void(u32, u16)>;
         using Write32MemoryCallback = std::function<void(u32, u32)>;
         void mapRead8MemoryCallback(Read8MemoryCallback callback) { load8 = callback; }
+        void mapRead16MemoryCallback(Read16MemoryCallback callback) { load16 = callback; }
         void mapRead32MemoryCallback(Read32MemoryCallback callback) { load32 = callback; }
         void mapWrite8MemoryCallback(Write8MemoryCallback callback) { store8 = callback; }
         void mapWrite16MemoryCallback(Write16MemoryCallback callback) { store16 = callback; }
@@ -129,6 +131,7 @@ namespace PSX {
         };
 
         Read8MemoryCallback load8 = nullptr;
+        Read16MemoryCallback load16 = nullptr;
         Read32MemoryCallback load32 = nullptr;
         Write8MemoryCallback store8 = nullptr;
         Write16MemoryCallback store16 = nullptr;
@@ -162,6 +165,7 @@ namespace PSX {
         void op_SW(RegIndex t, RegIndex s, u32 immediate);
         void op_LB(RegIndex t, RegIndex s, u32 immediate);
         void op_LBU(RegIndex t, RegIndex s, u32 immediate);
+        void op_LHU(RegIndex t, RegIndex s, u32 immediate);
         void op_LW(RegIndex t, RegIndex s, u32 immediate);
         void op_SLTU(RegIndex d, u32 lhs, u32 rhs);
         void op_SLT(RegIndex t, s32 lhs, s32 rhs);
