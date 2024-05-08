@@ -20,8 +20,8 @@ namespace PSX {
 		const CPU& getCPU() const { return m_CPU; }
 
 		explicit Emulator(Disassembly& disasm); // TODO: to much spagetti
-	private:
 		u8 memoryRead8(u32 address) const;
+	private:
 		u16 memoryRead16(u32 address) const;
 		u32 memoryRead32(u32 address) const;
 		void memoryWrite8(u32 address, u8 data);

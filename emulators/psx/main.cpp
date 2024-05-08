@@ -48,6 +48,8 @@ public:
             ImGui::Separator();
             ImGui::Text("SR: %08X", m_psx.getCPU().getCOP0Status().SR);
         };
+
+        m_memoryView.read8 = [this](unsigned int address) -> unsigned char { return m_psx.memoryRead8(address); };
     }
 private:
     std::span<const unsigned int> getScreenPixels() const override { return { dummyPixelData.get(), PSX::SCREEN_WIDTH * PSX::SCREEN_HEIGHT}; }
