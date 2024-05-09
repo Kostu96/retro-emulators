@@ -125,7 +125,8 @@ namespace PSX {
 
     CPU::CPU()
     {
-        m_cpuStatus.regs[0] = 0;
+        std::memset(m_cpuStatus.regs, 0, CPU_REGISTER_COUNT * sizeof(u32));
+        std::memset(m_helperCPURegs, 0, CPU_REGISTER_COUNT * sizeof(u32));
     }
 
     void CPU::setReg(RegIndex index, u32 value)
