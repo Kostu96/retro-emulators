@@ -1,6 +1,8 @@
 #include "psx.hpp"
+#include "disasm.hpp"
 
 #include "shared/source/address_range.hpp"
+#include "shared/source/disassembly_line.hpp"
 #include "shared/source/file_io.hpp"
 
 #include <cassert>
@@ -59,27 +61,29 @@ namespace PSX {
 
     void Emulator::clock()
     {
+        u32 PC = m_CPU.getCPUStatus().PC;
+
         if (m_enableBIOSPatches) {
-            auto it = m_BIOSPatches.find(m_CPU.getCPUStatus().PC);
+            auto it = m_BIOSPatches.find(PC);
             if (it != m_BIOSPatches.end())
                 it->second();
         }
 
         DisassemblyLine line;
-        m_CPU.clock(line);
+        disasm(PC, memoryRead32(PC), line);
+
         auto i = m_disasm.begin();
         for (; i != m_disasm.end(); i++)
-        {
             if (i->address >= line.address)
                 break;
-        }
-        if (m_disasm.empty() || i == m_disasm.end())
-        {
+
+        if (m_disasm.empty() || i == m_disasm.end()) {
             m_disasm.push_back(line);
-            return;
         }
-        if (line.address == i->address) *i = line;
+        else if (line.address == i->address) *i = line;
         else m_disasm.insert(i, line);
+        
+        m_CPU.clock();
     }
 
     Emulator::Emulator(Disassembly& disasm) :

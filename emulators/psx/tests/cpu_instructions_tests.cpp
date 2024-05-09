@@ -17,13 +17,12 @@ namespace PSX {
 		u32 memoryBefore[MEMORY_SIZE];
 
 		CPUTests() {
-			cpu.mapRead32MemoryCallback([&](u32 address) { return memory[address >> 2]; });
-			cpu.mapWrite32MemoryCallback([&](u32 address, u32 data) { memory[address >> 2] = data; });
+			cpu.mapRead32MemoryCallback([&](u32 address) { return memory[(address - 0xBFC00000) >> 2]; });
+			cpu.mapWrite32MemoryCallback([&](u32 address, u32 data) { memory[(address - 0xBFC00000) >> 2] = data; });
 		}
 
 		void SetUp() override {
 			cpu.reset();
-			cpu.m_cpuStatus.PC = 0;
 		}
 
 		void makeSnapshot() {
@@ -38,10 +37,10 @@ namespace PSX {
 			EXPECT_EQ(cpuStatusBefore.HI, cpuStatus.HI);
 			EXPECT_EQ(cpuStatusBefore.LO, cpuStatus.LO);
 			for (auto i = 0; i < 32; i++)
-				EXPECT_EQ(cpuStatusBefore.inputRegs[i], cpuStatus.inputRegs[i]) << "i == " << i;
+				EXPECT_EQ(cpuStatusBefore.regs[i], cpuStatus.regs[i]) << "i == " << i;
 
 			auto& cop0Status = cpu.getCOP0Status();
-			for (auto i = 0; i < 32; i++)
+			for (auto i = 0; i < 16; i++)
 				EXPECT_EQ(cop0StatusBefore.regs[i], cop0Status.regs[i]) << "i == " << i;
 
 			for (auto i = 0; i < MEMORY_SIZE; i++)
@@ -55,11 +54,10 @@ namespace PSX {
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cpuStatusBefore.outputRegs[8] = 0x13 << 16;
-		cpuStatusBefore.PC += 8;
+		cpuStatusBefore.regs[8] = 0x13 << 16;
+		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();
 	}
@@ -70,27 +68,25 @@ namespace PSX {
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cpuStatusBefore.outputRegs[8] |= 0x243F;
-		cpuStatusBefore.PC += 8;
+		cpuStatusBefore.regs[8] |= 0x243F;
+		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();
 	}
 
 	TEST_F(CPUTests, SWTestWithPositiveOffset)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0x2;
-		cpu.m_cpuStatus.outputRegs[8] = 0xDEADBEEF;
+		cpu.overrideCPURegister(1, 0xBFC00002);
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
 		memory[0] = 0xAC280006; // SW $8, 0x6($1)
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cpuStatusBefore.PC += 8;
+		cpuStatusBefore.PC += 4;
 		memoryBefore[0x2] = 0xDEADBEEF;
 
 		checkSnapshot();
@@ -98,16 +94,15 @@ namespace PSX {
 
 	TEST_F(CPUTests, SWTestWithNegativeOffset)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0x9;
-		cpu.m_cpuStatus.outputRegs[8] = 0xDEADBEEF;
+		cpu.overrideCPURegister(1, 0xBFC00009);
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
 		memory[0] = 0xAC28FFFF; // SW $8, 0xFFFF($1)
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cpuStatusBefore.PC += 8;
+		cpuStatusBefore.PC += 4;
 		memoryBefore[0x2] = 0xDEADBEEF;
 
 		checkSnapshot();
@@ -115,37 +110,35 @@ namespace PSX {
 
 	TEST_F(CPUTests, LWTestWithPositiveOffset)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0x2;
+		cpu.overrideCPURegister(1, 0xBFC00002);
 		memory[0] = 0x8C280006; // LW $8, 0x6($1)
 		memory[1] = 0x0;        // NOP
 		memory[2] = 0xDEADBEEF;
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock(); // execute load
 		cpu.clock(); // wait for load delay slot
 
-		cpuStatusBefore.outputRegs[8] = 0xDEADBEEF;
-		cpuStatusBefore.PC += 12;
+		cpuStatusBefore.regs[8] = 0xDEADBEEF;
+		cpuStatusBefore.PC += 8;
 		
 		checkSnapshot();
 	}
 
 	TEST_F(CPUTests, LWTestWithNegativeOffset)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0x9;
+		cpu.overrideCPURegister(1, 0xBFC00009);
 		memory[0] = 0x8C28FFFF; // LW $8, 0xFFFF($1)
 		memory[1] = 0x0;        // NOP
 		memory[2] = 0xDEADBEEF;
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock(); // execute load
 		cpu.clock(); // wait for load delay slot
 
-		cpuStatusBefore.outputRegs[8] = 0xDEADBEEF;
-		cpuStatusBefore.PC += 12;
+		cpuStatusBefore.regs[8] = 0xDEADBEEF;
+		cpuStatusBefore.PC += 8;
 
 		checkSnapshot();
 	}
@@ -154,16 +147,15 @@ namespace PSX {
 
 	TEST_F(CPUTests, SSLTest)
 	{
-		cpu.m_cpuStatus.outputRegs[8] = 0xDEADBEEF;
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
 		memory[0] = 0x00084080; // SSL $8, $8, 0x2
 		
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cpuStatusBefore.outputRegs[8] = 0x7AB6FBBC;
-		cpuStatusBefore.PC += 8;
+		cpuStatusBefore.regs[8] = 0x7AB6FBBC;
+		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();
 	}
@@ -174,72 +166,68 @@ namespace PSX {
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cpuStatusBefore.outputRegs[8] = 0xB88;
-		cpuStatusBefore.PC += 8;
+		cpuStatusBefore.regs[8] = 0xB88;
+		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();
 	}
 	
 	TEST_F(CPUTests, JTest)
 	{
-		memory[0] = 0x08000004; // J 0x10
+		memory[0] = 0x0BF00004; // J 0xFC00010
 		memory[1] = 0x24080123; // ADDIU $8, $zero, 0x123
 		memory[4] = 0x24090456; // ADDIU $9, $zero, 0x456
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock(); // execute jump
 		cpu.clock(); // execute branch delay slot
 		cpu.clock(); // execute instruction after jump
 
-		cpuStatusBefore.outputRegs[8] = 0x123;
-		cpuStatusBefore.outputRegs[9] = 0x456;
-		cpuStatusBefore.PC = 0x18;
+		cpuStatusBefore.regs[8] = 0x123;
+		cpuStatusBefore.regs[9] = 0x456;
+		cpuStatusBefore.PC = 0xBFC00014;
 
 		checkSnapshot();
 	}
 
 	TEST_F(CPUTests, ORTest)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0x12345678;
-		cpu.m_cpuStatus.outputRegs[2] = 0x87654321;
+		cpu.overrideCPURegister(1, 0x12345678);
+		cpu.overrideCPURegister(2, 0x87654321);
 		memory[0] = 0x00221825; // OR $3, $1, $2
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cpuStatusBefore.outputRegs[3] = 0x97755779;
-		cpuStatusBefore.PC += 8;
+		cpuStatusBefore.regs[3] = 0x97755779;
+		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();
 	}
 
 	TEST_F(CPUTests, MTC0Test)
 	{
-		cpu.m_cpuStatus.outputRegs[12] = 0xDEADBEEF;
+		cpu.overrideCPURegister(12, 0xDEADBEEF);
 		memory[0] = 0x408C6000; // MTC0 $12, $cop0_sr
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock();
 
-		cop0StatusBefore.SR = 0xDEADBEEF;
-		cpuStatusBefore.PC += 8;
+		cop0StatusBefore.SR.value = 0xDEADBEEF;
+		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();
 	}
 
 	TEST_F(CPUTests, BNETestWithRegistersEqual)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0xDEADBEEF;
-		cpu.m_cpuStatus.outputRegs[2] = 0xDEADBEEF;
+		cpu.overrideCPURegister(1, 0xDEADBEEF);
+		cpu.overrideCPURegister(2, 0xDEADBEEF);
 		memory[0] = 0x14220003; // 0x00: BNE $1, $2, 12
 		memory[1] = 0x24080123; // 0x04: ADDIU $8, $zero, 0x123
 		memory[2] = 0x24090456; // 0x08: ADDIU $9, $zero, 0x456
@@ -247,45 +235,43 @@ namespace PSX {
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock(); // execute branch not taken
 		cpu.clock(); // execute branch delay slot
 		cpu.clock(); // execute instruction after
 
-		cpuStatusBefore.outputRegs[8] = 0x123;
-		cpuStatusBefore.outputRegs[9] = 0x456;
-		cpuStatusBefore.PC = 0x10;
+		cpuStatusBefore.regs[8] = 0x123;
+		cpuStatusBefore.regs[9] = 0x456;
+		cpuStatusBefore.PC += 12;
 
 		checkSnapshot();
 	}
 
 	TEST_F(CPUTests, BNETestWithRegistersNotEqualAndPositiveOffset)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0xDEADBEEF;
-		cpu.m_cpuStatus.outputRegs[2] = 0x42;
+		cpu.overrideCPURegister(1, 0xDEADBEEF);
+		cpu.overrideCPURegister(2, 0x42);
 		memory[0] = 0x14220003; // 0x00: BNE $1, $2, 12
 		memory[1] = 0x24080123; // 0x04: ADDIU $8, $zero, 0x123
 		memory[4] = 0x24090456; // 0x10: ADDIU $9, $zero, 0x456
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock(); // execute branch
 		cpu.clock(); // execute branch delay slot
 		cpu.clock(); // execute instruction after jump
 
-		cpuStatusBefore.outputRegs[8] = 0x123;
-		cpuStatusBefore.outputRegs[9] = 0x456;
-		cpuStatusBefore.PC = 0x18;
+		cpuStatusBefore.regs[8] = 0x123;
+		cpuStatusBefore.regs[9] = 0x456;
+		cpuStatusBefore.PC = 0xBFC00014;
 
 		checkSnapshot();
 	}
 
 	TEST_F(CPUTests, BNETestWithRegistersNotEqualAndNegativeOffset)
 	{
-		cpu.m_cpuStatus.outputRegs[1] = 0xDEADBEEF;
-		cpu.m_cpuStatus.outputRegs[2] = 0x42;
-		cpu.m_cpuStatus.outputRegs[7] = 0;
+		cpu.overrideCPURegister(1, 0xDEADBEEF);
+		cpu.overrideCPURegister(2, 0x42);
+		cpu.overrideCPURegister(7, 0);
 		memory[0] = 0x24E70111; // 0x00: ADDIU $7, $7, 0x111
 		memory[1] = 0x1422FFFE; // 0x04: BNE $1, $2, -8
 		memory[2] = 0x24080123; // 0x08: ADDIU $8, $zero, 0x123
@@ -293,20 +279,16 @@ namespace PSX {
 
 		makeSnapshot();
 
-		cpu.clock(); // go over first dummy nop
 		cpu.clock(); // execute first ADDIU
 		cpu.clock(); // execute branch
 		cpu.clock(); // execute branch delay slot
 		cpu.clock(); // execute second ADDIU
 
-		cpuStatusBefore.outputRegs[7] = 0x222;
-		cpuStatusBefore.outputRegs[8] = 0x123;
-		cpuStatusBefore.PC = 0x08;
+		cpuStatusBefore.regs[7] = 0x222;
+		cpuStatusBefore.regs[8] = 0x123;
+		cpuStatusBefore.PC = 0xBFC00004;
 
 		checkSnapshot();
 	}
-
-	// TODO: ADDI
-
 
 } // namespace PSX

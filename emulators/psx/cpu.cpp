@@ -1,5 +1,4 @@
 #include "cpu.hpp"
-#include "disasm.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -18,7 +17,7 @@ namespace PSX {
         m_isBranchDelaySlot = false;
     }
 
-    void CPU::clock(DisassemblyLine& disasmLine)
+    void CPU::clock()
     {
         m_currentPC = m_cpuStatus.PC;
         if (m_currentPC % 4 != 0) {
@@ -26,8 +25,7 @@ namespace PSX {
             return;
         }
 
-        Instruction inst = load32(m_cpuStatus.PC);
-        disasm(m_cpuStatus.PC, inst, disasmLine);
+        CPUInstruction inst = load32(m_cpuStatus.PC);
         m_cpuStatus.PC = m_nextPC;
         m_nextPC += 4;
 
@@ -127,7 +125,7 @@ namespace PSX {
 
     CPU::CPU()
     {
-        setReg(RegIndex{ 0 }, 0);
+        m_cpuStatus.regs[0] = 0;
     }
 
     void CPU::setReg(RegIndex index, u32 value)

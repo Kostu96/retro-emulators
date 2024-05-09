@@ -4,6 +4,6 @@
 
 namespace PSX {
 
-    void disasm(u32 address, CPU::Instruction inst, DisassemblyLine& output);
+    void disasm(u32 address, CPUInstruction inst, DisassemblyLine& output);
 
 } // namespace PSX
