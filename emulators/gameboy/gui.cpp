@@ -5,8 +5,6 @@
 
 #include <glw/glw.hpp>
 #include <imgui.h>
-//#include <backends/imgui_impl_glfw.h>
-//#include <backends/imgui_impl_opengl3.h>
 #include <tinyfiledialogs.h>
 
 namespace GUI {
@@ -127,7 +125,7 @@ namespace GUI {
                 }
             }
             if (ImGui::MenuItem("Reset")) gb.reset();
-            if (ImGui::MenuItem("Exit", "Alt+F4")) s_app->stop();
+            if (ImGui::MenuItem("Exit", "Alt+F4")) s_app->exit();
 
             ImGui::EndMenu();
         }

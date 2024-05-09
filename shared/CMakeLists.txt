@@ -25,6 +25,8 @@ set(SHARED_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/devices/cpu8080/cpu8080.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/devices/cpu8080/disasm8080.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/devices/cpu8080/disasm8080.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/debug_view.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/debug_view.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/disassembly_view.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/disassembly_view.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/imgui/imgui_helper.cpp
@@ -35,6 +37,7 @@ set(SHARED_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/application.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/application.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/disassembly_line.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/emulator_base.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/file_io.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/file_io.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/types.hpp

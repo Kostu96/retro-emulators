@@ -5,9 +5,9 @@
 
 namespace imgui {
 
-    void DisassemblyView::updateWindow(const std::vector<DisassemblyLine>& disassembly)
+    void DisassemblyView::updateWindow(uint32_t pc)
     {
-        if (disassembly.empty()) return;
+        if (!open) return;
 
         if (ImGui::Begin("Disassembly", &open, ImGuiWindowFlags_NoScrollbar))
         {
@@ -20,7 +20,14 @@ namespace imgui {
                 for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++)
                 {
                     auto& line = disassembly[line_i];
-                    ImGui::Text(line.buffer);
+                    if (line_i > 0) {
+                        auto& prev_line = disassembly[line_i - 1];
+                        if (line.address - prev_line.address > 4) ImGui::Separator();
+                    }
+                    constexpr const char* fmt = "%08X:  %s";
+                    (pc == line.address) ?
+                    ImGui::TextColored({ 1.f, 0.f, 0.f, 1.f }, fmt, line.address, line.buffer) :
+                    ImGui::Text(fmt, line.address, line.buffer);
                 }
 
             ImGui::EndChild();

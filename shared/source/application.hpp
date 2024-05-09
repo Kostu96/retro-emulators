@@ -24,7 +24,7 @@ public:
     virtual ~Application();
 
     void run();
-    void stop();
+    void exit();
     bool isRunning() const { return m_isRunning; }
 
     virtual std::span<const unsigned int> getScreenPixels() const = 0;

@@ -7,6 +7,8 @@ set(PSX_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/disasm.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/disasm.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/psx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/psx.hpp
 )
@@ -48,3 +50,5 @@ set_target_properties(${PSX_APP_TARGET_NAME} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${PSX_APP_TARGET_NAME}>
     FOLDER ${PSX_FOLDER_NAME}
 )
+
+add_subdirectory(tests)

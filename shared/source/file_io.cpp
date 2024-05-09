@@ -19,7 +19,7 @@ bool readFile(const char* filename, char* data, size_t& size, bool binary)
 
     size = fin.gcount();
     fin.close();
-    return true;
+    return retVal;
 }
 
 bool writeFile(const char* filename, const char* data, size_t size, bool binary)

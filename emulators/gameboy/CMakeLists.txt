@@ -13,6 +13,8 @@ set(GAMEBOY_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/cpu.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameboy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameboy.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gb_doctor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gb_doctor.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ppu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ppu.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/timer.cpp
