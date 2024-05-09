@@ -18,7 +18,7 @@ jobs:
         config:
         - {
             name: "Windows MSVC Debug",
-            os: windows-latest,
+            os: windows-2022,
             build_type: "Debug",
             cc: "cl",
             cxx: "cl",
@@ -26,7 +26,7 @@ jobs:
           }
         - {
             name: "Windows MSVC Release",
-            os: windows-latest,
+            os: windows-2022,
             build_type: "Release",
             cc: "cl",
             cxx: "cl",
