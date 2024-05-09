@@ -1,7 +1,6 @@
 #include "cpu.hpp"
 
 #include <cassert>
-#include <iostream>
 
 namespace PSX {
 
@@ -75,17 +74,14 @@ namespace PSX {
         case 0x01: op_BXX(inst.regS(), inst.imm_se_jump(), inst.word); break;
         case 0x02: op_J(inst.imm_jump()); break;
         case 0x03: op_JAL(inst.imm_jump()); break;
-
         case 0x04: branch(getReg(inst.regS()) == getReg(inst.regT()), inst.imm_se_jump()); break; // BEQ
         case 0x05: branch(getReg(inst.regS()) != getReg(inst.regT()), inst.imm_se_jump()); break; // BNE
         case 0x06: branch(static_cast<s32>(getReg(inst.regS())) <= 0, inst.imm_se_jump()); break; // BLEZ
         case 0x07: branch(static_cast<s32>(getReg(inst.regS())) > 0, inst.imm_se_jump()); break; // BGTZ
-
         case 0x08: op_ADD(inst.regT(), inst.regS(), inst.imm_se()); break; // ADDI
         case 0x09: op_ADDU(inst.regT(), inst.regS(), inst.imm_se()); break; // ADDIU
         case 0x0A: op_SLT(inst.regT(), getReg(inst.regS()), inst.imm_se()); break; // SLTI
         case 0x0B: op_SLTU(inst.regT(), getReg(inst.regS()), inst.imm_se()); break; // SLTIU
-
         case 0x0C: op_AND(inst.regT(), inst.regS(), inst.imm()); break; // ANDI
         case 0x0D: op_OR(inst.regT(), inst.regS(), inst.imm()); break; // ORI
 
@@ -287,7 +283,7 @@ namespace PSX {
     void CPU::op_SB(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR.Isc)
-            return; // isolated cache bit is set
+            return;
 
         store8(getReg(s) + immediate, getReg(t) & 0xFF);
     }
@@ -295,7 +291,7 @@ namespace PSX {
     void CPU::op_SH(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR.Isc)
-            return; // isolated cache bit is set
+            return;
 
         u32 address = getReg(s) + immediate;
         if (address % 2 == 0)
@@ -307,7 +303,7 @@ namespace PSX {
     void CPU::op_SW(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR.Isc)
-            return; // isolated cache bit is set
+            return;
 
         u32 address = getReg(s) + immediate;
         if (address % 4 == 0)
@@ -319,7 +315,7 @@ namespace PSX {
     void CPU::op_LB(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR.Isc)
-            return; // isolated cache bit is set
+            return;
 
         s8 value = load8(getReg(s) + immediate);
         m_pendingLoad = { t, static_cast<u32>(value) };
@@ -328,7 +324,7 @@ namespace PSX {
     void CPU::op_LBU(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR.Isc)
-            return; // isolated cache bit is set
+            return;
 
         m_pendingLoad = { t, load8(getReg(s) + immediate) };
     }
@@ -336,7 +332,7 @@ namespace PSX {
     void CPU::op_LHU(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR.Isc)
-            return; // isolated cache bit is set
+            return;
 
         u32 address = getReg(s) + immediate;
         if (address % 2 == 0)
@@ -348,7 +344,7 @@ namespace PSX {
     void CPU::op_LW(RegIndex t, RegIndex s, u32 immediate)
     {
         if (m_cop0Status.SR.Isc)
-            return; // isolated cache bit is set
+            return;
 
         u32 address = getReg(s) + immediate;
         if (address % 4 == 0)
@@ -370,7 +366,6 @@ namespace PSX {
     void CPU::op_DIV(s32 numerator, s32 denominator)
     {
         if (denominator == 0) {
-            // division by 0
             m_cpuStatus.HI = numerator;
             m_cpuStatus.LO = (numerator >= 0) ? 0xFFFFFFFF : 1;
         }
@@ -387,7 +382,6 @@ namespace PSX {
     void CPU::op_DIVU(u32 numerator, u32 denominator)
     {
         if (denominator == 0) {
-            // division by 0
             m_cpuStatus.HI = numerator;
             m_cpuStatus.LO = 0xFFFFFFFF;
         }

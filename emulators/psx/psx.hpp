@@ -33,7 +33,7 @@ namespace PSX {
 		CPU m_CPU;
 
 		bool m_enableBIOSPatches = true;
-		std::unordered_map<u32, std::function<void()>> m_BIOSPatches; // TODO: rewrite not to use std::function
+		std::unordered_map<u32, std::function<void()>> m_BIOSPatches;
 
 		Disassembly& m_disasm;
 	};

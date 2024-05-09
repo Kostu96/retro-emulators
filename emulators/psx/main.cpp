@@ -94,6 +94,13 @@ private:
 
 int main()
 {
+    [[maybe_unused]] u32 x = 0x12308000;
+
+    [[maybe_unused]] s16 y = x &= 0xFFFF;
+
+    x <<= 2;
+    [[maybe_unused]] u32 z = static_cast<u32>(y) << 2;
+
     Disassembly disassembly;
     std::unique_ptr<PSX::Emulator> psx = std::make_unique<PSX::Emulator>(disassembly);
     PSXApp app{ *psx.get(), disassembly }; // TODO: toooo much spagetti

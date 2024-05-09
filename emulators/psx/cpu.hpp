@@ -3,12 +3,6 @@
 
 #include <functional>
 
-//#if defined(PSX_TESTS)
-//#define PRIVATE public
-//#else
-//#define PRIVATE private
-//#endif
-
 namespace PSX {
 
     struct RegIndex
@@ -33,7 +27,7 @@ namespace PSX {
         RegIndex regD() const { return RegIndex{ (word >> 11) & 0x1F }; }
         u32 imm() const { return word & 0xFFFF; }
         u32 imm_se() const { return static_cast<s16>(word & 0xFFFF); }
-        u32 imm_se_jump() const { return static_cast<s16>(word & 0xFFFF) << 2; }
+        u32 imm_se_jump() const { return static_cast<u32>(static_cast<s16>(word & 0xFFFF)) << 2; }
         u32 imm_jump() const { return (word & 0x3FFFFFF) << 2; }
         u32 shift() const { return (word >> 6) & 0x1F; }
     };

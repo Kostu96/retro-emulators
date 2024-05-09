@@ -1,7 +1,10 @@
 set(PSX_TESTS_TARGET_NAME ${PSX_TARGET_NAME}_tests)
 set(PSX_TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_instructions_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_alu_instructions_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_branch_instructions_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_instructions_tests_fixture.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu_transfer_instructions_tests.cpp
 )
 
 add_executable(${PSX_TESTS_TARGET_NAME} ${PSX_TESTS_SOURCES})
