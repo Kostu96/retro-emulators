@@ -102,6 +102,7 @@ namespace PSX {
         const COP0Status& getCOP0Status() const { return m_cop0Status; }
 
         void overrideCPURegister(size_t index, u32 value) { m_cpuStatus.regs[index] = value; m_helperCPURegs[index] = value; }
+        void overrideCOP0Register(size_t index, u32 value) { m_cop0Status.regs[index] = value; }
 
         CPU();
         CPU(CPU&) = delete;

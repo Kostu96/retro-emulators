@@ -4,6 +4,97 @@ namespace PSX {
 
     using CPUALUInstructionsTests = CPUInstructionsTests;
 
+	TEST_F(CPUALUInstructionsTests, SSLTest)
+	{
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
+		memory[0] = 0x00084100; // SSL $8, $8, 4
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0xEADBEEF0;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, SRLTestWithSignBitOn)
+	{
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
+		memory[0] = 0x00084102; // SRL $8, $8, 4
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0x0DEADBEE;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, SRLTestWithSignBitOff)
+	{
+		cpu.overrideCPURegister(8, 0x5EADBEEF);
+		memory[0] = 0x00084102; // SRL $8, $8, 4
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0x05EADBEE;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, SRATestWithSignBitOn)
+	{
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
+		memory[0] = 0x00084103; // SRA $8, $8, 4
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0xFDEADBEE;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, SRATestWithSignBitOff)
+	{
+		cpu.overrideCPURegister(8, 0x5EADBEEF);
+		memory[0] = 0x00084103; // SRA $8, $8, 4
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0x05EADBEE;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, SSLVTest)
+	{
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
+		cpu.overrideCPURegister(9, 4);
+		memory[0] = 0x01284004; // SSLV $8, $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0xEADBEEF0;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
 	TEST_F(CPUALUInstructionsTests, ORITest)
 	{
 		memory[0] = 0x3508243F; // ORI $8, $8, 0x243F
@@ -13,21 +104,6 @@ namespace PSX {
 		cpu.clock();
 
 		cpuStatusBefore.regs[8] |= 0x243F;
-		cpuStatusBefore.PC += 4;
-
-		checkSnapshot();
-	}
-
-	TEST_F(CPUALUInstructionsTests, SSLTest)
-	{
-		cpu.overrideCPURegister(8, 0xDEADBEEF);
-		memory[0] = 0x00084080; // SSL $8, $8, 0x2
-
-		makeSnapshot();
-
-		cpu.clock();
-
-		cpuStatusBefore.regs[8] = 0x7AB6FBBC;
 		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();

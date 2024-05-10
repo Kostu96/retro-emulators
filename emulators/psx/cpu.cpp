@@ -148,7 +148,7 @@ namespace PSX {
         m_cop0Status.EPC = m_currentPC;
 
         if (m_isBranchDelaySlot) {
-            m_cop0Status.EPC = m_currentPC;
+            m_cop0Status.EPC -= 4;
             m_cop0Status.CAUSE |= 1 << 31; // set BD flag
         }
 
@@ -248,7 +248,7 @@ namespace PSX {
 
     void CPU::op_JALR(RegIndex d, RegIndex s)
     {
-        setReg(d, m_cpuStatus.PC);
+        setReg(d, m_nextPC);
         m_nextPC = getReg(s);
         m_isBranch = true;
     }

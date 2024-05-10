@@ -46,7 +46,11 @@ public:
 
             ImGui::Text("COP0 Registers");
             ImGui::Separator();
-            ImGui::Text("SR: %08X", m_psx.getCPU().getCOP0Status().SR);
+            ImGui::Text("EPC: %08X", m_psx.getCPU().getCOP0Status().EPC);
+            ImGui::Text("Status Register:");
+            ImGui::Text("  IEKUStack: %02X", m_psx.getCPU().getCOP0Status().SR.IEKUStack);
+            ImGui::Text("  Isc: %01X", m_psx.getCPU().getCOP0Status().SR.Isc);
+            ImGui::Text("  BEV: %01X", m_psx.getCPU().getCOP0Status().SR.BEV);
         };
 
         m_memoryView.read8 = [this](unsigned int address) -> unsigned char { return m_psx.memoryRead8(address); };
@@ -94,13 +98,6 @@ private:
 
 int main()
 {
-    [[maybe_unused]] u32 x = 0x12308000;
-
-    [[maybe_unused]] s16 y = x &= 0xFFFF;
-
-    x <<= 2;
-    [[maybe_unused]] u32 z = static_cast<u32>(y) << 2;
-
     Disassembly disassembly;
     std::unique_ptr<PSX::Emulator> psx = std::make_unique<PSX::Emulator>(disassembly);
     PSXApp app{ *psx.get(), disassembly }; // TODO: toooo much spagetti
