@@ -214,6 +214,55 @@ namespace PSX {
 		checkSnapshot();
 	}
 
+	TEST_F(CPUALUInstructionsTests, ADDTestWithValidPositiveArguments)
+	{
+		cpu.overrideCPURegister(8, 25);
+		cpu.overrideCPURegister(9, 42);
+		memory[0] = 0x01092020; // ADD $4, $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.GPR[4] = 67;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, ADDTestWithValidNegativeArguments)
+	{
+		cpu.overrideCPURegister(8, -25);
+		cpu.overrideCPURegister(9, -42);
+		memory[0] = 0x01092020; // ADD $4, $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.GPR[4] = -67;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, ADDTestWithArgumentsCausingOverflows)
+	{
+		cpu.overrideCPURegister(8, 0x7FFFFFFF);
+		cpu.overrideCPURegister(9, 42);
+		memory[0] = 0x01092020; // ADD $4, $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.PC = 0x80000080;
+		cop0StatusBefore.CAUSE = 0x30;
+		cop0StatusBefore.EPC = 0xBFC00000;
+
+		checkSnapshot();
+	}
+
 	TEST_F(CPUALUInstructionsTests, ORITest)
 	{
 		memory[0] = 0x3508243F; // ORI $8, $8, 0x243F
