@@ -95,6 +95,125 @@ namespace PSX {
 		checkSnapshot();
 	}
 
+	TEST_F(CPUALUInstructionsTests, DIVTestWithValidPositiveArguments)
+	{
+		cpu.overrideCPURegister(8, 25);
+		cpu.overrideCPURegister(9, 4);
+		memory[0] = 0x0109001A; // DIV $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = 1;
+		cpuStatusBefore.LO = 6;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, DIVTestWithValidNegativeArguments)
+	{
+		cpu.overrideCPURegister(8, -25);
+		cpu.overrideCPURegister(9, 4);
+		memory[0] = 0x0109001A; // DIV $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = -1;
+		cpuStatusBefore.LO = -6;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, DIVTestWithPositiveNumeratorAnd0Denominator)
+	{
+		cpu.overrideCPURegister(8, 25);
+		cpu.overrideCPURegister(9, 0);
+		memory[0] = 0x0109001A; // DIV $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = 25;
+		cpuStatusBefore.LO = -1;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, DIVTestWithValidNegativeNumeratorAnd0Denominator)
+	{
+		cpu.overrideCPURegister(8, -25);
+		cpu.overrideCPURegister(9, 0);
+		memory[0] = 0x0109001A; // DIV $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = -25;
+		cpuStatusBefore.LO = 1;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, DIVTestWithValidLowestNegativeNumeratorAndHighestNegativeDenominator)
+	{
+		cpu.overrideCPURegister(8, 0x80000000);
+		cpu.overrideCPURegister(9, -1);
+		memory[0] = 0x0109001A; // DIV $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = 0;
+		cpuStatusBefore.LO = 0x80000000;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, DIVUTestWithValidArguments)
+	{
+		cpu.overrideCPURegister(8, 25);
+		cpu.overrideCPURegister(9, 4);
+		memory[0] = 0x0109001B; // DIVU $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = 1;
+		cpuStatusBefore.LO = 6;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUALUInstructionsTests, DIVUTestWith0Denominator)
+	{
+		cpu.overrideCPURegister(8, 25);
+		cpu.overrideCPURegister(9, 0);
+		memory[0] = 0x0109001B; // DIVU $8, $9
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = 25;
+		cpuStatusBefore.LO = -1;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
 	TEST_F(CPUALUInstructionsTests, ORITest)
 	{
 		memory[0] = 0x3508243F; // ORI $8, $8, 0x243F

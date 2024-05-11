@@ -4,6 +4,66 @@ namespace PSX {
 
 	using CPUTransferInstructionsTests = CPUInstructionsTests;
 
+	TEST_F(CPUTransferInstructionsTests, MFHITest)
+	{
+		cpu.overrideCPURegister(32, 0xDEADBEEF);
+		memory[0] = 0x00004010; // MFHI $8
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0xDEADBEEF;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUTransferInstructionsTests, MTHITest)
+	{
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
+		memory[0] = 0x01000011; // MTHI $8
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.HI = 0xDEADBEEF;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUTransferInstructionsTests, MFLOTest)
+	{
+		cpu.overrideCPURegister(33, 0xDEADBEEF);
+		memory[0] = 0x00004012; // MFLO $8
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.regs[8] = 0xDEADBEEF;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
+	TEST_F(CPUTransferInstructionsTests, MTLOTest)
+	{
+		cpu.overrideCPURegister(8, 0xDEADBEEF);
+		memory[0] = 0x01000013; // MTLO $8
+
+		makeSnapshot();
+
+		cpu.clock();
+
+		cpuStatusBefore.LO = 0xDEADBEEF;
+		cpuStatusBefore.PC += 4;
+
+		checkSnapshot();
+	}
+
 	TEST_F(CPUTransferInstructionsTests, LUITest)
 	{
 		memory[0] = 0x3C080013; // LUI $8, 0x13
@@ -12,7 +72,7 @@ namespace PSX {
 
 		cpu.clock();
 
-		cpuStatusBefore.regs[8] = 0x13 << 16;
+		cpuStatusBefore.regs[8] = 0x130000;
 		cpuStatusBefore.PC += 4;
 
 		checkSnapshot();
