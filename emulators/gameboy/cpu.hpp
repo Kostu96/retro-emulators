@@ -61,6 +61,7 @@ public:
     bool interrupt(u8 vector);
     void clock();
 
+    // TODO(Kostu): make stata non const to remove setters
     const State& getState() const { return m_state; }
     void setCarry(u8 value) { m_state.F.Carry = value; }
     void setHalfCarry(u8 value) { m_state.F.HalfCarry = value; }

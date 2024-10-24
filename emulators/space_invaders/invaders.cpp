@@ -9,6 +9,8 @@
 
 //#define CPU_DIAG
 
+static constexpr u16 CLEAR_SCREEN_ROUTINE_ADDRESS = 0x1A5C;
+
 static const AddressRange16 ROM_RANGE{ 0x0000, 0x1FFF };
 static const AddressRange16 RAM_RANGE{ 0x2000, 0x4000 };
 
@@ -57,7 +59,7 @@ void Invaders::update()
         }
     }
 #else
-    if (m_cpu.getPC() == 0x1A5C)
+    if (m_cpu.getState().PC == CLEAR_SCREEN_ROUTINE_ADDRESS)
     {
         std::memset(m_VRAM, 0, VRAM_SIZE);
     }
@@ -86,14 +88,13 @@ Invaders::Invaders()
     m_cpu.map(ROM, { 0x0000, 0x06A5 });
     m_cpu.map(RAM, { 0x06A6, 0x16A5 });
 #else
-    std::ifstream romFile;
     constexpr size_t ROM_SIZE = 0x800;
     size_t offset = 0;
     for (auto filename : {
-        "roms/invaders_h.bin",
-        "roms/invaders_g.bin",
-        "roms/invaders_f.bin",
-        "roms/invaders_e.bin"
+        "rom/invaders/invaders_h.bin",
+        "rom/invaders/invaders_g.bin",
+        "rom/invaders/invaders_f.bin",
+        "rom/invaders/invaders_e.bin"
         })
     {
         size_t size = ROM_SIZE;
@@ -102,7 +103,7 @@ Invaders::Invaders()
         offset += ROM_SIZE;
     }
 
-    m_ROM[0x1A5C] = 0xC9; // Early out from ClearScreen routine
+    m_ROM[CLEAR_SCREEN_ROUTINE_ADDRESS] = 0xC9; // Early out from ClearScreen routine
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
     m_cpu.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });
@@ -111,7 +112,7 @@ Invaders::Invaders()
     reset();
 }
 
-u8 Invaders::memoryRead(u16 address)
+u8 Invaders::memoryRead(u16 address) const
 {
     u16 offset;
 

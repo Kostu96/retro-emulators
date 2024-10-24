@@ -6,26 +6,6 @@
 class CPU8080
 {
 public:
-    using ReadMemoryCallback = std::function<u8(u16)>;
-    using WriteMemoryCallback = std::function<void(u16, u8)>;
-    void mapReadMemoryCallback(ReadMemoryCallback callback) { load8 = callback; }
-    void mapWriteMemoryCallback(WriteMemoryCallback callback) { store8 = callback; }
-
-    void reset();
-    bool interrupt(u8 vector);
-    void clock();
-
-    u16 getPC() const { return PC; }
-    u16 getSP() const { return SP; }
-    u16 getAF() const { return AF; }
-    u16 getBC() const { return BC; }
-    u16 getDE() const { return DE; }
-    u16 getHL() const { return HL; }
-
-    CPU8080() = default;
-    CPU8080(CPU8080&) = delete;
-    CPU8080& operator=(CPU8080&) = delete;
-private:
     union Flags {
         struct {
             u8 Carry     : 1; // 0
@@ -41,14 +21,59 @@ private:
         u8 byte;
     };
 
+    struct State {
+        u16 PC;
+        u16 SP;
+        union {
+            struct {
+                Flags F;
+                u8 A;
+            };
+            u16 AF;
+        };
+        union {
+            struct {
+                u8 C, B;
+            };
+            u16 BC;
+        };
+        union {
+            struct {
+                u8 E, D;
+            };
+            u16 DE;
+        };
+        union {
+            struct {
+                u8 L, H;
+            };
+            u16 HL;
+        };
+    };
+
+    using ReadMemoryCallback = std::function<u8(u16)>;
+    using WriteMemoryCallback = std::function<void(u16, u8)>;
+    void mapReadMemoryCallback(ReadMemoryCallback callback) { load8 = callback; }
+    void mapWriteMemoryCallback(WriteMemoryCallback callback) { store8 = callback; }
+
+    void reset();
+    bool interrupt(u8 vector);
+    void clock();
+
+    State& getState() { return m_state; }
+
+    CPU8080() = default;
+    CPU8080(CPU8080&) = delete;
+    CPU8080& operator=(CPU8080&) = delete;
+private:
     ReadMemoryCallback load8 = nullptr;
     WriteMemoryCallback store8 = nullptr;
     u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }
     void store16(u16 address, u16 data) const { store8(address, data & 0xFF); store8(address + 1, data >> 8); }
-    void push8(u8 data) { store8(--SP, data); }
-    void push16(u16 data) { store16(SP - 2, data); SP -= 2; }
-    u8 pop8() { return load8(SP++); }
-    u16 pop16() { SP += 2; return load16(SP - 2); }
+    void push8(u8 data) { store8(--m_state.SP, data); }
+    void push16(u16 data) { store16(m_state.SP - 2, data); m_state.SP -= 2; }
+    u8 pop8() { return load8(m_state.SP++); }
+    u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
 
     void executeInstruction(u8 opcode);
 
@@ -77,33 +102,7 @@ private:
     void XOR(u8 value);
     void XTHL();
 
-    u16 PC;
-    u16 SP;
-    union {
-        struct {
-            Flags F;
-            u8 A;
-        };
-        u16 AF;
-    };
-    union {
-        struct {
-            u8 C, B;
-        };
-        u16 BC;
-    };
-    union {
-        struct {
-            u8 E, D;
-        };
-        u16 DE;
-    };
-    union {
-        struct {
-            u8 L, H;
-        };
-        u16 HL;
-    };
+    State m_state;
 
     u8 m_cyclesLeft;
     u8 m_interruptVector;

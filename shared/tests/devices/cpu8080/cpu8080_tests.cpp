@@ -8,41 +8,10 @@ struct CPU8080Tests :
     static constexpr u16 ROM_SIZE = 0x10;
     static constexpr u16 RAM_SIZE = 0x10;
 
-    struct State {
-        u16 PC;
-        u16 SP;
-        union {
-            struct {
-                u8 F;
-                u8 A;
-            };
-            u16 AF;
-        };
-        union {
-            struct {
-                u8 C, B;
-            };
-            u16 BC;
-        };
-        union {
-            struct {
-                u8 E, D;
-            };
-            u16 DE;
-        };
-        union {
-            struct {
-                u8 L, H;
-            };
-            u16 HL;
-        };
-    };
-
     u8 rom[ROM_SIZE]{};
     u8 ram[RAM_SIZE]{};
 
     CPU8080 cpu;
-    State referenceState;
 
     CPU8080Tests()
     {
@@ -61,24 +30,26 @@ struct CPU8080Tests :
 
     void SetUp() override
     {
+        std::memset(rom, 0, ROM_SIZE);
+        std::memset(ram, 0, RAM_SIZE);
         cpu.reset();
-
-        referenceState.PC = cpu.getPC();
-        referenceState.SP = cpu.getSP();
-        referenceState.AF = cpu.getAF();
-        referenceState.BC = cpu.getBC();
-        referenceState.DE = cpu.getDE();
-        referenceState.HL = cpu.getHL();
     }
 
-    void TearDown() override
+    CPU8080::State captureCPUState()
     {
-        EXPECT_EQ(referenceState.PC, cpu.getPC());
-        EXPECT_EQ(referenceState.SP, cpu.getSP());
-        EXPECT_EQ(referenceState.AF, cpu.getAF());
-        EXPECT_EQ(referenceState.BC, cpu.getBC());
-        EXPECT_EQ(referenceState.DE, cpu.getDE());
-        EXPECT_EQ(referenceState.HL, cpu.getHL());
+        CPU8080::State state;
+        std::memcpy(&state, &cpu.getState(), sizeof(CPU8080::State));
+        return state;
+    }
+
+    void compareCPUStates(const CPU8080::State& state1, const CPU8080::State& state2)
+    {
+        EXPECT_EQ(state1.PC, state2.PC);
+        EXPECT_EQ(state1.SP, state2.SP);
+        EXPECT_EQ(state1.AF, state2.AF);
+        EXPECT_EQ(state1.BC, state2.BC);
+        EXPECT_EQ(state1.DE, state2.DE);
+        EXPECT_EQ(state1.HL, state2.HL);
     }
 };
 
@@ -86,11 +57,14 @@ TEST_F(CPU8080Tests, NOPTest)
 {
     rom[0x0] = 0x00; // NOP
 
+    auto preExecutionState = captureCPUState();
     u8 clocks = 1;
     while (clocks--)
         cpu.clock();
+    const auto postExecutionState = captureCPUState();
 
-    referenceState.PC = 0x0001;
+    preExecutionState.PC = 0x0001;
+    compareCPUStates(preExecutionState, postExecutionState);
 }
 
 TEST_F(CPU8080Tests, JMPTest)
@@ -99,11 +73,14 @@ TEST_F(CPU8080Tests, JMPTest)
     rom[0x1] = 0xAD;
     rom[0x2] = 0xDE; // JMP 0xDEAD
 
+    auto preExecutionState = captureCPUState();
     u8 clocks = 1;
     while (clocks--)
         cpu.clock();
+    const auto postExecutionState = captureCPUState();
 
-    referenceState.PC = 0xDEAD;
+    preExecutionState.PC = 0xDEAD;
+    compareCPUStates(preExecutionState, postExecutionState);
 }
 
 TEST_F(CPU8080Tests, LXITest)
@@ -124,15 +101,18 @@ TEST_F(CPU8080Tests, LXITest)
     rom[0xA] = 0xEF;
     rom[0xB] = 0xCD; // LXI SP, 0xCDEF
 
+    auto preExecutionState = captureCPUState();
     u8 clocks = 4;
     while (clocks--)
         cpu.clock();
+    const auto postExecutionState = captureCPUState();
 
-    referenceState.BC = 0x0123;
-    referenceState.DE = 0x4567;
-    referenceState.HL = 0x89AB;
-    referenceState.SP = 0xCDEF;
-    referenceState.PC = 0x000C;
+    preExecutionState.BC = 0x0123;
+    preExecutionState.DE = 0x4567;
+    preExecutionState.HL = 0x89AB;
+    preExecutionState.SP = 0xCDEF;
+    preExecutionState.PC = 0x000C;
+    compareCPUStates(preExecutionState, postExecutionState);
 }
 
 TEST_F(CPU8080Tests, MVITest)
@@ -161,15 +141,18 @@ TEST_F(CPU8080Tests, MVITest)
     rom[0xE] = 0x3E;
     rom[0xF] = 0xEF; // MVI A, 0xEF
 
+    auto preExecutionState = captureCPUState();
     u8 clocks = 8;
     while (clocks--)
         cpu.clock();
+    const auto postExecutionState = captureCPUState();
 
-    referenceState.BC = 0x0123;
-    referenceState.DE = 0x4567;
-    referenceState.HL = 0x8001;
-    referenceState.A = 0xEF;
-    referenceState.PC = 0x0010;
+    preExecutionState.BC = 0x0123;
+    preExecutionState.DE = 0x4567;
+    preExecutionState.HL = 0x8001;
+    preExecutionState.A = 0xEF;
+    preExecutionState.PC = 0x0010;
+    compareCPUStates(preExecutionState, postExecutionState);
 
     EXPECT_EQ(ram[1], 0xCD);
 }

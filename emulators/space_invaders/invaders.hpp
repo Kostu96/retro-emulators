@@ -17,7 +17,7 @@ public:
 private:
     static constexpr size_t VRAM_SIZE = 0x1C00;
 
-    u8 memoryRead(u16 address);
+    u8 memoryRead(u16 address) const;
     void memoryWrite(u16 address, u8 data);
 
     CPU8080 m_cpu;
