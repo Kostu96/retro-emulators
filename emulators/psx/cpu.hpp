@@ -48,16 +48,20 @@ namespace PSX {
         void mapWrite16MemoryCallback(Write16MemoryCallback callback) { store16 = callback; }
         void mapWrite32MemoryCallback(Write32MemoryCallback callback) { store32 = callback; }
 
-        static constexpr size_t CPU_REGISTER_COUNT = 32;
+        static constexpr size_t CPU_GPR_COUNT = 32;
+        static constexpr size_t CPU_REGISTER_COUNT = 35;
         static constexpr size_t COP0_REGISTER_COUNT = 16;
 
-        struct CPUStatus {
+        union CPUStatus {
+            struct {
+                u32 GPR[CPU_GPR_COUNT];
+                u32 HI;
+                u32 LO;
+                u32 PC;
+            };
             u32 regs[CPU_REGISTER_COUNT];
-            u32 PC;
-            u32 HI;
-            u32 LO;
         };
-        static_assert(sizeof(CPUStatus) == (CPU_REGISTER_COUNT + 3) * 4);
+        static_assert(sizeof(CPUStatus) == CPU_REGISTER_COUNT * 4);
 
         union COP0Status {
             union StatusRegister {
@@ -101,7 +105,7 @@ namespace PSX {
         const CPUStatus& getCPUStatus() const { return m_cpuStatus; }
         const COP0Status& getCOP0Status() const { return m_cop0Status; }
 
-        void overrideCPURegister(size_t index, u32 value) { m_cpuStatus.regs[index] = value; m_helperCPURegs[index] = value; }
+        void overrideCPURegister(size_t index, u32 value);
         void overrideCOP0Register(size_t index, u32 value) { m_cop0Status.regs[index] = value; }
 
         CPU();
@@ -174,7 +178,7 @@ namespace PSX {
         COP0Status m_cop0Status;
 
         PendingLoad m_pendingLoad{};
-        u32 m_helperCPURegs[CPU_REGISTER_COUNT];
+        u32 m_helperCPURegs[CPU_GPR_COUNT];
         u32 m_currentPC;
         u32 m_nextPC;
         bool m_isBranch;

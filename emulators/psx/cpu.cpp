@@ -114,20 +114,27 @@ namespace PSX {
             assert(false && "Unhandled opcode!");
         }
 
-        std::memcpy(m_cpuStatus.regs, m_helperCPURegs, CPU_REGISTER_COUNT * sizeof(u32));
+        std::memcpy(m_cpuStatus.GPR, m_helperCPURegs, CPU_GPR_COUNT * sizeof(u32));
 
         assert(getReg(RegIndex{ 0 }) == 0 && "GPR zero value was changed!");
     }
 
+    void CPU::overrideCPURegister(size_t index, u32 value)
+    {
+        m_cpuStatus.regs[index] = value;
+        if (index < CPU_GPR_COUNT)
+            m_helperCPURegs[index] = value;
+    }
+
     CPU::CPU()
     {
-        std::memset(m_cpuStatus.regs, 0, CPU_REGISTER_COUNT * sizeof(u32));
-        std::memset(m_helperCPURegs, 0, CPU_REGISTER_COUNT * sizeof(u32));
+        std::memset(m_cpuStatus.regs, 0, CPU_GPR_COUNT * sizeof(u32));
+        std::memset(m_helperCPURegs, 0, CPU_GPR_COUNT * sizeof(u32));
     }
 
     void CPU::setReg(RegIndex index, u32 value)
     {
-        assert(index.i < CPU_REGISTER_COUNT && "Index out of bounds!");
+        assert(index.i < CPU_GPR_COUNT && "Index out of bounds!");
 
         m_helperCPURegs[index.i] = value;
         m_helperCPURegs[0] = 0;
@@ -135,7 +142,7 @@ namespace PSX {
 
     u32 CPU::getReg(RegIndex index) const
     {
-        assert(index.i < CPU_REGISTER_COUNT && "Index out of bounds!");
+        assert(index.i < CPU_GPR_COUNT && "Index out of bounds!");
 
         return m_cpuStatus.regs[index.i];
     }
@@ -367,7 +374,7 @@ namespace PSX {
     {
         if (denominator == 0) {
             m_cpuStatus.HI = numerator;
-            m_cpuStatus.LO = (numerator >= 0) ? 0xFFFFFFFF : 1;
+            m_cpuStatus.LO = (numerator >= 0) ? -1 : 1;
         }
         else if (static_cast<u32>(numerator) == 0x80000000 && denominator == -1) {
             m_cpuStatus.HI = 0;
