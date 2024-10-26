@@ -61,6 +61,8 @@ public:
     void clock();
 
     const State& getState() const { return m_state; }
+    State& getState() { return m_state; }
+    u8 getCyclesLeft() const { return m_cyclesLeft; }
 
     CPU8080() = default;
     CPU8080(CPU8080&) = delete;

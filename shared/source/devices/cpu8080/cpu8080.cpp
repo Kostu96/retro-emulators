@@ -3,20 +3,53 @@
 #include <bitset>
 #include <cassert>
 
+static const u8 standardCycleCounts[256]{
+    4, 10,  7,  5,  5,  5,  7,  4, 4, 10,  7,  5,  5,  5, 7,  4,
+    4, 10,  7,  5,  5,  5,  7,  4, 4, 10,  7,  5,  5,  5, 7,  4,
+    4, 10, 16,  5,  5,  5,  7,  4, 4, 10, 16,  5,  5,  5, 7,  4,
+    4, 10, 13,  5, 10, 10, 10,  4, 4, 10, 13,  5,  5,  5, 7,  4,
+    5,  5,  5,  5,  5,  5,  7,  5, 5,  5,  5,  5,  5,  5, 7,  5,
+    5,  5,  5,  5,  5,  5,  7,  5, 5,  5,  5,  5,  5,  5, 7,  5,
+    5,  5,  5,  5,  5,  5,  7,  5, 5,  5,  5,  5,  5,  5, 7,  5,
+    7,  7,  7,  7,  7,  7,  7,  7, 5,  5,  5,  5,  5,  5, 7,  5,
+    4,  4,  4,  4,  4,  4,  7,  4, 4,  4,  4,  4,  4,  4, 7,  4,
+    4,  4,  4,  4,  4,  4,  7,  4, 4,  4,  4,  4,  4,  4, 7,  4,
+    4,  4,  4,  4,  4,  4,  7,  4, 4,  4,  4,  4,  4,  4, 7,  4,
+    4,  4,  4,  4,  4,  4,  7,  4, 4,  4,  4,  4,  4,  4, 7,  4,
+    5, 10, 10, 10, 11, 11,  7, 11, 5, 10, 10, 10, 11, 17, 7, 11,
+    5, 10, 10, 10, 11, 11,  7, 11, 5, 10, 10, 10, 11, 17, 7, 11,
+    5, 10, 10, 18, 11, 11,  7, 11, 5,  5, 10,  5, 11, 17, 7, 11,
+    5, 10, 10,  4, 11, 11,  7, 11, 5,  5, 10,  4, 11, 17, 7, 11
+};
+
+static const u8 conditionalCycleCounts[256]{
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+     0, 0,  0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0,
+    11, 0, 10, 10, 17, 0, 0, 11, 0, 0, 0, 0, 17, 17, 0, 0,
+    11, 0, 10,  0, 17, 0, 0, 11, 0, 0, 0, 0, 17, 17, 0, 0,
+    11, 0, 10,  0, 17, 0, 0, 11, 0, 0, 0, 0, 17, 17, 0, 0,
+    11, 0, 10,  0, 17, 0, 0, 11, 0, 0, 0, 0, 17, 17, 0, 0
+};
+
 void CPU8080::reset()
 {
-    m_state.AF = 0;
-    m_state.BC = 0;
-    m_state.DE = 0;
-    m_state.HL = 0;
-    m_state.SP = 0xF000;
     m_state.PC = 0;
     m_interruptEnabled = false;
     m_isHalted = false;
 
     m_conditionalTaken = false;
     m_EIRequested = false;
-    m_cyclesLeft = 0;
+    m_cyclesLeft = 3;
     m_interruptRequested = false;
 }
 
@@ -37,11 +70,6 @@ bool CPU8080::interrupt(u8 vector)
 
 void CPU8080::clock()
 {
-    m_cyclesLeft = 0; // TODO: temp WA until i8080 cycle times are implemented
-
-    if (m_cyclesLeft > 0)
-        m_cyclesLeft--;
-
     if (m_EIRequested) {
         m_EIRequested = false;
         m_interruptEnabled = true;
@@ -58,10 +86,13 @@ void CPU8080::clock()
             u8 opcode = load8(m_state.PC++);
 
             executeInstruction(opcode);
-            // m_cyclesLeft += m_conditionalTaken ? conditionalCycleCounts[opcode] : standardCycleCounts[opcode];
+            m_cyclesLeft += m_conditionalTaken ? conditionalCycleCounts[opcode] : standardCycleCounts[opcode];
             m_conditionalTaken = false;
         }
     }
+
+    if (m_cyclesLeft > 0)
+        m_cyclesLeft--;
 }
 
 void CPU8080::executeInstruction(u8 opcode)
@@ -210,7 +241,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0x8B: ADC(m_state.E); break;
     case 0x8C: ADC(m_state.H); break;
     case 0x8D: ADC(m_state.L); break;
-    case 0x8E: ADC(load8(m_state.HL));                   break;
+    case 0x8E: ADC(load8(m_state.HL)); break;
     case 0x8F: ADC(m_state.A); break;
     case 0x90: SUB(m_state.B); break;
     case 0x91: SUB(m_state.C); break;

@@ -6,8 +6,6 @@
 #include <cstdio>
 #include <cstring>
 
-static constexpr u16 CLEAR_SCREEN_ROUTINE_ADDRESS = 0x1A5C;
-
 static const AddressRange16 ROM_RANGE{ 0x0000, 0x1FFF };
 static const AddressRange16 RAM_RANGE{ 0x2000, 0x4000 };
 
@@ -18,11 +16,6 @@ void Invaders::reset()
 
 void Invaders::clock()
 {
-    if (m_cpu.getState().PC == CLEAR_SCREEN_ROUTINE_ADDRESS)
-    {
-        std::memset(m_VRAM, 0, VRAM_SIZE);
-    }
-
     m_cpu.clock();
 }
 
@@ -42,8 +35,6 @@ Invaders::Invaders()
         assert(ret && "File read failed!");
         offset += ROM_SIZE;
     }
-
-    m_ROM[CLEAR_SCREEN_ROUTINE_ADDRESS] = 0xC9; // Early out from ClearScreen routine
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
     m_cpu.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });

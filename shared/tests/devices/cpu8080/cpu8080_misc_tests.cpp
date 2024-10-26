@@ -1,64 +1,11 @@
-#include "shared/source/devices/cpu8080/cpu8080.hpp"
-
-#include <gtest/gtest.h>
-
-struct CPU8080Tests :
-    public testing::Test
-{
-    static constexpr u16 ROM_SIZE = 0x10;
-    static constexpr u16 RAM_SIZE = 0x10;
-
-    u8 rom[ROM_SIZE]{};
-    u8 ram[RAM_SIZE]{};
-
-    CPU8080 cpu;
-
-    CPU8080Tests()
-    {
-        cpu.mapReadMemoryCallback([&](u16 address)
-            {
-                if (address < ROM_SIZE) return rom[address];
-                if (address >= 0x8000) return ram[address - 0x8000];
-                return u8{};
-            });
-
-        cpu.mapWriteMemoryCallback([&](u16 address, u8 data)
-            {
-                if (address >= 0x8000) ram[address - 0x8000] = data;
-            });
-    }
-
-    void SetUp() override
-    {
-        std::memset(rom, 0, ROM_SIZE);
-        std::memset(ram, 0, RAM_SIZE);
-        cpu.reset();
-    }
-
-    CPU8080::State captureCPUState()
-    {
-        CPU8080::State state;
-        std::memcpy(&state, &cpu.getState(), sizeof(CPU8080::State));
-        return state;
-    }
-
-    void compareCPUStates(const CPU8080::State& state1, const CPU8080::State& state2)
-    {
-        EXPECT_EQ(state1.PC, state2.PC);
-        EXPECT_EQ(state1.SP, state2.SP);
-        EXPECT_EQ(state1.AF, state2.AF);
-        EXPECT_EQ(state1.BC, state2.BC);
-        EXPECT_EQ(state1.DE, state2.DE);
-        EXPECT_EQ(state1.HL, state2.HL);
-    }
-};
+#include "cpu8080_tests_fixture.hpp"
 
 TEST_F(CPU8080Tests, NOPTest)
 {
     rom[0x0] = 0x00; // NOP
 
     auto preExecutionState = captureCPUState();
-    u8 clocks = 1;
+    u8 clocks = 4;
     while (clocks--)
         cpu.clock();
     const auto postExecutionState = captureCPUState();
@@ -74,7 +21,7 @@ TEST_F(CPU8080Tests, JMPTest)
     rom[0x2] = 0xDE; // JMP 0xDEAD
 
     auto preExecutionState = captureCPUState();
-    u8 clocks = 1;
+    u8 clocks = 10;
     while (clocks--)
         cpu.clock();
     const auto postExecutionState = captureCPUState();
@@ -102,7 +49,7 @@ TEST_F(CPU8080Tests, LXITest)
     rom[0xB] = 0xCD; // LXI SP, 0xCDEF
 
     auto preExecutionState = captureCPUState();
-    u8 clocks = 4;
+    u8 clocks = 4 * 10;
     while (clocks--)
         cpu.clock();
     const auto postExecutionState = captureCPUState();
@@ -142,7 +89,7 @@ TEST_F(CPU8080Tests, MVITest)
     rom[0xF] = 0xEF; // MVI A, 0xEF
 
     auto preExecutionState = captureCPUState();
-    u8 clocks = 8;
+    u8 clocks = 7 * 7 + 10;
     while (clocks--)
         cpu.clock();
     const auto postExecutionState = captureCPUState();
