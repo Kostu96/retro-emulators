@@ -60,7 +60,7 @@ public:
     bool interrupt(u8 vector);
     void clock();
 
-    State& getState() { return m_state; }
+    const State& getState() const { return m_state; }
 
     CPU8080() = default;
     CPU8080(CPU8080&) = delete;
