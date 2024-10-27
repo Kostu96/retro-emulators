@@ -78,7 +78,11 @@ target_link_libraries(${SHARED_LIB_TARGET_NAME} PUBLIC
 set(SHARED_LIB_TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu40xx/cpu40xx_instructions_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu6502/cpu6502_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu8080/cpu8080_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu8080/cpu8080_arithmetic_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu8080/cpu8080_branch_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu8080/cpu8080_misc_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu8080/cpu8080_tests_fixture.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/devices/cpu8080/cpu8080_transfer_tests.cpp
 )
 
 add_executable(${SHARED_LIB_TESTS_TARGET_NAME}
