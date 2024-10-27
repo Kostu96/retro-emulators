@@ -8,14 +8,14 @@ class CPU8080
 public:
     union Flags {
         struct {
-            u8 Carry     : 1; // 0
-            u8 unused1   : 1; // 1
-            u8 Parity    : 1; // 2
-            u8 unused3   : 1; // 3
-            u8 HalfCarry : 1; // 4
-            u8 unused5   : 1; // 5
-            u8 Sign      : 1; // 6
-            u8 Zero      : 1; // 7
+            u8 Carry          : 1; // 0
+            u8 unused1        : 1; // 1
+            u8 Parity         : 1; // 2
+            u8 unused3        : 1; // 3
+            u8 AuxiliaryCarry : 1; // 4
+            u8 unused5        : 1; // 5
+            u8 Sign           : 1; // 6
+            u8 Zero           : 1; // 7
         };
 
         u8 byte;

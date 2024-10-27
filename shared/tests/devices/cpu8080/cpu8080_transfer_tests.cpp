@@ -1156,3 +1156,89 @@ TEST_F(CPU8080TransferTests, SHLDTest)
 	EXPECT_EQ(ram[0], 0xAD);
 	EXPECT_EQ(ram[1], 0xDE);
 }
+
+TEST_F(CPU8080TransferTests, LDAX_BTest)
+{
+	rom[0x0] = 0x0A; // LDAX B
+	ram[0] = 0x42;
+	cpu.getState().BC = 0x8000;
+
+	auto preExecutionState = captureCPUState();
+	u8 cycles = 7;
+	while (cycles--)
+		cpu.clock();
+	auto postExecutionState = captureCPUState();
+
+	preExecutionState.PC = 0x0001;
+	preExecutionState.A = 0x42;
+	compareCPUStates(preExecutionState, postExecutionState);
+}
+
+TEST_F(CPU8080TransferTests, LDAX_DTest)
+{
+	rom[0x0] = 0x1A; // LDAX D
+	ram[0] = 0x42;
+	cpu.getState().DE = 0x8000;
+
+	auto preExecutionState = captureCPUState();
+	u8 cycles = 7;
+	while (cycles--)
+		cpu.clock();
+	auto postExecutionState = captureCPUState();
+
+	preExecutionState.PC = 0x0001;
+	preExecutionState.A = 0x42;
+	compareCPUStates(preExecutionState, postExecutionState);
+}
+
+TEST_F(CPU8080TransferTests, STAX_BTest)
+{
+	rom[0x0] = 0x02; // STAX B
+	cpu.getState().A = 0x42;
+	cpu.getState().BC = 0x8000;
+
+	auto preExecutionState = captureCPUState();
+	u8 cycles = 7;
+	while (cycles--)
+		cpu.clock();
+	auto postExecutionState = captureCPUState();
+
+	preExecutionState.PC = 0x0001;
+	compareCPUStates(preExecutionState, postExecutionState);
+	EXPECT_EQ(ram[0], 0x42);
+}
+
+TEST_F(CPU8080TransferTests, STAX_DTest)
+{
+	rom[0x0] = 0x12; // STAX D
+	cpu.getState().A = 0x42;
+	cpu.getState().DE = 0x8000;
+
+	auto preExecutionState = captureCPUState();
+	u8 cycles = 7;
+	while (cycles--)
+		cpu.clock();
+	auto postExecutionState = captureCPUState();
+
+	preExecutionState.PC = 0x0001;
+	compareCPUStates(preExecutionState, postExecutionState);
+	EXPECT_EQ(ram[0], 0x42);
+}
+
+TEST_F(CPU8080TransferTests, XCHG_TEST)
+{
+	rom[0x0] = 0xEB; // XCHG
+	cpu.getState().HL = 0xDEAD;
+	cpu.getState().DE = 0xBEEF;
+
+	auto preExecutionState = captureCPUState();
+	u8 cycles = 4;
+	while (cycles--)
+		cpu.clock();
+	auto postExecutionState = captureCPUState();
+
+	preExecutionState.PC = 0x0001;
+	preExecutionState.HL = 0xBEEF;
+	preExecutionState.DE = 0xDEAD;
+	compareCPUStates(preExecutionState, postExecutionState);
+}

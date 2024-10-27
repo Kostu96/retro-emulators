@@ -18,7 +18,7 @@ static const u8 standardCycleCounts[256]{
     4,  4,  4,  4,  4,  4,  7,  4, 4,  4,  4,  4,  4,  4, 7,  4,
     5, 10, 10, 10, 11, 11,  7, 11, 5, 10, 10, 10, 11, 17, 7, 11,
     5, 10, 10, 10, 11, 11,  7, 11, 5, 10, 10, 10, 11, 17, 7, 11,
-    5, 10, 10, 18, 11, 11,  7, 11, 5,  5, 10,  5, 11, 17, 7, 11,
+    5, 10, 10, 18, 11, 11,  7, 11, 5,  5, 10,  4, 11, 17, 7, 11,
     5, 10, 10,  4, 11, 11,  7, 11, 5,  5, 10,  4, 11, 17, 7, 11
 };
 
@@ -367,7 +367,7 @@ void CPU8080::ADD(u8 value)
     m_state.A = result & 0xFF;
 
     m_state.F.Zero = (m_state.A == 0);
-    m_state.F.HalfCarry = (result4bit >> 4);
+    m_state.F.AuxiliaryCarry = (result4bit >> 4);
     m_state.F.Carry = (result >> 8);
     m_state.F.Sign = (result >> 7);
     m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
@@ -380,7 +380,7 @@ void CPU8080::ADC(u8 value)
     m_state.A = result & 0xFF;
 
     m_state.F.Zero = (m_state.A == 0);
-    m_state.F.HalfCarry = (result4bit >> 4);
+    m_state.F.AuxiliaryCarry = (result4bit >> 4);
     m_state.F.Carry = (result >> 8);
     m_state.F.Sign = (result >> 7);
     m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
@@ -420,7 +420,7 @@ void CPU8080::CMP(u8 value)
     u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
 
     m_state.F.Zero = (result == 0);
-    m_state.F.HalfCarry = (result4bit >> 4);
+    m_state.F.AuxiliaryCarry = (result4bit >> 4);
     m_state.F.Carry = (result >> 8);
     m_state.F.Sign = (result >> 7);
     m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
@@ -430,7 +430,7 @@ void CPU8080::DAA()
 {
     u16 value = m_state.A;
 
-    if ((value & 0x0F) > 9 || m_state.F.HalfCarry)
+    if ((value & 0x0F) > 9 || m_state.F.AuxiliaryCarry)
         value += 0x06;
 
     if ((value >> 4) > 9 || m_state.F.Carry)
@@ -456,7 +456,7 @@ void CPU8080::DECR(u8& reg)
     u8 halfResult = (s8)(reg & 0xF) - 1;
     reg--;
 
-    m_state.F.HalfCarry = (halfResult >> 4);
+    m_state.F.AuxiliaryCarry = (halfResult >> 4);
     m_state.F.Zero = (reg == 0);
     m_state.F.Sign = (reg >> 7);
     m_state.F.Parity = ((std::bitset<8>(reg).count() % 2) == 0);
@@ -474,7 +474,7 @@ void CPU8080::INCR(u8& reg)
     u8 halfResult = (reg & 0xF) + 1;
     reg++;
 
-    m_state.F.HalfCarry = (halfResult >> 4);
+    m_state.F.AuxiliaryCarry = (halfResult >> 4);
     m_state.F.Zero = (reg == 0);
     m_state.F.Sign = (reg >> 7);
     m_state.F.Parity = ((std::bitset<8>(reg).count() % 2) == 0);
@@ -559,7 +559,7 @@ void CPU8080::SUB(u8 value)
     m_state.A = result & 0xFF;
 
     m_state.F.Zero = (m_state.A == 0);
-    m_state.F.HalfCarry = (result4bit >> 4);
+    m_state.F.AuxiliaryCarry = (result4bit >> 4);
     m_state.F.Carry = (result >> 8);
     m_state.F.Sign = (result >> 7);
     m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
@@ -572,7 +572,7 @@ void CPU8080::SBB(u8 value)
     m_state.A = result & 0xFF;
 
     m_state.F.Zero = (m_state.A == 0);
-    m_state.F.HalfCarry = (result4bit >> 4);
+    m_state.F.AuxiliaryCarry = (result4bit >> 4);
     m_state.F.Carry = (result >> 8);
     m_state.F.Sign = (result >> 7);
     m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
