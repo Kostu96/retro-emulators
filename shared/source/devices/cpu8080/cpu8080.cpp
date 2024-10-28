@@ -108,7 +108,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0x06: m_state.B = load8(m_state.PC++); break;
     case 0x07: RLC(); break;
                                                  
-    case 0x09: ADDHL(m_state.BC); break;
+    case 0x09: DAD(m_state.BC); break;
     case 0x0A: m_state.A = load8(m_state.BC); break;
     case 0x0B: m_state.BC--; break;
     case 0x0C: INCR(m_state.C); break;
@@ -124,7 +124,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0x16: m_state.D = load8(m_state.PC++); break;
     case 0x17: RAL(); break;
                                                  
-    case 0x19: ADDHL(m_state.DE); break;
+    case 0x19: DAD(m_state.DE); break;
     case 0x1A: m_state.A = load8(m_state.DE); break;
     case 0x1B: m_state.DE--; break;
     case 0x1C: INCR(m_state.E); break;
@@ -140,7 +140,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0x26: m_state.H = load8(m_state.PC++); break;
     case 0x27: DAA(); break;
 
-    case 0x29: ADDHL(m_state.HL); break;
+    case 0x29: DAD(m_state.HL); break;
     case 0x2A: m_state.HL = load16(load16(m_state.PC)); m_state.PC += 2; break;
     case 0x2B: m_state.HL--; break;
     case 0x2C: INCR(m_state.L); break;
@@ -156,7 +156,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0x36: store8(m_state.HL, load8(m_state.PC++)); break;
     case 0x37: m_state.F.Carry = 1; break;
 
-    case 0x39: ADDHL(m_state.SP); break;
+    case 0x39: DAD(m_state.SP); break;
     case 0x3A: m_state.A = load8(load16(m_state.PC)); m_state.PC += 2; break;
     case 0x3B: m_state.SP--; break;
     case 0x3C: INCR(m_state.A); break;
@@ -360,36 +360,44 @@ void CPU8080::executeInstruction(u8 opcode)
     }
 }
 
+void CPU8080::setFlagsArithmeticStandard(u16 result, u8 auxiliaryResult)
+{
+    m_state.F.Zero = ((result & 0xFF) == 0);
+    m_state.F.AuxiliaryCarry = (auxiliaryResult >> 4);
+    m_state.F.Carry = (result >> 8);
+    m_state.F.Sign = (result >> 7) & 0x1;
+    m_state.F.Parity = ((std::bitset<8>((result & 0xFF)).count() % 2) == 0);
+}
+
+void CPU8080::setFlagsArithmeticINCAndDEC(u8 result, u8 auxiliaryResult)
+{
+    m_state.F.Zero = (result == 0);
+    m_state.F.AuxiliaryCarry = (auxiliaryResult >> 4);
+    m_state.F.Sign = (result >> 7) & 0x1;
+    m_state.F.Parity = ((std::bitset<8>(result).count() % 2) == 0);
+}
+
 void CPU8080::ADD(u8 value)
 {
     u16 result = m_state.A + value;
-    u8 result4bit = (m_state.A & 0xF) + (value & 0xF);
+    u8 auxiliaryResult = (m_state.A & 0xF) + (value & 0xF);
     m_state.A = result & 0xFF;
 
-    m_state.F.Zero = (m_state.A == 0);
-    m_state.F.AuxiliaryCarry = (result4bit >> 4);
-    m_state.F.Carry = (result >> 8);
-    m_state.F.Sign = (result >> 7);
-    m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
+    setFlagsArithmeticStandard(result, auxiliaryResult);
 }
 
 void CPU8080::ADC(u8 value)
 {
     u16 result = m_state.A + value + m_state.F.Carry;
-    u8 result4bit = (m_state.A & 0xF) + (value & 0xF) + m_state.F.Carry;
+    u8 auxiliaryResult = (m_state.A & 0xF) + (value & 0xF) + m_state.F.Carry;
     m_state.A = result & 0xFF;
 
-    m_state.F.Zero = (m_state.A == 0);
-    m_state.F.AuxiliaryCarry = (result4bit >> 4);
-    m_state.F.Carry = (result >> 8);
-    m_state.F.Sign = (result >> 7);
-    m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
+    setFlagsArithmeticStandard(result, auxiliaryResult);
 }
 
-void CPU8080::ADDHL(u16 value)
+void CPU8080::DAD(u16 value)
 {
     u32 result = m_state.HL + value;
-    //u16 result12bit = (HL & 0xFFF) + (value & 0xFFF); TODO: check this
     m_state.HL = result & 0xFFFF;
 
     m_state.F.Carry = (result >> 16);
@@ -428,20 +436,17 @@ void CPU8080::CMP(u8 value)
 
 void CPU8080::DAA()
 {
-    u16 value = m_state.A;
+    u16 result = m_state.A;
 
-    if ((value & 0x0F) > 9 || m_state.F.AuxiliaryCarry)
-        value += 0x06;
+    if ((result & 0x0F) > 9 || m_state.F.AuxiliaryCarry)
+        result += 0x06;
 
-    if ((value >> 4) > 9 || m_state.F.Carry)
-        value += 0x60;
+    if ((result >> 4) > 9 || m_state.F.Carry)
+        result += 0x60;
 
-    m_state.A = value & 0xFF;
+    m_state.A = result & 0xFF;
 
-    m_state.F.Carry = (value >> 8);
-    m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
-    m_state.F.Sign = (m_state.A >> 7);
-    m_state.F.Zero = (m_state.A == 0);
+    setFlagsArithmeticStandard(result, 0); // TODO: how is AC set?
 }
 
 void CPU8080::DECM()
@@ -453,13 +458,10 @@ void CPU8080::DECM()
 
 void CPU8080::DECR(u8& reg)
 {
-    u8 halfResult = (s8)(reg & 0xF) - 1;
+    u8 auxResult = (s8)(reg & 0xF) - 1;
     reg--;
 
-    m_state.F.AuxiliaryCarry = (halfResult >> 4);
-    m_state.F.Zero = (reg == 0);
-    m_state.F.Sign = (reg >> 7);
-    m_state.F.Parity = ((std::bitset<8>(reg).count() % 2) == 0);
+    setFlagsArithmeticINCAndDEC(reg, auxResult);
 }
 
 void CPU8080::INCM()
@@ -471,13 +473,10 @@ void CPU8080::INCM()
 
 void CPU8080::INCR(u8& reg)
 {
-    u8 halfResult = (reg & 0xF) + 1;
+    u8 auxResult = (reg & 0xF) + 1;
     reg++;
 
-    m_state.F.AuxiliaryCarry = (halfResult >> 4);
-    m_state.F.Zero = (reg == 0);
-    m_state.F.Sign = (reg >> 7);
-    m_state.F.Parity = ((std::bitset<8>(reg).count() % 2) == 0);
+    setFlagsArithmeticINCAndDEC(reg, auxResult);
 }
 
 void CPU8080::JMP(bool flag)
@@ -555,27 +554,19 @@ void CPU8080::RST(u8 vector)
 void CPU8080::SUB(u8 value)
 {
     u16 result = (s16)m_state.A - (s16)value;
-    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
+    u8 auxiliaryResult = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
     m_state.A = result & 0xFF;
 
-    m_state.F.Zero = (m_state.A == 0);
-    m_state.F.AuxiliaryCarry = (result4bit >> 4);
-    m_state.F.Carry = (result >> 8);
-    m_state.F.Sign = (result >> 7);
-    m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
+    setFlagsArithmeticStandard(result, auxiliaryResult);
 }
 
 void CPU8080::SBB(u8 value)
 {
     u16 result = (s16)m_state.A - (s16)value - m_state.F.Carry;
-    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF) - m_state.F.Carry;
+    u8 auxiliaryResult = (s8)(m_state.A & 0xF) - (s8)(value & 0xF) - m_state.F.Carry;
     m_state.A = result & 0xFF;
 
-    m_state.F.Zero = (m_state.A == 0);
-    m_state.F.AuxiliaryCarry = (result4bit >> 4);
-    m_state.F.Carry = (result >> 8);
-    m_state.F.Sign = (result >> 7);
-    m_state.F.Parity = ((std::bitset<8>(m_state.A).count() % 2) == 0);
+    setFlagsArithmeticStandard(result, auxiliaryResult);
 }
 
 void CPU8080::XCHG()
