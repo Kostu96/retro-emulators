@@ -2,7 +2,7 @@
 
 using CPU8080TransferTests = CPU8080Tests;
 
-TEST_F(CPU8080TransferTests, MOV_B_BTest)
+TEST_F(CPU8080TransferTests, MOVBBTest)
 {
 	rom[0x0] = 0x40; // MOV B, B
 
@@ -16,7 +16,7 @@ TEST_F(CPU8080TransferTests, MOV_B_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_B_CTest)
+TEST_F(CPU8080TransferTests, MOVBCTest)
 {
 	rom[0x0] = 0x41; // MOV B, C
 	cpu.getState().C = 0x42;
@@ -32,7 +32,7 @@ TEST_F(CPU8080TransferTests, MOV_B_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_B_DTest)
+TEST_F(CPU8080TransferTests, MOVBDTest)
 {
 	rom[0x0] = 0x42; // MOV B, D
 	cpu.getState().D = 0x42;
@@ -48,7 +48,7 @@ TEST_F(CPU8080TransferTests, MOV_B_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_B_ETest)
+TEST_F(CPU8080TransferTests, MOVBETest)
 {
 	rom[0x0] = 0x43; // MOV B, E
 	cpu.getState().E = 0x42;
@@ -64,7 +64,7 @@ TEST_F(CPU8080TransferTests, MOV_B_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_B_HTest)
+TEST_F(CPU8080TransferTests, MOVBHTest)
 {
 	rom[0x0] = 0x44; // MOV B, H
 	cpu.getState().H = 0x42;
@@ -80,7 +80,7 @@ TEST_F(CPU8080TransferTests, MOV_B_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_B_LTest)
+TEST_F(CPU8080TransferTests, MOVBLTest)
 {
 	rom[0x0] = 0x45; // MOV B, L
 	cpu.getState().L = 0x42;
@@ -96,7 +96,7 @@ TEST_F(CPU8080TransferTests, MOV_B_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_B_MTest)
+TEST_F(CPU8080TransferTests, MOVBMTest)
 {
 	rom[0x0] = 0x46; // MOV B, M
 	ram[0] = 0x42;
@@ -113,7 +113,7 @@ TEST_F(CPU8080TransferTests, MOV_B_MTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_B_ATest)
+TEST_F(CPU8080TransferTests, MOVBATest)
 {
 	rom[0x0] = 0x47; // MOV B, A
 	cpu.getState().A = 0x42;
@@ -129,7 +129,7 @@ TEST_F(CPU8080TransferTests, MOV_B_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_BTest)
+TEST_F(CPU8080TransferTests, MOVCBTest)
 {
 	rom[0x0] = 0x48; // MOV C, B
 	cpu.getState().B = 0x42;
@@ -145,7 +145,7 @@ TEST_F(CPU8080TransferTests, MOV_C_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_CTest)
+TEST_F(CPU8080TransferTests, MOVCCTest)
 {
 	rom[0x0] = 0x49; // MOV C, C
 
@@ -159,7 +159,7 @@ TEST_F(CPU8080TransferTests, MOV_C_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_DTest)
+TEST_F(CPU8080TransferTests, MOVCDTest)
 {
 	rom[0x0] = 0x4A; // MOV C, D
 	cpu.getState().D = 0x42;
@@ -175,7 +175,7 @@ TEST_F(CPU8080TransferTests, MOV_C_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_ETest)
+TEST_F(CPU8080TransferTests, MOVCETest)
 {
 	rom[0x0] = 0x4B; // MOV C, E
 	cpu.getState().E = 0x42;
@@ -191,7 +191,7 @@ TEST_F(CPU8080TransferTests, MOV_C_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_HTest)
+TEST_F(CPU8080TransferTests, MOVCHTest)
 {
 	rom[0x0] = 0x4C; // MOV C, H
 	cpu.getState().H = 0x42;
@@ -207,7 +207,7 @@ TEST_F(CPU8080TransferTests, MOV_C_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_LTest)
+TEST_F(CPU8080TransferTests, MOVCLTest)
 {
 	rom[0x0] = 0x4D; // MOV C, L
 	cpu.getState().L = 0x42;
@@ -223,7 +223,7 @@ TEST_F(CPU8080TransferTests, MOV_C_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_MTest)
+TEST_F(CPU8080TransferTests, MOVCMTest)
 {
 	rom[0x0] = 0x4E; // MOV C, M
 	ram[0] = 0x42;
@@ -240,7 +240,7 @@ TEST_F(CPU8080TransferTests, MOV_C_MTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_C_ATest)
+TEST_F(CPU8080TransferTests, MOVCATest)
 {
 	rom[0x0] = 0x4F; // MOV C, A
 	cpu.getState().A = 0x42;
@@ -256,7 +256,7 @@ TEST_F(CPU8080TransferTests, MOV_C_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_BTest)
+TEST_F(CPU8080TransferTests, MOVDBTest)
 {
 	rom[0x0] = 0x50; // MOV D, B
 	cpu.getState().B = 0x42;
@@ -272,7 +272,7 @@ TEST_F(CPU8080TransferTests, MOV_D_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_CTest)
+TEST_F(CPU8080TransferTests, MOVDCTest)
 {
 	rom[0x0] = 0x51; // MOV D, C
 	cpu.getState().C = 0x42;
@@ -288,7 +288,7 @@ TEST_F(CPU8080TransferTests, MOV_D_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_DTest)
+TEST_F(CPU8080TransferTests, MOVDDTest)
 {
 	rom[0x0] = 0x52; // MOV D, D
 
@@ -302,7 +302,7 @@ TEST_F(CPU8080TransferTests, MOV_D_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_ETest)
+TEST_F(CPU8080TransferTests, MOVDETest)
 {
 	rom[0x0] = 0x53; // MOV D, E
 	cpu.getState().E = 0x42;
@@ -318,7 +318,7 @@ TEST_F(CPU8080TransferTests, MOV_D_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_HTest)
+TEST_F(CPU8080TransferTests, MOVDHTest)
 {
 	rom[0x0] = 0x54; // MOV D, H
 	cpu.getState().H = 0x42;
@@ -334,7 +334,7 @@ TEST_F(CPU8080TransferTests, MOV_D_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_LTest)
+TEST_F(CPU8080TransferTests, MOVDLTest)
 {
 	rom[0x0] = 0x55; // MOV D, L
 	cpu.getState().L = 0x42;
@@ -350,7 +350,7 @@ TEST_F(CPU8080TransferTests, MOV_D_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_MTest)
+TEST_F(CPU8080TransferTests, MOVDMTest)
 {
 	rom[0x0] = 0x56; // MOV D, M
 	ram[0] = 0x42;
@@ -367,7 +367,7 @@ TEST_F(CPU8080TransferTests, MOV_D_MTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_D_ATest)
+TEST_F(CPU8080TransferTests, MOVDATest)
 {
 	rom[0x0] = 0x57; // MOV D, A
 	cpu.getState().A = 0x42;
@@ -383,7 +383,7 @@ TEST_F(CPU8080TransferTests, MOV_D_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_BTest)
+TEST_F(CPU8080TransferTests, MOVEBTest)
 {
 	rom[0x0] = 0x58; // MOV E, B
 	cpu.getState().B = 0x42;
@@ -399,7 +399,7 @@ TEST_F(CPU8080TransferTests, MOV_E_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_CTest)
+TEST_F(CPU8080TransferTests, MOVECTest)
 {
 	rom[0x0] = 0x59; // MOV E, C
 	cpu.getState().C = 0x42;
@@ -415,7 +415,7 @@ TEST_F(CPU8080TransferTests, MOV_E_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_DTest)
+TEST_F(CPU8080TransferTests, MOVEDTest)
 {
 	rom[0x0] = 0x5A; // MOV E, D
 	cpu.getState().D = 0x42;
@@ -431,7 +431,7 @@ TEST_F(CPU8080TransferTests, MOV_E_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_ETest)
+TEST_F(CPU8080TransferTests, MOVEETest)
 {
 	rom[0x0] = 0x5B; // MOV E, E
 
@@ -445,7 +445,7 @@ TEST_F(CPU8080TransferTests, MOV_E_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_HTest)
+TEST_F(CPU8080TransferTests, MOVEHTest)
 {
 	rom[0x0] = 0x5C; // MOV E, H
 	cpu.getState().H = 0x42;
@@ -461,7 +461,7 @@ TEST_F(CPU8080TransferTests, MOV_E_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_LTest)
+TEST_F(CPU8080TransferTests, MOVELTest)
 {
 	rom[0x0] = 0x5D; // MOV E, L
 	cpu.getState().L = 0x42;
@@ -477,7 +477,7 @@ TEST_F(CPU8080TransferTests, MOV_E_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_MTest)
+TEST_F(CPU8080TransferTests, MOVEMTest)
 {
 	rom[0x0] = 0x5E; // MOV E, M
 	ram[0] = 0x42;
@@ -494,7 +494,7 @@ TEST_F(CPU8080TransferTests, MOV_E_MTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_E_ATest)
+TEST_F(CPU8080TransferTests, MOVEATest)
 {
 	rom[0x0] = 0x5F; // MOV E, A
 	cpu.getState().A = 0x42;
@@ -510,7 +510,7 @@ TEST_F(CPU8080TransferTests, MOV_E_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_BTest)
+TEST_F(CPU8080TransferTests, MOVHBTest)
 {
 	rom[0x0] = 0x60; // MOV H, B
 	cpu.getState().B = 0x42;
@@ -526,7 +526,7 @@ TEST_F(CPU8080TransferTests, MOV_H_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_CTest)
+TEST_F(CPU8080TransferTests, MOVHCTest)
 {
 	rom[0x0] = 0x61; // MOV H, C
 	cpu.getState().C = 0x42;
@@ -542,7 +542,7 @@ TEST_F(CPU8080TransferTests, MOV_H_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_DTest)
+TEST_F(CPU8080TransferTests, MOVHDTest)
 {
 	rom[0x0] = 0x62; // MOV H, D
 	cpu.getState().D = 0x42;
@@ -558,7 +558,7 @@ TEST_F(CPU8080TransferTests, MOV_H_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_ETest)
+TEST_F(CPU8080TransferTests, MOVHETest)
 {
 	rom[0x0] = 0x63; // MOV H, E
 	cpu.getState().E = 0x42;
@@ -574,7 +574,7 @@ TEST_F(CPU8080TransferTests, MOV_H_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_HTest)
+TEST_F(CPU8080TransferTests, MOVHHTest)
 {
 	rom[0x0] = 0x64; // MOV H, H
 
@@ -588,7 +588,7 @@ TEST_F(CPU8080TransferTests, MOV_H_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_LTest)
+TEST_F(CPU8080TransferTests, MOVHLTest)
 {
 	rom[0x0] = 0x65; // MOV H, L
 	cpu.getState().L = 0x42;
@@ -604,7 +604,7 @@ TEST_F(CPU8080TransferTests, MOV_H_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_MTest)
+TEST_F(CPU8080TransferTests, MOVHMTest)
 {
 	rom[0x0] = 0x66; // MOV H, M
 	ram[0] = 0x42;
@@ -621,7 +621,7 @@ TEST_F(CPU8080TransferTests, MOV_H_MTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_H_ATest)
+TEST_F(CPU8080TransferTests, MOVHATest)
 {
 	rom[0x0] = 0x67; // MOV H, A
 	cpu.getState().A = 0x42;
@@ -637,7 +637,7 @@ TEST_F(CPU8080TransferTests, MOV_H_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_BTest)
+TEST_F(CPU8080TransferTests, MOVLBTest)
 {
 	rom[0x0] = 0x68; // MOV L, B
 	cpu.getState().B = 0x42;
@@ -653,7 +653,7 @@ TEST_F(CPU8080TransferTests, MOV_L_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_CTest)
+TEST_F(CPU8080TransferTests, MOVLCTest)
 {
 	rom[0x0] = 0x69; // MOV L, C
 	cpu.getState().C = 0x42;
@@ -669,7 +669,7 @@ TEST_F(CPU8080TransferTests, MOV_L_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_DTest)
+TEST_F(CPU8080TransferTests, MOVLDTest)
 {
 	rom[0x0] = 0x6A; // MOV L, D
 	cpu.getState().D = 0x42;
@@ -685,7 +685,7 @@ TEST_F(CPU8080TransferTests, MOV_L_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_ETest)
+TEST_F(CPU8080TransferTests, MOVLETest)
 {
 	rom[0x0] = 0x6B; // MOV L, E
 	cpu.getState().E = 0x42;
@@ -701,7 +701,7 @@ TEST_F(CPU8080TransferTests, MOV_L_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_HTest)
+TEST_F(CPU8080TransferTests, MOVLHTest)
 {
 	rom[0x0] = 0x6C; // MOV L, H
 	cpu.getState().H = 0x42;
@@ -717,7 +717,7 @@ TEST_F(CPU8080TransferTests, MOV_L_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_LTest)
+TEST_F(CPU8080TransferTests, MOVLLTest)
 {
 	rom[0x0] = 0x6D; // MOV L, L
 
@@ -731,7 +731,7 @@ TEST_F(CPU8080TransferTests, MOV_L_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_MTest)
+TEST_F(CPU8080TransferTests, MOVLMTest)
 {
 	rom[0x0] = 0x6E; // MOV L, M
 	ram[0] = 0x42;
@@ -748,7 +748,7 @@ TEST_F(CPU8080TransferTests, MOV_L_MTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_L_ATest)
+TEST_F(CPU8080TransferTests, MOVLATest)
 {
 	rom[0x0] = 0x6F; // MOV L, A
 	cpu.getState().A = 0x42;
@@ -764,7 +764,7 @@ TEST_F(CPU8080TransferTests, MOV_L_ATest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_M_BTest)
+TEST_F(CPU8080TransferTests, MOVMBTest)
 {
 	rom[0x0] = 0x70; // MOV M, B
 	cpu.getState().B = 0x42;
@@ -781,7 +781,7 @@ TEST_F(CPU8080TransferTests, MOV_M_BTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080TransferTests, MOV_M_CTest)
+TEST_F(CPU8080TransferTests, MOVMCTest)
 {
 	rom[0x0] = 0x71; // MOV M, C
 	cpu.getState().C = 0x42;
@@ -798,7 +798,7 @@ TEST_F(CPU8080TransferTests, MOV_M_CTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080TransferTests, MOV_M_DTest)
+TEST_F(CPU8080TransferTests, MOVMDTest)
 {
 	rom[0x0] = 0x72; // MOV M, D
 	cpu.getState().D = 0x42;
@@ -815,7 +815,7 @@ TEST_F(CPU8080TransferTests, MOV_M_DTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080TransferTests, MOV_M_ETest)
+TEST_F(CPU8080TransferTests, MOVMETest)
 {
 	rom[0x0] = 0x73; // MOV M, E
 	cpu.getState().E = 0x42;
@@ -832,7 +832,7 @@ TEST_F(CPU8080TransferTests, MOV_M_ETest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080TransferTests, MOV_M_HTest)
+TEST_F(CPU8080TransferTests, MOVMHTest)
 {
 	rom[0x0] = 0x74; // MOV M, H
 	cpu.getState().HL = 0x8000;
@@ -848,7 +848,7 @@ TEST_F(CPU8080TransferTests, MOV_M_HTest)
 	EXPECT_EQ(ram[0], 0x80);
 }
 
-TEST_F(CPU8080TransferTests, MOV_M_LTest)
+TEST_F(CPU8080TransferTests, MOVMLTest)
 {
 	rom[0x0] = 0x75; // MOV M, L
 	cpu.getState().HL = 0x8002;
@@ -864,7 +864,7 @@ TEST_F(CPU8080TransferTests, MOV_M_LTest)
 	EXPECT_EQ(ram[0x2], 0x02);
 }
 
-TEST_F(CPU8080TransferTests, MOV_M_ATest)
+TEST_F(CPU8080TransferTests, MOVMATest)
 {
 	rom[0x0] = 0x77; // MOV M, A
 	cpu.getState().A = 0x42;
@@ -881,7 +881,7 @@ TEST_F(CPU8080TransferTests, MOV_M_ATest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_BTest)
+TEST_F(CPU8080TransferTests, MOVABTest)
 {
 	rom[0x0] = 0x78; // MOV A, B
 	cpu.getState().B = 0x42;
@@ -897,7 +897,7 @@ TEST_F(CPU8080TransferTests, MOV_A_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_CTest)
+TEST_F(CPU8080TransferTests, MOVACTest)
 {
 	rom[0x0] = 0x79; // MOV A, C
 	cpu.getState().C = 0x42;
@@ -913,7 +913,7 @@ TEST_F(CPU8080TransferTests, MOV_A_CTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_DTest)
+TEST_F(CPU8080TransferTests, MOVADTest)
 {
 	rom[0x0] = 0x7A; // MOV A, D
 	cpu.getState().D = 0x42;
@@ -929,7 +929,7 @@ TEST_F(CPU8080TransferTests, MOV_A_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_ETest)
+TEST_F(CPU8080TransferTests, MOVAETest)
 {
 	rom[0x0] = 0x7B; // MOV A, E
 	cpu.getState().E = 0x42;
@@ -945,7 +945,7 @@ TEST_F(CPU8080TransferTests, MOV_A_ETest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_HTest)
+TEST_F(CPU8080TransferTests, MOVAHTest)
 {
 	rom[0x0] = 0x7C; // MOV A, H
 	cpu.getState().H = 0x42;
@@ -961,7 +961,7 @@ TEST_F(CPU8080TransferTests, MOV_A_HTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_LTest)
+TEST_F(CPU8080TransferTests, MOVALTest)
 {
 	rom[0x0] = 0x7D; // MOV A, L
 	cpu.getState().L = 0x42;
@@ -977,7 +977,7 @@ TEST_F(CPU8080TransferTests, MOV_A_LTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_MTest)
+TEST_F(CPU8080TransferTests, MOVAMTest)
 {
 	rom[0x0] = 0x7E; // MOV A, M
 	ram[0] = 0x42;
@@ -994,7 +994,7 @@ TEST_F(CPU8080TransferTests, MOV_A_MTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, MOV_A_ATest)
+TEST_F(CPU8080TransferTests, MOVAATest)
 {
 	rom[0x0] = 0x7F; // MOV A, A
 
@@ -1157,7 +1157,7 @@ TEST_F(CPU8080TransferTests, SHLDTest)
 	EXPECT_EQ(ram[1], 0xDE);
 }
 
-TEST_F(CPU8080TransferTests, LDAX_BTest)
+TEST_F(CPU8080TransferTests, LDAXBTest)
 {
 	rom[0x0] = 0x0A; // LDAX B
 	ram[0] = 0x42;
@@ -1174,7 +1174,7 @@ TEST_F(CPU8080TransferTests, LDAX_BTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, LDAX_DTest)
+TEST_F(CPU8080TransferTests, LDAXDTest)
 {
 	rom[0x0] = 0x1A; // LDAX D
 	ram[0] = 0x42;
@@ -1191,7 +1191,7 @@ TEST_F(CPU8080TransferTests, LDAX_DTest)
 	compareCPUStates(preExecutionState, postExecutionState);
 }
 
-TEST_F(CPU8080TransferTests, STAX_BTest)
+TEST_F(CPU8080TransferTests, STAXBTest)
 {
 	rom[0x0] = 0x02; // STAX B
 	cpu.getState().A = 0x42;
@@ -1208,7 +1208,7 @@ TEST_F(CPU8080TransferTests, STAX_BTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080TransferTests, STAX_DTest)
+TEST_F(CPU8080TransferTests, STAXDTest)
 {
 	rom[0x0] = 0x12; // STAX D
 	cpu.getState().A = 0x42;
@@ -1225,7 +1225,7 @@ TEST_F(CPU8080TransferTests, STAX_DTest)
 	EXPECT_EQ(ram[0], 0x42);
 }
 
-TEST_F(CPU8080TransferTests, XCHG_TEST)
+TEST_F(CPU8080TransferTests, XCHGTEST)
 {
 	rom[0x0] = 0xEB; // XCHG
 	cpu.getState().HL = 0xDEAD;

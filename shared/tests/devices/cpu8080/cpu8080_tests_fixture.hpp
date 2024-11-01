@@ -34,6 +34,8 @@ struct CPU8080Tests :
         std::memset(rom, 0, ROM_SIZE);
         std::memset(ram, 0, RAM_SIZE);
         cpu.reset();
+        cpu.getState().F.byte = 0;
+        
         u8 clocks = 3;
         while (clocks--)
             cpu.clock();
@@ -55,7 +57,8 @@ struct CPU8080Tests :
     {
         EXPECT_EQ(state1.PC, state2.PC);
         EXPECT_EQ(state1.SP, state2.SP);
-        EXPECT_EQ(state1.AF, state2.AF);
+        EXPECT_EQ(state1.AF, state2.AF) 
+            << "state1 flags: " << (u16)state1.F.byte << " state2 flags: " << (u16)state2.F.byte;
         EXPECT_EQ(state1.BC, state2.BC);
         EXPECT_EQ(state1.DE, state2.DE);
         EXPECT_EQ(state1.HL, state2.HL);

@@ -79,9 +79,12 @@ private:
 
     void executeInstruction(u8 opcode);
 
+    void setFlagsArithmeticStandard(u16 result, u8 auxiliaryResult);
+    void setFlagsArithmeticINCAndDEC(u8 result, u8 auxiliaryResult);
+
     void ADD(u8 value);
     void ADC(u8 value);
-    void ADDHL(u16 value);
+    void DAD(u16 value);
     void AND(u8 value);
     void CALL(bool flag);
     void CMP(u8 value);
