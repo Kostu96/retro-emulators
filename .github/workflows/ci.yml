@@ -97,12 +97,15 @@ jobs:
         set(TEST_DIR build/output/${{matrix.config.build_type}}/bin)
         
         foreach(TEST ${TESTS})
+          message(STATUS "Running ${TEST} ...")
           execute_process(COMMAND ${TEST}
                           WORKING_DIRECTORY ${TEST_DIR}
                           RESULT_VARIABLE result)
           if (NOT result EQUAL 0)
             set(ERROR true)
-            message(ERROR "${TEST} has failed!")
+            message(ERROR "${TEST} failed!")
+          else()
+            message(STATUS "${TEST} passed.")
           endif()
         endforeach()
         

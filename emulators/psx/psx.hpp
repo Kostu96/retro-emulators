@@ -1,5 +1,4 @@
 #pragma once
-#include "shared/source/emulator_base.hpp"
 #include "shared/source/imgui/disassembly_view.hpp" // TODO: to much spagetti
 #include "cpu.hpp"
 
@@ -10,8 +9,7 @@ namespace PSX {
 	constexpr size_t RAM_SIZE = 2 * 1024 * 1024;
 	constexpr size_t BIOS_SIZE = 512 * 1024;
 
-	class Emulator :
-		public EmulatorBase
+	class Emulator
 	{
 	public:
 		void reset();
