@@ -4,14 +4,15 @@
 #include <cassert>
 #include <iomanip>
 
+
+void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)
+{
 #define PRINT1 printBytes(ss, code, addr, 1, &byte1)
 #define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)
 #define INST1(str) ss << "       " str; break
 #define INST2(str) PRINT1; ss << "    " str << std::setw(2) << (u16)byte1; break
 #define INST3(str) PRINT2; ss << " " str << std::setw(2) << (u16)byte2 << std::setw(2) << (u16)byte1; break
 
-void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)
-{
     for (size_t addr = 0; addr < code_size; )
     {
         DisassemblyLine line;
@@ -286,4 +287,45 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
         strcpy_s(line.buffer, ss.str().c_str());
         output.push_back(line);
     }
+
+#undef INST1
+#undef INST2
+#undef INST3
+}
+
+void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
+{
+#define INST1(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic)
+#define INST2(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic ", 0x%02X", byte1)
+#define INSTW(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic " 0x%04X", (u16)byte2 << 8 | byte1)
+
+    switch (opcode)
+    {
+    case 0x00: INST1("NOP"); break;
+
+    case 0x06: INST2("MVI B"); break;
+
+    case 0x11: INSTW("LXI DE,"); break;
+
+    case 0x1A: INST1("LDAX"); break;
+
+    case 0x21: INSTW("LXI HL,"); break;
+
+    case 0x23: INST1("INX HL"); break;
+
+    case 0x31: INSTW("LXI SP,"); break;
+
+    case 0x77: INST1("MOV (HL), A"); break;
+
+    case 0xC3: INSTW("JMP"); break;
+
+    case 0xCD: INSTW("CALL"); break;
+
+    default:
+        assert(false);
+        break;
+    }
+
+#undef INST1
+#undef INST2
 }
