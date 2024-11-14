@@ -24,8 +24,7 @@ public:
         } },
         m_invaders{ invaders },
         m_debugView{ m_isPaused },
-        m_disassemblyView{ m_disassembly, 4 },
-        dummyPixelData{ new u32[SCREEN_WIDTH * SCREEN_HEIGHT] } {
+        m_disassemblyView{ m_disassembly, 4 }  {
         
         m_debugView.stepCallback = [&]() {
             if (m_isPaused) {
@@ -73,7 +72,7 @@ public:
 
     bool isPaused() const { return m_isPaused; }
 private:
-    std::span<const unsigned int> getScreenPixels() const override { return { dummyPixelData.get(), SCREEN_WIDTH * SCREEN_HEIGHT }; }
+    std::span<const unsigned int> getScreenPixels() const override { return m_invaders.getVideo().getScreenPixels(); }
 
     void onImGUIRender() override {
         ImGui::BeginMainMenuBar();
@@ -102,11 +101,9 @@ private:
 
     Disassembly m_disassembly; // TODO(Kostu): move this inside DisassemblyView
     Invaders& m_invaders;
-    bool m_isPaused = true;
+    bool m_isPaused = false;
     imgui::DebugView m_debugView;
     imgui::DisassemblyView m_disassemblyView;
-
-    std::unique_ptr<u32> dummyPixelData;
 };
 
 int main()

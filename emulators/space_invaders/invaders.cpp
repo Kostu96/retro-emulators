@@ -20,6 +20,7 @@ void Invaders::reset()
 void Invaders::clock()
 {
     m_cpu.clock();
+    m_video.clock();
 }
 
 void Invaders::runUntilNextInstruction()
@@ -29,7 +30,8 @@ void Invaders::runUntilNextInstruction()
     } while (m_cpu.getCyclesLeft() > 0);
 }
 
-Invaders::Invaders()
+Invaders::Invaders() :
+    m_video{ m_cpu }
 {
     constexpr size_t ROM_SIZE = 0x800;
     size_t offset = 0;
@@ -74,5 +76,5 @@ void Invaders::memoryWrite(u16 address, u8 data)
         return;
     }
 
-    assert(false && "Unkhandled memory write");
+    //assert(false && "Unkhandled memory write");
 }

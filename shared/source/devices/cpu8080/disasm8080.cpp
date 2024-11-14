@@ -304,24 +304,25 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0x00: INST1("NOP"); break;
     case 0x01: INSTW("LXI BC,"); break;
 
-    case 0x05: INST1("DCR B"); break;
+    case 0x05: INST1("DEC B"); break;
     case 0x06: INST2("MVI B,"); break;
 
     case 0x09: INST1("DAD BC"); break;
 
-    case 0x0D: INST1("DCR C"); break;
+    case 0x0D: INST1("DEC C"); break;
     case 0x0E: INST2("MVI C,"); break;
     case 0x0F: INST1("RRC"); break;
 
     case 0x11: INSTW("LXI DE,"); break;
 
-    case 0x13: INST1("INX DE"); break;
+    case 0x13: INST1("INC DE"); break;
+    case 0x14: INST1("INC D"); break;
 
     case 0x19: INST1("DAD DE"); break;
     case 0x1A: INST1("LDAX"); break;
 
     case 0x21: INSTW("LXI HL,"); break;
-
+    case 0x22: INSTW("SHLD"); break;
     case 0x23: INST1("INX HL"); break;
 
     case 0x26: INST2("MVI H,"); break;
@@ -487,6 +488,8 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
 
     case 0xE5: INST1("PUSH HL"); break;
     case 0xE6: INST2("ANI"); break;
+
+    case 0xE9: INST1("PCHL"); break;
 
     case 0xEB: INST1("XCHG"); break;
 

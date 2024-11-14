@@ -70,6 +70,10 @@ bool CPU8080::interrupt(u8 vector)
 
 void CPU8080::clock()
 {
+    if (m_state.PC == 0x0043) {
+        assert(false); // TODO(Kostu): implement last executed instructions in debug view
+    }
+
     if (m_EIRequested) {
         m_EIRequested = false;
         m_interruptEnabled = true;

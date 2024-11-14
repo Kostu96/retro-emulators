@@ -11,6 +11,7 @@ public:
     void runUntilNextInstruction();
 
     const CPU8080& getCPU() const { return m_cpu; }
+    const Video& getVideo() const { return m_video; }
     u8 memoryRead(u16 address) const;
 
     Invaders();
