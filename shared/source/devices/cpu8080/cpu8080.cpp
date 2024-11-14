@@ -310,7 +310,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0xD0: RET(!m_state.F.Carry); break;
     case 0xD1: m_state.DE = pop16(); break;
     case 0xD2: JMP(!m_state.F.Carry); break;
-    case 0xD3: loadMemory8(m_state.PC++); break; /* to be implemented */
+    case 0xD3: storeIO8(loadMemory8(m_state.PC++), m_state.A); break;
     case 0xD4: CALL(!m_state.F.Carry); break;
     case 0xD5: push16(m_state.DE); break;
     case 0xD6: SUB(loadMemory8(m_state.PC++)); break;
@@ -318,7 +318,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0xD8: RET(m_state.F.Carry); break;
 
     case 0xDA: JMP(m_state.F.Carry); break;
-    case 0xDB: loadMemory8(m_state.PC++); break; /* to be implemented */
+    case 0xDB: m_state.A = loadIO8(loadMemory8(m_state.PC++)); break;
     case 0xDC: CALL(m_state.F.Carry); break;
 
     case 0xDE: SBB(loadMemory8(m_state.PC++)); break;

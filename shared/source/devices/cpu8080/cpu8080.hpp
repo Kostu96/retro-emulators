@@ -57,6 +57,8 @@ public:
     using WriteIOCallback = std::function<void(u8, u8)>;
     void mapReadMemoryCallback(ReadMemoryCallback callback) { loadMemory8 = callback; }
     void mapWriteMemoryCallback(WriteMemoryCallback callback) { storeMemory8 = callback; }
+    void mapReadIOCallback(ReadIOCallback callback) { loadIO8 = callback; }
+    void mapWriteIOCallback(WriteIOCallback callback) { storeIO8 = callback; }
 
     void reset();
     bool interrupt(u8 vector);
@@ -72,6 +74,8 @@ public:
 private:
     ReadMemoryCallback loadMemory8 = nullptr;
     WriteMemoryCallback storeMemory8 = nullptr;
+    ReadIOCallback loadIO8 = nullptr;
+    WriteIOCallback storeIO8 = nullptr;
     u16 loadMemory16(u16 address) const { return loadMemory8(address) | (loadMemory8(address + 1) << 8); }
     void storeMemory16(u16 address, u16 data) const { storeMemory8(address, data & 0xFF); storeMemory8(address + 1, data >> 8); }
     void push8(u8 data) { storeMemory8(--m_state.SP, data); }

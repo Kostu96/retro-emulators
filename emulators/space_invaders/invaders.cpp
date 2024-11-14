@@ -38,6 +38,8 @@ Invaders::Invaders()
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
     m_cpu.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });
+    m_cpu.mapReadIOCallback([this](u8 port) { return m_io.read8(port); });
+    m_cpu.mapWriteIOCallback([this](u8 port, u8 data) { m_io.write8(port, data); });
 
     reset();
 }

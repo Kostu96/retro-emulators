@@ -4,11 +4,11 @@
 #include <cassert>
 #include <iomanip>
 
+#define PRINT1 printBytes(ss, code, addr, 1, &byte1)
+#define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)
 
 void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)
 {
-#define PRINT1 printBytes(ss, code, addr, 1, &byte1)
-#define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)
 #define INST1(str) ss << "       " str; break
 #define INST2(str) PRINT1; ss << "    " str << std::setw(2) << (u16)byte1; break
 #define INST3(str) PRINT2; ss << " " str << std::setw(2) << (u16)byte2 << std::setw(2) << (u16)byte1; break
@@ -302,11 +302,16 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     switch (opcode)
     {
     case 0x00: INST1("NOP"); break;
+    case 0x01: INSTW("LXI BC,"); break;
 
     case 0x05: INST1("DCR B"); break;
     case 0x06: INST2("MVI B,"); break;
 
+    case 0x09: INST1("DAD BC"); break;
+
+    case 0x0D: INST1("DCR C"); break;
     case 0x0E: INST2("MVI C,"); break;
+    case 0x0F: INST1("RRC"); break;
 
     case 0x11: INSTW("LXI DE,"); break;
 
@@ -324,21 +329,155 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0x29: INST1("DAD HL"); break;
 
     case 0x31: INSTW("LXI SP,"); break;
+    case 0x32: INSTW("STA"); break;
 
     case 0x36: INST2("MVI (HL),"); break;
 
+    case 0x3A: INSTW("LDA"); break;
+
+    case 0x3E: INST2("MVI A,"); break;
+
+    case 0x40: INST1("MOV B, B"); break;
+    case 0x41: INST1("MOV B, C"); break;
+    case 0x42: INST1("MOV B, D"); break;
+    case 0x43: INST1("MOV B, E"); break;
+    case 0x44: INST1("MOV B, H"); break;
+    case 0x45: INST1("MOV B, L"); break;
+    case 0x46: INST1("MOV B, (HL)"); break;
+    case 0x47: INST1("MOV B, A"); break;
+    case 0x48: INST1("MOV C, B"); break;
+    case 0x49: INST1("MOV C, C"); break;
+    case 0x4A: INST1("MOV C, D"); break;
+    case 0x4B: INST1("MOV C, E"); break;
+    case 0x4C: INST1("MOV C, H"); break;
+    case 0x4D: INST1("MOV C, L"); break;
+    case 0x4E: INST1("MOV C, (HL)"); break;
+    case 0x4F: INST1("MOV C, A"); break;
+    case 0x50: INST1("MOV D, B"); break;
+    case 0x51: INST1("MOV D, C"); break;
+    case 0x52: INST1("MOV D, D"); break;
+    case 0x53: INST1("MOV D, E"); break;
+    case 0x54: INST1("MOV D, H"); break;
+    case 0x55: INST1("MOV D, L"); break;
+    case 0x56: INST1("MOV D, (HL)"); break;
+    case 0x57: INST1("MOV D, A"); break;
+    case 0x58: INST1("MOV E, B"); break;
+    case 0x59: INST1("MOV E, C"); break;
+    case 0x5A: INST1("MOV E, D"); break;
+    case 0x5B: INST1("MOV E, E"); break;
+    case 0x5C: INST1("MOV E, H"); break;
+    case 0x5D: INST1("MOV E, L"); break;
+    case 0x5E: INST1("MOV E, (HL)"); break;
+    case 0x5F: INST1("MOV E, A"); break;
+    case 0x60: INST1("MOV H, B"); break;
+    case 0x61: INST1("MOV H, C"); break;
+    case 0x62: INST1("MOV H, D"); break;
+    case 0x63: INST1("MOV H, E"); break;
+    case 0x64: INST1("MOV H, H"); break;
+    case 0x65: INST1("MOV H, L"); break;
+    case 0x66: INST1("MOV H, (HL)"); break;
+    case 0x67: INST1("MOV H, A"); break;
+    case 0x68: INST1("MOV L, B"); break;
+    case 0x69: INST1("MOV L, C"); break;
+    case 0x6A: INST1("MOV L, D"); break;
+    case 0x6B: INST1("MOV L, E"); break;
+    case 0x6C: INST1("MOV L, H"); break;
+    case 0x6D: INST1("MOV L, L"); break;
+    case 0x6E: INST1("MOV L, (HL)"); break;
     case 0x6F: INST1("MOV L, A"); break;
-
+    case 0x70: INST1("MOV (HL), B"); break;
+    case 0x71: INST1("MOV (HL), C"); break;
+    case 0x72: INST1("MOV (HL), D"); break;
+    case 0x73: INST1("MOV (HL), E"); break;
+    case 0x74: INST1("MOV (HL), H"); break;
+    case 0x75: INST1("MOV (HL), L"); break;
+    case 0x76: INST1("HLT"); break;
     case 0x77: INST1("MOV (HL), A"); break;
-
+    case 0x78: INST1("MOV A, B"); break;
+    case 0x79: INST1("MOV A, C"); break;
+    case 0x7A: INST1("MOV A, D"); break;
+    case 0x7B: INST1("MOV A, E"); break;
     case 0x7C: INST1("MOV A, H"); break;
+    case 0x7D: INST1("MOV A, L"); break;
+    case 0x7E: INST1("MOV A, (HL)"); break;
+    case 0x7F: INST1("MOV A, A"); break;
+    case 0x80: INST1("ADD B"); break;
+    case 0x81: INST1("ADD C"); break;
+    case 0x82: INST1("ADD D"); break;
+    case 0x83: INST1("ADD E"); break;
+    case 0x84: INST1("ADD H"); break;
+    case 0x85: INST1("ADD L"); break;
+    case 0x86: INST1("ADD (HL)"); break;
+    case 0x87: INST1("ADD A"); break;
+    case 0x88: INST1("ADC B"); break;
+    case 0x89: INST1("ADC C"); break;
+    case 0x8A: INST1("ADC D"); break;
+    case 0x8B: INST1("ADC E"); break;
+    case 0x8C: INST1("ADC H"); break;
+    case 0x8D: INST1("ADC L"); break;
+    case 0x8E: INST1("ADC (HL)"); break;
+    case 0x8F: INST1("ADC A"); break;
+    case 0x90: INST1("SUB B"); break;
+    case 0x91: INST1("SUB C"); break;
+    case 0x92: INST1("SUB D"); break;
+    case 0x93: INST1("SUB E"); break;
+    case 0x94: INST1("SUB H"); break;
+    case 0x95: INST1("SUB L"); break;
+    case 0x96: INST1("SUB (HL)"); break;
+    case 0x97: INST1("SUB A"); break;
+    case 0x98: INST1("SBB B"); break;
+    case 0x99: INST1("SBB C"); break;
+    case 0x9A: INST1("SBB D"); break;
+    case 0x9B: INST1("SBB E"); break;
+    case 0x9C: INST1("SBB H"); break;
+    case 0x9D: INST1("SBB L"); break;
+    case 0x9E: INST1("SBB (HL)"); break;
+    case 0x9F: INST1("SBB A"); break;
+    case 0xA0: INST1("AND B"); break;
+    case 0xA1: INST1("AND C"); break;
+    case 0xA2: INST1("AND D"); break;
+    case 0xA3: INST1("AND E"); break;
+    case 0xA4: INST1("AND H"); break;
+    case 0xA5: INST1("AND L"); break;
+    case 0xA6: INST1("AND (HL)"); break;
+    case 0xA7: INST1("AND A"); break;
+    case 0xA8: INST1("XOR B"); break;
+    case 0xA9: INST1("XOR C"); break;
+    case 0xAA: INST1("XOR D"); break;
+    case 0xAB: INST1("XOR E"); break;
+    case 0xAC: INST1("XOR H"); break;
+    case 0xAD: INST1("XOR L"); break;
+    case 0xAE: INST1("XOR (HL)"); break;
+    case 0xAF: INST1("XOR A"); break;
+    case 0xB0: INST1("OR B"); break;
+    case 0xB1: INST1("OR C"); break;
+    case 0xB2: INST1("OR D"); break;
+    case 0xB3: INST1("OR E"); break;
+    case 0xB4: INST1("OR H"); break;
+    case 0xB5: INST1("OR L"); break;
+    case 0xB6: INST1("OR (HL)"); break;
+    case 0xB7: INST1("OR A"); break;
+    case 0xB8: INST1("CMP B"); break;
+    case 0xB9: INST1("CMP C"); break;
+    case 0xBA: INST1("CMP D"); break;
+    case 0xBB: INST1("CMP E"); break;
+    case 0xBC: INST1("CMP H"); break;
+    case 0xBD: INST1("CMP L"); break;
+    case 0xBE: INST1("CMP (HL)"); break;
+    case 0xBF: INST1("CMP A"); break;
 
+    case 0xC1: INST1("POP BC"); break;
     case 0xC2: INSTW("JNZ"); break;
     case 0xC3: INSTW("JMP"); break;
+
+    case 0xC5: INST1("PUSH BC"); break;
+    case 0xC6: INST2("ADI"); break;
 
     case 0xC9: INST1("RET"); break;
 
     case 0xCD: INSTW("CALL"); break;
+
+    case 0xD1: INST1("POP DE"); break;
 
     case 0xD3: INST2("OUT"); break;
 
@@ -347,8 +486,13 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0xE1: INST1("POP HL"); break;
 
     case 0xE5: INST1("PUSH HL"); break;
+    case 0xE6: INST2("ANI"); break;
 
     case 0xEB: INST1("XCHG"); break;
+
+    case 0xF1: INST1("RP"); break;
+
+    case 0xF5: INST1("PUSH AF"); break;
 
     case 0xFE: INST2("CPI"); break;
 
@@ -359,4 +503,5 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
 
 #undef INST1
 #undef INST2
+#undef INSTW
 }
