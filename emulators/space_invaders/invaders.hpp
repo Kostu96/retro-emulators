@@ -8,6 +8,7 @@ class Invaders
 public:
     void reset();
     void clock();
+    void runUntilNextInstruction();
 
     const CPU8080& getCPU() const { return m_cpu; }
     u8 memoryRead(u16 address) const;

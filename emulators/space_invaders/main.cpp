@@ -23,11 +23,16 @@ public:
                 .hasMenuBar = true
         } },
         m_invaders{ invaders },
+        m_debugView{ m_isPaused },
         m_disassemblyView{ m_disassembly, 4 },
         dummyPixelData{ new u32[SCREEN_WIDTH * SCREEN_HEIGHT] } {
-        m_debugView.cpuStepCallback = [&]() {
-            m_invaders.clock();
-            };
+        
+        m_debugView.stepCallback = [&]() {
+            if (m_isPaused) {
+                m_invaders.runUntilNextInstruction();
+                updateDisassembly();
+            }
+        };
 
         m_debugView.cpuStatusCallback = [&]() {
             const auto& cpuStatus = m_invaders.getCPU().getState();
@@ -41,6 +46,8 @@ public:
             ImGui::Text("DE: %04X", cpuStatus.DE); ImGui::SameLine();
             ImGui::Text("HL: %04X", cpuStatus.HL); ImGui::SameLine();
             };
+
+        updateDisassembly();
     }
 
     void updateDisassembly() {
@@ -63,6 +70,8 @@ public:
         else if (line.address == i->address) *i = line;
         else m_disassembly.insert(i, line);
     }
+
+    bool isPaused() const { return m_isPaused; }
 private:
     std::span<const unsigned int> getScreenPixels() const override { return { dummyPixelData.get(), SCREEN_WIDTH * SCREEN_HEIGHT }; }
 
@@ -93,6 +102,7 @@ private:
 
     Disassembly m_disassembly; // TODO(Kostu): move this inside DisassemblyView
     Invaders& m_invaders;
+    bool m_isPaused = true;
     imgui::DebugView m_debugView;
     imgui::DisassemblyView m_disassemblyView;
 
@@ -108,10 +118,12 @@ int main()
         [&]() {
             while (app.isRunning()) {
                 //std::this_thread::sleep_for(std::chrono::nanoseconds{ 32 }); // TODO: temp
-                if (invaders->getCPU().getCyclesLeft() == 0) {
-                    app.updateDisassembly();
+                if (!app.isPaused()) {
+                    invaders->clock();
+                    if (invaders->getCPU().getCyclesLeft() == 0) {
+                        app.updateDisassembly();
+                    }
                 }
-                invaders->clock();
             }
         }
     };

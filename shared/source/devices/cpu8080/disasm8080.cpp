@@ -480,7 +480,7 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0xD1: INST1("POP DE"); break;
 
     case 0xD3: INST2("OUT"); break;
-
+    case 0xD4: INSTW("CNC"); break;
     case 0xD5: INST1("PUSH DE"); break;
 
     case 0xE1: INST1("POP HL"); break;
@@ -493,6 +493,8 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0xF1: INST1("RP"); break;
 
     case 0xF5: INST1("PUSH AF"); break;
+
+    case 0xFB: INST1("EI"); break;
 
     case 0xFE: INST2("CPI"); break;
 
