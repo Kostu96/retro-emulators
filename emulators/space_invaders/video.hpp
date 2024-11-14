@@ -9,8 +9,8 @@ class Video
 public:
     Video() = default;
 
-    Video(Video&) = delete;
-    Video& operator=(Video&) = delete;
+    Video(const Video&) = delete;
+    Video& operator=(const Video&) = delete;
 private:
     u32 m_screenPixels[SCREEN_WIDTH * SCREEN_HEIGHT];
 };

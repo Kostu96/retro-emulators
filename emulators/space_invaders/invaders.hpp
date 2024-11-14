@@ -1,6 +1,7 @@
 #pragma once
 #include "shared/source/devices/cpu8080/cpu8080.hpp"
 #include "video.hpp"
+#include "io.hpp"
 
 class Invaders
 {
@@ -19,6 +20,7 @@ private:
 
     CPU8080 m_cpu;
     Video m_video;
+    IO m_io;
     u8 m_ROM[0x2000];
     u8 m_RAM[0x2000];
     u8* m_VRAM = m_RAM + 0x400;

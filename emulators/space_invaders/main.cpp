@@ -23,7 +23,7 @@ public:
                 .hasMenuBar = true
         } },
         m_invaders{ invaders },
-        m_disassemblyView{ m_disassembly },
+        m_disassemblyView{ m_disassembly, 4 },
         dummyPixelData{ new u32[SCREEN_WIDTH * SCREEN_HEIGHT] } {
         m_debugView.cpuStepCallback = [&]() {
             m_invaders.clock();

@@ -24,7 +24,7 @@ public:
         } },
         m_psx{ psx },
         m_disassembly{ disassembly },
-        m_disasmView{ m_disassembly },
+        m_disasmView{ m_disassembly, 8 },
         dummyPixelData{ new unsigned int[PSX::SCREEN_WIDTH * PSX::SCREEN_HEIGHT] }
     {
         m_debugView.cpuStepCallback = [&]() {

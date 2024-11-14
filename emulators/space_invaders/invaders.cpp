@@ -57,8 +57,10 @@ void Invaders::memoryWrite(u16 address, u8 data)
 {
     u16 offset;
 
-    if (ROM_RANGE.contains(address, offset)) m_ROM[offset] = data; return;
-    if (RAM_RANGE.contains(address, offset)) m_RAM[offset] = data; return;
+    if (RAM_RANGE.contains(address, offset)) {
+        m_RAM[offset] = data;
+        return;
+    }
 
     assert(false && "Unkhandled memory write");
 }

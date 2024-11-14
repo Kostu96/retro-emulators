@@ -296,30 +296,61 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
 void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
 {
 #define INST1(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic)
-#define INST2(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic ", 0x%02X", byte1)
+#define INST2(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic " 0x%02X", byte1)
 #define INSTW(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic " 0x%04X", (u16)byte2 << 8 | byte1)
 
     switch (opcode)
     {
     case 0x00: INST1("NOP"); break;
 
-    case 0x06: INST2("MVI B"); break;
+    case 0x05: INST1("DCR B"); break;
+    case 0x06: INST2("MVI B,"); break;
+
+    case 0x0E: INST2("MVI C,"); break;
 
     case 0x11: INSTW("LXI DE,"); break;
 
+    case 0x13: INST1("INX DE"); break;
+
+    case 0x19: INST1("DAD DE"); break;
     case 0x1A: INST1("LDAX"); break;
 
     case 0x21: INSTW("LXI HL,"); break;
 
     case 0x23: INST1("INX HL"); break;
 
+    case 0x26: INST2("MVI H,"); break;
+
+    case 0x29: INST1("DAD HL"); break;
+
     case 0x31: INSTW("LXI SP,"); break;
+
+    case 0x36: INST2("MVI (HL),"); break;
+
+    case 0x6F: INST1("MOV L, A"); break;
 
     case 0x77: INST1("MOV (HL), A"); break;
 
+    case 0x7C: INST1("MOV A, H"); break;
+
+    case 0xC2: INSTW("JNZ"); break;
     case 0xC3: INSTW("JMP"); break;
 
+    case 0xC9: INST1("RET"); break;
+
     case 0xCD: INSTW("CALL"); break;
+
+    case 0xD3: INST2("OUT"); break;
+
+    case 0xD5: INST1("PUSH DE"); break;
+
+    case 0xE1: INST1("POP HL"); break;
+
+    case 0xE5: INST1("PUSH HL"); break;
+
+    case 0xEB: INST1("XCHG"); break;
+
+    case 0xFE: INST2("CPI"); break;
 
     default:
         assert(false);
