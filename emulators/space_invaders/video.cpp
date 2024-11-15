@@ -10,27 +10,28 @@ void Video::clock()
 {
     m_counter++;
 
-    constexpr size_t COUNTS_PER_FRAME = 1000000 / 60;
+    constexpr size_t COUNTS_PER_FRAME = 2000000 / 60;
     constexpr size_t COUNTS_PER_HALFFRAME = COUNTS_PER_FRAME / 2;
 
-    if (m_counter == COUNTS_PER_HALFFRAME) { // TODO(Kostu): do math from 2MHz
-        size_t index = 0;
-        for (const u8* ptr = m_VRAM; ptr < m_VRAM + 0xE00; ptr++) {
-            u8 byte = *ptr;
-            for (size_t i = 0; i < 8; i++) {
-                    m_screenPixels[index++] = ((byte >> i) & 1) ? 0xFFFFFFFF : 0xFF000000;
+    auto drawHalf = [this](bool second) {
+        for (size_t x = 0; x < SCREEN_WIDTH; x++) {
+            for (size_t y = second ? SCREEN_HEIGHT / 16 : 0; y < SCREEN_HEIGHT / (second ? 8 : 16); y++) {
+                size_t ptrOffset = x * 32 + (32 - y - 1);
+                u8 byte = m_VRAM[ptrOffset];
+                for (size_t i = 0; i < 8; i++) {
+                    size_t index = (y * 8 + (8 - i) - 1) * SCREEN_WIDTH + x;
+                    m_screenPixels[index] = ((byte >> i) & 1) ? 0xFFFFFFFF : 0xFF000000;
+                }
             }
         }
+    };
+
+    if (m_counter == COUNTS_PER_HALFFRAME) { // TODO(Kostu): do math from 2MHz
+        drawHalf(false);
         m_cpuRef.interrupt(0x08);
     }
     else if (m_counter == COUNTS_PER_FRAME) {
-        size_t index = 28672;
-        for (const u8* ptr = m_VRAM + 0xE00; ptr < m_VRAM + 0x1C00; ptr++) {
-            u8 byte = *ptr;
-            for (size_t i = 0; i < 8; i++) {
-                m_screenPixels[index++] = ((byte >> i) & 1) ? 0xFFFFFFFF : 0xFF000000;
-            }
-        }
+        drawHalf(true);
         m_cpuRef.interrupt(0x10);
         m_counter = 0;
     }

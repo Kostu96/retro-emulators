@@ -3,8 +3,8 @@
 
 #include <span>
 
-constexpr u16 SCREEN_WIDTH = 256;
-constexpr u16 SCREEN_HEIGHT = 224;
+constexpr u16 SCREEN_WIDTH = 224;
+constexpr u16 SCREEN_HEIGHT = 256;
 
 class CPU8080;
 
