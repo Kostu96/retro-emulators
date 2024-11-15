@@ -12,5 +12,6 @@ public:
     u8 read8(u8 port) const;
     void write8(u8 port, u8 data);
 private:
-
+    u8 m_shiftAmount : 3;
+    u16 m_shiftRegister;
 };
