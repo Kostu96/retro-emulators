@@ -12,14 +12,24 @@ static const AddressRange16 RAM_RANGE{ 0x2000, 0x4000 };
 void Invaders::reset()
 {
     m_cpu.reset();
+    runUntilNextInstruction();
 }
 
 void Invaders::clock()
 {
     m_cpu.clock();
+    m_video.clock();
 }
 
-Invaders::Invaders()
+void Invaders::runUntilNextInstruction()
+{
+    do {
+        clock();
+    } while (m_cpu.getCyclesLeft() > 0);
+}
+
+Invaders::Invaders() :
+    m_video{ m_cpu, m_VRAM }
 {
     constexpr size_t ROM_SIZE = 0x800;
     size_t offset = 0;
@@ -38,6 +48,8 @@ Invaders::Invaders()
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });
     m_cpu.mapWriteMemoryCallback([this](u16 address, u8 data) { memoryWrite(address, data); });
+    m_cpu.mapReadIOCallback([this](u8 port) { return m_io.read8(port); });
+    m_cpu.mapWriteIOCallback([this](u8 port, u8 data) { m_io.write8(port, data); });
 
     reset();
 }
@@ -57,8 +69,10 @@ void Invaders::memoryWrite(u16 address, u8 data)
 {
     u16 offset;
 
-    if (ROM_RANGE.contains(address, offset)) m_ROM[offset] = data; return;
-    if (RAM_RANGE.contains(address, offset)) m_RAM[offset] = data; return;
+    if (RAM_RANGE.contains(address, offset)) {
+        m_RAM[offset] = data;
+        return;
+    }
 
     assert(false && "Unkhandled memory write");
 }

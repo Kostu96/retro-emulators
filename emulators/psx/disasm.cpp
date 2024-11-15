@@ -6,7 +6,7 @@ namespace PSX {
 
     void disasm(u32 address, CPUInstruction inst, DisassemblyLine& output)
     {
-        output.address = address;
+        output.address = address; // TODO(Kostu): this is not a good solution when memory address is translated
 
         switch (inst.opcode())
         {

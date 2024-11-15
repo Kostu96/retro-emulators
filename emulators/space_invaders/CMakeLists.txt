@@ -4,7 +4,11 @@ set(INVADERS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/invaders.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/invaders.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/video.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/video.hpp
 )
 
 add_executable(${INVADERS_TARGET_NAME}

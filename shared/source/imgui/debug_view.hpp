@@ -6,10 +6,13 @@ namespace imgui {
 	struct DebugView
 	{
 		bool open = false;
-		std::function<void()> cpuStepCallback = nullptr;
+		bool& isPaused;
+		std::function<void()> stepCallback = nullptr;
 		std::function<void()> cpuStatusCallback = nullptr;
 
 		void updateWindow();
+
+		DebugView(bool& isPaused) : isPaused{ isPaused } {}
 	};
 
 } // namespace imgui

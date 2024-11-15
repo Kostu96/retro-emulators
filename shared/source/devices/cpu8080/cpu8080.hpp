@@ -53,8 +53,12 @@ public:
 
     using ReadMemoryCallback = std::function<u8(u16)>;
     using WriteMemoryCallback = std::function<void(u16, u8)>;
-    void mapReadMemoryCallback(ReadMemoryCallback callback) { load8 = callback; }
-    void mapWriteMemoryCallback(WriteMemoryCallback callback) { store8 = callback; }
+    using ReadIOCallback = std::function<u8(u8)>;
+    using WriteIOCallback = std::function<void(u8, u8)>;
+    void mapReadMemoryCallback(ReadMemoryCallback callback) { loadMemory8 = callback; }
+    void mapWriteMemoryCallback(WriteMemoryCallback callback) { storeMemory8 = callback; }
+    void mapReadIOCallback(ReadIOCallback callback) { loadIO8 = callback; }
+    void mapWriteIOCallback(WriteIOCallback callback) { storeIO8 = callback; }
 
     void reset();
     bool interrupt(u8 vector);
@@ -68,14 +72,16 @@ public:
     CPU8080(CPU8080&) = delete;
     CPU8080& operator=(CPU8080&) = delete;
 private:
-    ReadMemoryCallback load8 = nullptr;
-    WriteMemoryCallback store8 = nullptr;
-    u16 load16(u16 address) const { return load8(address) | (load8(address + 1) << 8); }
-    void store16(u16 address, u16 data) const { store8(address, data & 0xFF); store8(address + 1, data >> 8); }
-    void push8(u8 data) { store8(--m_state.SP, data); }
-    void push16(u16 data) { store16(m_state.SP - 2, data); m_state.SP -= 2; }
-    u8 pop8() { return load8(m_state.SP++); }
-    u16 pop16() { m_state.SP += 2; return load16(m_state.SP - 2); }
+    ReadMemoryCallback loadMemory8 = nullptr;
+    WriteMemoryCallback storeMemory8 = nullptr;
+    ReadIOCallback loadIO8 = nullptr;
+    WriteIOCallback storeIO8 = nullptr;
+    u16 loadMemory16(u16 address) const { return loadMemory8(address) | (loadMemory8(address + 1) << 8); }
+    void storeMemory16(u16 address, u16 data) const { storeMemory8(address, data & 0xFF); storeMemory8(address + 1, data >> 8); }
+    void push8(u8 data) { storeMemory8(--m_state.SP, data); }
+    void push16(u16 data) { storeMemory16(m_state.SP - 2, data); m_state.SP -= 2; }
+    u8 pop8() { return loadMemory8(m_state.SP++); }
+    u16 pop16() { m_state.SP += 2; return loadMemory16(m_state.SP - 2); }
 
     void executeInstruction(u8 opcode);
 

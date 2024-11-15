@@ -23,12 +23,15 @@ public:
                 .hasMenuBar = true
         } },
         m_psx{ psx },
+        m_debugView{ m_isPaused },
         m_disassembly{ disassembly },
-        m_disasmView{ m_disassembly },
+        m_disasmView{ m_disassembly, 8 },
         dummyPixelData{ new unsigned int[PSX::SCREEN_WIDTH * PSX::SCREEN_HEIGHT] }
     {
-        m_debugView.cpuStepCallback = [&]() {
-            m_psx.clock();
+        m_debugView.stepCallback = [&]() {
+            if (m_isPaused) {
+                m_psx.clock();
+            }
         };
 
         m_debugView.cpuStatusCallback = [&]() {
@@ -92,6 +95,7 @@ private:
     imgui::DisassemblyView m_disasmView;
     imgui::MemoryView m_memoryView;
     bool m_autostart = false;
+    bool m_isPaused = false;
 
     std::unique_ptr<unsigned int> dummyPixelData;
 };
