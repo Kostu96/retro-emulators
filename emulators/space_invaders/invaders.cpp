@@ -12,9 +12,7 @@ static const AddressRange16 RAM_RANGE{ 0x2000, 0x4000 };
 void Invaders::reset()
 {
     m_cpu.reset();
-    m_cpu.clock();
-    m_cpu.clock();
-    m_cpu.clock();
+    runUntilNextInstruction();
 }
 
 void Invaders::clock()

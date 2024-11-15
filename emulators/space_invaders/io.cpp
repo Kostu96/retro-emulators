@@ -8,7 +8,7 @@ u8 IO::read8(u8 port) const
     switch (port) {
     case 0x01: return 0x88; // TODO(Kostu): temp except always ones
     case 0x02: return 0x00; // TODO(Kostu): temp
-    case 0x03: return (m_shiftRegister >> m_shiftAmount) & 0xFF;
+    case 0x03: return (m_shiftRegister >> (8 - m_shiftAmount)) & 0xFF;
     }
 
     assert(false && "Unhandled io read!");
