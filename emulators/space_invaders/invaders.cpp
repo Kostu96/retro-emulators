@@ -31,7 +31,7 @@ void Invaders::runUntilNextInstruction()
 }
 
 Invaders::Invaders() :
-    m_video{ m_cpu }
+    m_video{ m_cpu, m_VRAM }
 {
     constexpr size_t ROM_SIZE = 0x800;
     size_t offset = 0;
@@ -76,5 +76,5 @@ void Invaders::memoryWrite(u16 address, u8 data)
         return;
     }
 
-    //assert(false && "Unkhandled memory write");
+    assert(false && "Unkhandled memory write");
 }

@@ -21,9 +21,9 @@ private:
     void memoryWrite(u16 address, u8 data);
 
     CPU8080 m_cpu;
-    Video m_video;
-    IO m_io;
     u8 m_ROM[0x2000];
     u8 m_RAM[0x2000];
     u8* m_VRAM = m_RAM + 0x400;
+    Video m_video;
+    IO m_io;
 };

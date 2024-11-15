@@ -11,7 +11,7 @@ class CPU8080;
 class Video
 {
 public:
-    Video(CPU8080& cpu) : m_cpuRef{ cpu } {};
+    Video(CPU8080& cpu, const u8* VRAM) : m_cpuRef{ cpu }, m_VRAM{ VRAM } {};
 
     void reset();
     void clock();
@@ -22,6 +22,7 @@ public:
     Video& operator=(const Video&) = delete;
 private:
     CPU8080& m_cpuRef;
+    const u8* m_VRAM;
     u32 m_screenPixels[SCREEN_WIDTH * SCREEN_HEIGHT];
     u32 m_counter = 0;
 };

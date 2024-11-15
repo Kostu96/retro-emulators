@@ -46,10 +46,10 @@ public:
             ImGui::Text("HL: %04X", cpuStatus.HL);
 
             ImGui::SeparatorText("Instruction Trace");
-            /*for (const auto& inst : m_intructionTrace) {
-                ImGui::Text("0x%04X: ", inst.address);
-            }*/
-            };
+            for (size_t i = 0; i < INSTRUCTION_TRACE_CAPACITY; i++) {
+                ImGui::Text("0x%04X: %.*s", m_intructionTrace[i].address, DisassemblyLine::BUFFER_SIZE, m_intructionTrace[i].buffer);
+            }
+        };
 
         updateDisassembly();
     }
@@ -63,7 +63,10 @@ public:
         disasmIntruction(opcode, byte1, byte2, line);
         line.address = pc;
 
-        
+        for (size_t i = INSTRUCTION_TRACE_CAPACITY - 1; i > 0; i--) {
+            m_intructionTrace[i] = m_intructionTrace[i - 1];
+        }
+        m_intructionTrace[0] = line;
 
         auto i = m_disassembly.begin();
         for (; i != m_disassembly.end(); i++)
@@ -111,9 +114,8 @@ private:
     bool m_isPaused = false;
     imgui::DebugView m_debugView;
     imgui::DisassemblyView m_disassemblyView;
-    static constexpr size_t INSTRUCTION_TRACE_CAPACITY = 5;
+    static constexpr size_t INSTRUCTION_TRACE_CAPACITY = 8;
     DisassemblyLine m_intructionTrace[INSTRUCTION_TRACE_CAPACITY];
-    size_t instrctionTraceCurrent = 0;
 };
 
 int main()

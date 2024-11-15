@@ -303,12 +303,17 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     {
     case 0x00: INST1("NOP"); break;
     case 0x01: INSTW("LXI BC,"); break;
-
+    case 0x02: INST1("SDAX BC"); break;
+    case 0x03: INST1("INC BC"); break;
+    case 0x04: INST1("INC B"); break;
     case 0x05: INST1("DEC B"); break;
     case 0x06: INST2("MVI B,"); break;
+    case 0x07: INST1("RLC"); break;
 
     case 0x09: INST1("DAD BC"); break;
-
+    case 0x0A: INST1("LDAX BC"); break;
+    case 0x0B: INST1("DEC BC"); break;
+    case 0x0C: INST1("INC C"); break;
     case 0x0D: INST1("DEC C"); break;
     case 0x0E: INST2("MVI C,"); break;
     case 0x0F: INST1("RRC"); break;
@@ -318,8 +323,12 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0x13: INST1("INC DE"); break;
     case 0x14: INST1("INC D"); break;
 
+    case 0x16: INST2("MVI D"); break;
+
     case 0x19: INST1("DAD DE"); break;
-    case 0x1A: INST1("LDAX"); break;
+    case 0x1A: INST1("LDAX DE"); break;
+
+    case 0x1F: INST1("RAR"); break;
 
     case 0x21: INSTW("LXI HL,"); break;
     case 0x22: INSTW("SHLD"); break;
@@ -328,14 +337,19 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0x26: INST2("MVI H,"); break;
 
     case 0x29: INST1("DAD HL"); break;
+    case 0x2A: INSTW("LHLD"); break;
+    case 0x2B: INST1("DEC HL"); break;
 
     case 0x31: INSTW("LXI SP,"); break;
     case 0x32: INSTW("STA"); break;
 
+    case 0x35: INST1("DEC (HL)"); break;
     case 0x36: INST2("MVI (HL),"); break;
+    case 0x37: INST1("STC"); break;
 
     case 0x3A: INSTW("LDA"); break;
 
+    case 0x3D: INST1("DEC A"); break;
     case 0x3E: INST2("MVI A,"); break;
 
     case 0x40: INST1("MOV B, B"); break;
@@ -466,25 +480,35 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0xBD: INST1("CMP L"); break;
     case 0xBE: INST1("CMP (HL)"); break;
     case 0xBF: INST1("CMP A"); break;
-
+    case 0xC0: INST1("RETNZ"); break;
     case 0xC1: INST1("POP BC"); break;
     case 0xC2: INSTW("JNZ"); break;
     case 0xC3: INSTW("JMP"); break;
-
+    case 0xC4: INSTW("CALL NZ"); break;
     case 0xC5: INST1("PUSH BC"); break;
     case 0xC6: INST2("ADI"); break;
 
+    case 0xC8: INST1("RETZ"); break;
     case 0xC9: INST1("RET"); break;
+    case 0xCA: INSTW("JZ"); break;
 
     case 0xCD: INSTW("CALL"); break;
 
+    case 0xD0: INST1("RET NC"); break;
     case 0xD1: INST1("POP DE"); break;
-
+    case 0xD2: INSTW("JNC"); break;
     case 0xD3: INST2("OUT"); break;
     case 0xD4: INSTW("CNC"); break;
     case 0xD5: INST1("PUSH DE"); break;
 
+    case 0xD8: INST1("RET C"); break;
+
+    case 0xDA: INSTW("JC"); break;
+    case 0xDB: INST2("IN"); break;
+
     case 0xE1: INST1("POP HL"); break;
+
+    case 0xE3: INST1("XTHL"); break;
 
     case 0xE5: INST1("PUSH HL"); break;
     case 0xE6: INST2("ANI"); break;
