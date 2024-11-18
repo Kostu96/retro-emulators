@@ -70,6 +70,10 @@ bool CPU8080::interrupt(u8 vector)
 
 void CPU8080::clock()
 {
+    /*if (m_state.PC == 0x19A1) {
+        printf("debugbreak\n");
+    }*/
+
     if (m_EIRequested) {
         m_EIRequested = false;
         m_interruptEnabled = true;
@@ -292,7 +296,7 @@ void CPU8080::executeInstruction(u8 opcode)
     case 0xBD: CMP(m_state.L); break;
     case 0xBE: CMP(loadMemory8(m_state.HL)); break;
     case 0xBF: CMP(m_state.A); break;
-    case 0xC0: RET(!m_state.F.Carry); break;
+    case 0xC0: RET(!m_state.F.Zero); break;
     case 0xC1: m_state.BC = pop16(); break;
     case 0xC2: JMP(!m_state.F.Zero); break;
     case 0xC3: JMP(true); break;

@@ -322,7 +322,7 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
 
     case 0x13: INST1("INC DE"); break;
     case 0x14: INST1("INC D"); break;
-
+    case 0x15: INST1("DEC D"); break;
     case 0x16: INST2("MVI D"); break;
 
     case 0x19: INST1("DAD DE"); break;
@@ -339,6 +339,7 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0x29: INST1("DAD HL"); break;
     case 0x2A: INSTW("LHLD"); break;
     case 0x2B: INST1("DEC HL"); break;
+    case 0x2C: INST1("INC L"); break;
 
     case 0x2F: INST1("CMA"); break;
 
@@ -496,6 +497,7 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0xC9: INST1("RET"); break;
     case 0xCA: INSTW("JZ"); break;
 
+    case 0xCC: INSTW("CALL Z"); break;
     case 0xCD: INSTW("CALL"); break;
 
     case 0xD0: INST1("RET NC"); break;
@@ -508,8 +510,10 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
 
     case 0xD8: INST1("RET C"); break;
 
-    case 0xDA: INSTW("JC"); break;
+    case 0xDA: INSTW("JMP C"); break;
     case 0xDB: INST2("IN"); break;
+
+    case 0xDE: INST2("SUBI"); break;
 
     case 0xE1: INST1("POP HL"); break;
 
@@ -527,6 +531,7 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
     case 0xF5: INST1("PUSH AF"); break;
     case 0xF6: INST2("ORI"); break;
 
+    case 0xFA: INSTW("CALL M"); break;
     case 0xFB: INST1("EI"); break;
 
     case 0xFE: INST2("CPI"); break;

@@ -126,7 +126,7 @@ int main()
     std::thread emuThread{
         [&]() {
             while (app.isRunning()) {
-                //std::this_thread::sleep_for(std::chrono::nanoseconds{ 32 }); // TODO: temp
+                std::this_thread::sleep_for(std::chrono::nanoseconds{ 10 }); // TODO: temp
                 if (!app.isPaused()) {
                     invaders->clock();
                     if (invaders->getCPU().getCyclesLeft() == 0) {
