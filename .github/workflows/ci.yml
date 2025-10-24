@@ -48,4 +48,4 @@ jobs:
     
     - name: Build
       run: |
-        conan build .
+        conan build . --output-folder=build --settings=build_type=${{ matrix.build_type }}
