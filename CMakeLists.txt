@@ -1,8 +1,31 @@
 cmake_minimum_required(VERSION 3.22)
-
 project(emulators LANGUAGES CXX)
+
 include(cmake/base_configuration.cmake)
 include(cmake/compiler_warnings.cmake)
+
+enable_testing()
+find_package(GTest REQUIRED)
+include(GoogleTest)
+
+add_subdirectory(shared/utils)
+
+add_subdirectory(shared/cpu40xx)
+add_subdirectory(shared/cpu6502)
+add_subdirectory(shared/cpu8008)
+add_subdirectory(shared/cpu8080)
+
+set_target_properties(
+    cpu40xx
+    cpu40xx_test
+    cpu6502
+    cpu6502_test
+    cpu8008
+    cpu8080
+    cpu8080_test
+    PROPERTIES
+    FOLDER devices
+)
 
 add_subdirectory(third_party)
 

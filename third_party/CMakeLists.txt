@@ -8,10 +8,10 @@ add_subdirectory(glfw)
 
 add_subdirectory(glw)
 
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-add_subdirectory(googletest)
-set_target_properties(gtest gtest_main PROPERTIES FOLDER third_party/googletest)
+#set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+#set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+#add_subdirectory(googletest)
+#set_target_properties(gtest gtest_main PROPERTIES FOLDER third_party/googletest)
 
 set(IMGUI_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_glfw.cpp
