@@ -44,7 +44,11 @@ jobs:
     
     - name: Install dependencies
       run: |
-        conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --build=missing
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=20 --build=missing
+        else
+          conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=gnu20 --build=missing
+        fi
     
     - name: Build
       run: |
