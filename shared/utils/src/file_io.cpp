@@ -1,6 +1,7 @@
 #include "utils/file_io.hpp"
 
 #include <fstream>
+#include <limits>
 
 bool readFile(const char* filename, char* data, size_t& size, bool binary)
 {

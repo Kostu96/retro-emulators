@@ -1,3 +1,5 @@
+find_package(OpenGL REQUIRED)
+
 set(SHARED_LIB_TARGET_NAME shared_lib)
 set(SHARED_LIB_TESTS_TARGET_NAME ${SHARED_LIB_TARGET_NAME}_tests)
 
@@ -43,4 +45,5 @@ target_link_libraries(${SHARED_LIB_TARGET_NAME} PUBLIC
     glfw
     glw
     imgui
+    OpenGL::GL
 )

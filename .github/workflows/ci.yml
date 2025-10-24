@@ -30,6 +30,9 @@ jobs:
     - name: Install Conan
       run: |
         pip install conan==2.*
+    - name: Create Conan profile
+      run: |
+        conan profile new default --detect --force
     
     - name: Configure Conan cache
       uses: actions/cache@v4
