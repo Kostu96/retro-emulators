@@ -48,4 +48,4 @@ jobs:
     
     - name: Build
       run: |
-        conan build . --build-folder=build
+        conan build .
