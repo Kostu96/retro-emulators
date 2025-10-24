@@ -44,7 +44,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        conan install . -s build_type=${{ matrix.build_type }} --build=missing
+        conan install . --output-folder=build -settings=build_type=${{ matrix.build_type }} --build=missing
     
     - name: Build
       run: |
