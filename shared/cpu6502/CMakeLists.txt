@@ -27,4 +27,12 @@ target_link_libraries(${CPU6502_TEST_TARGET_NAME} PRIVATE
     GTest::gtest_main
 )
 
+#add_custom_command(
+#    TARGET ${CPU6502_TEST_TARGET_NAME}
+#    POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/third_party/6502_test_roms ${CMAKE_CURRENT_BINARY_DIR}/test_files/6502
+#)
+
+file(COPY ${CMAKE_SOURCE_DIR}/third_party/6502_test_roms DESTINATION $<TARGET_FILE_DIR:${SHARED_LIB_TESTS_TARGET_NAME}>/test_files/6502)
+
 gtest_discover_tests(${CPU6502_TEST_TARGET_NAME})

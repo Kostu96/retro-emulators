@@ -1,7 +1,6 @@
 #pragma once
 #include "cpu8080/cpu8080.hpp"
 
-#include <gtest.h>
 #include <gtest/gtest.h>
 
 struct CPU8080Tests :
