@@ -4,8 +4,8 @@
 #include "shared/source/application.hpp"
 
 #include <glw/glw.hpp>
+#include <portable-file-dialogs.h>
 #include <imgui.h>
-#include <tinyfiledialogs.h>
 
 namespace GUI {
 
@@ -80,31 +80,31 @@ namespace GUI {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::SetNextWindowSize({ imageSize.x, imageSize.y + 8 }, ImGuiCond_Always);
         if (ImGui::Begin(title, &show, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
-            ImGui::Image((ImTextureID)texture.getRendererID(), imageSize, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
+            ImGui::Image(const_cast<void*>(texture.getRendererID()), imageSize, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
         ImGui::End();
         ImGui::PopStyleVar(2);
     }
 
-    static void drawTileMapWindow(const glw::Framebuffer* fb, const std::span<u8>& tiles, bool addrMode, const char* title, bool& show)
+    static void drawTileMapWindow(const glw::Framebuffer* fb, std::span<const u8> tiles, bool addrMode, const char* title, bool& show)
     {
         glw::Renderer::beginFrame(fb);
         s_tileDataTexture->bind(0);
         for (u16 y = 0; y < 32; y++)
             for (u16 x = 0; x < 32; x++) {
                 u16 index = y * 32 + x;
-                u16 tile = addrMode ? tiles[index] : 256 + (s8)tiles[index];
+                u16 tile = addrMode ? tiles[index] : 256 + to_s8(tiles[index]);
                 u16 xpos = tile % 16;
                 u16 ypos = tile / 16;
-                constexpr float tileSize = 8;
-                constexpr float tileMapHalfSize = 128;
-                float left = (float)(x * tileSize) / tileMapHalfSize - 1.f;
-                float right = (float)(x * tileSize + tileSize) / tileMapHalfSize - 1.f;
-                float top = ((float)(y * tileSize) / tileMapHalfSize - 1.f);
-                float bottom = ((float)(y * tileSize + tileSize) / tileMapHalfSize - 1.f);
-                float u0 = (float)(xpos * tileSize) / PPU::TILE_DATA_WIDTH;
-                float v0 = (float)(ypos * tileSize) / PPU::TILE_DATA_HEIGHT;
-                float u1 = (float)(xpos * tileSize + tileSize) / PPU::TILE_DATA_WIDTH;
-                float v1 = (float)(ypos * tileSize + tileSize) / PPU::TILE_DATA_HEIGHT;
+                constexpr f32 tileSize = 8;
+                constexpr f32 tileMapHalfSize = 128;
+                f32 left = (x * tileSize) / tileMapHalfSize - 1.f;
+                f32 right = (x * tileSize + tileSize) / tileMapHalfSize - 1.f;
+                f32 top = (y * tileSize) / tileMapHalfSize - 1.f;
+                f32 bottom = (y * tileSize + tileSize) / tileMapHalfSize - 1.f;
+                f32 u0 = to_f32(xpos * tileSize) / PPU::TILE_DATA_WIDTH;
+                f32 v0 = to_f32(ypos * tileSize) / PPU::TILE_DATA_HEIGHT;
+                f32 u1 = to_f32(xpos * tileSize + tileSize) / PPU::TILE_DATA_WIDTH;
+                f32 v1 = to_f32(ypos * tileSize + tileSize) / PPU::TILE_DATA_HEIGHT;
                 glw::Renderer::renderTexture(left, top, right, bottom, u0, v0, u1, v1);
             }
         glw::Renderer::endFrame();
@@ -117,10 +117,9 @@ namespace GUI {
         if (ImGui::BeginMenu("File"))
         {
             if (ImGui::MenuItem("Load cartridge...")) {
-                static const char* filters[1] = { "*.gb" };
-                char* filename = tinyfd_openFileDialog("Load cartridge", nullptr, 1, filters, nullptr, 0);
-                if (filename) {
-                    gb.loadCartridge(filename);
+                auto f = pfd::open_file("Load cartridge", "", { "*.gb" }).result();
+                if (!f.empty()) {
+                    gb.loadCartridge(f[0].c_str());
                     gb.reset();
                 }
             }

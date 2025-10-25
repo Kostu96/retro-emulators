@@ -3,12 +3,13 @@
 
 #include <functional>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-
 class CPU
 {
 public:
+    
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
     union Flags {
         struct {
             u8 alwaysZero : 4; // 0-3
@@ -54,6 +55,8 @@ public:
         bool InterruptEnabled;
         bool IsHalted;
     };
+
+#pragma GCC diagnostic pop
 
     using ReadMemoryCallback = std::function<u8(u16)>;
     using WriteMemoryCallback = std::function<void(u16, u8)>;
@@ -160,5 +163,3 @@ private:
     bool m_EIRequested;
     u8 m_cyclesLeft;
 };
-
-#pragma GCC diagnostic pop

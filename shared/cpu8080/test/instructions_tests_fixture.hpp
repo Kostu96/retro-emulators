@@ -2,6 +2,7 @@
 #include "cpu8080/cpu8080.hpp"
 
 #include <gtest/gtest.h>
+#include <cstring>
 
 struct CPU8080Tests :
     public ::testing::Test
@@ -31,8 +32,8 @@ struct CPU8080Tests :
 
     void SetUp() override
     {
-        std::memset(rom, 0, ROM_SIZE);
-        std::memset(ram, 0, RAM_SIZE);
+        memset(rom, 0, ROM_SIZE);
+        memset(ram, 0, RAM_SIZE);
         cpu.reset();
         cpu.getState().F.byte = 0;
         

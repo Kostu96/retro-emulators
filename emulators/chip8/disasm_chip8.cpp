@@ -87,7 +87,7 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
         default: ss << "???"; break;
         }
 
-        strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer));
+        strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer) - 1);
         output.push_back(line);
     }
 }

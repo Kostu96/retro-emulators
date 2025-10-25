@@ -2,6 +2,7 @@
 #include "../cpu.hpp"
 
 #include <gtest/gtest.h>
+#include <cstring>
 
 namespace PSX {
 
@@ -29,7 +30,7 @@ namespace PSX {
 		void makeSnapshot() {
 			cpuStatusBefore = cpu.getCPUStatus();
 			cop0StatusBefore = cpu.getCOP0Status();
-			std::memcpy(memoryBefore, memory, MEMORY_SIZE * sizeof(u32));
+			memcpy(memoryBefore, memory, MEMORY_SIZE * sizeof(u32));
 		}
 
 		void checkSnapshot() const {

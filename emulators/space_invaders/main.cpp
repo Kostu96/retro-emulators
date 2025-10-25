@@ -3,8 +3,8 @@
 #include "shared/source/application.hpp"
 #include "shared/source/imgui/debug_view.hpp"
 #include "shared/source/imgui/disassembly_view.hpp"
-#include "shared/source/disassembly_line.hpp"
-#include "shared/source/devices/cpu8080/disasm8080.hpp"
+#include "utils/disassembly_line.hpp"
+#include "cpu8080/disasm8080.hpp"
 
 #include <imgui.h>
 #include <thread>
@@ -40,14 +40,14 @@ public:
             ImGui::Text("PC: %04X", cpuStatus.PC); ImGui::SameLine();
             ImGui::Text("SP: %04X", cpuStatus.SP); ImGui::SameLine();
             ImGui::Text("A: %02X", cpuStatus.A); ImGui::SameLine();
-            ImGui::Text("F: %02X", cpuStatus.F);
+            ImGui::Text("F: %02X", cpuStatus.F.byte);
             ImGui::Text("BC: %04X", cpuStatus.BC); ImGui::SameLine();
             ImGui::Text("DE: %04X", cpuStatus.DE); ImGui::SameLine();
             ImGui::Text("HL: %04X", cpuStatus.HL);
 
             ImGui::SeparatorText("Instruction Trace");
             for (size_t i = 0; i < INSTRUCTION_TRACE_CAPACITY; i++) {
-                ImGui::Text("0x%04X: %.*s", m_intructionTrace[i].address, DisassemblyLine::BUFFER_SIZE, m_intructionTrace[i].buffer);
+                ImGui::Text("0x%04X: %.*s", m_intructionTrace[i].address, static_cast<int>(DisassemblyLine::BUFFER_SIZE), m_intructionTrace[i].buffer);
             }
         };
 

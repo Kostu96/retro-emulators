@@ -27,7 +27,7 @@ void IO::write8(u8 port, u8 data)
     case 0x04:
         m_shiftRegister >>= 8;
         m_shiftRegister &= 0x00FF;
-        m_shiftRegister |= (u16)data << 8;
+        m_shiftRegister |= to_u16(data) << 8;
         return;
     case 0x05:
         printf("Unhadnled sound at port 5 - data: 0x%02X\n", data);

@@ -1,5 +1,4 @@
 find_package(OpenGL REQUIRED)
-find_package(portable-file-dialogs REQUIRED)
 
 set(SHARED_LIB_TARGET_NAME shared_lib)
 set(SHARED_LIB_TESTS_TARGET_NAME ${SHARED_LIB_TARGET_NAME}_tests)
@@ -39,7 +38,7 @@ target_compile_options(${SHARED_LIB_TARGET_NAME} PRIVATE
 
 target_include_directories(${SHARED_LIB_TARGET_NAME} PUBLIC
     ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs
+    #${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs
 )
 
 target_link_libraries(${SHARED_LIB_TARGET_NAME} PUBLIC
@@ -47,6 +46,6 @@ target_link_libraries(${SHARED_LIB_TARGET_NAME} PUBLIC
     glw
     imgui
     OpenGL::GL
-    portable-file-dialogs::portable-file-dialogs
+    #portable-file-dialogs::portable-file-dialogs
     utils
 )

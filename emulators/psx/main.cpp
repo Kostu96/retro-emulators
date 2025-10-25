@@ -1,7 +1,7 @@
 #include "psx.hpp"
 
 #include "shared/source/application.hpp"
-#include "shared/source/disassembly_line.hpp"
+#include "utils/disassembly_line.hpp"
 #include "shared/source/imgui/debug_view.hpp"
 #include "shared/source/imgui/disassembly_view.hpp"
 #include "shared/source/imgui/memory_view.hpp"
@@ -23,8 +23,8 @@ public:
                 .hasMenuBar = true
         } },
         m_psx{ psx },
-        m_debugView{ m_isPaused },
         m_disassembly{ disassembly },
+        m_debugView{ m_isPaused },
         m_disasmView{ m_disassembly, 8 },
         dummyPixelData{ new unsigned int[PSX::SCREEN_WIDTH * PSX::SCREEN_HEIGHT] }
     {
@@ -90,12 +90,12 @@ private:
     }
 
     PSX::Emulator& m_psx;
+    bool m_isPaused = false;
+    bool m_autostart = false;
     Disassembly& m_disassembly;
     imgui::DebugView m_debugView;
     imgui::DisassemblyView m_disasmView;
     imgui::MemoryView m_memoryView;
-    bool m_autostart = false;
-    bool m_isPaused = false;
 
     std::unique_ptr<unsigned int> dummyPixelData;
 };

@@ -4,8 +4,8 @@ add_library(${CPU8080_LIB_TARGET_NAME} STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpu8080.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/disasm8080.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/disasm8080.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/include/cpu8080/cpu8080.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/include/cpu8080/disasm8080.hpp
 )
 
 target_include_directories(${CPU8080_LIB_TARGET_NAME} PUBLIC

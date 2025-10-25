@@ -1,6 +1,6 @@
 #include "invaders.hpp"
-#include "shared/source/address_range.hpp"
-#include "shared/source/file_io.hpp"
+#include "utils/address_range.hpp"
+#include "utils/file_io.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -41,7 +41,7 @@ Invaders::Invaders() :
         })
     {
         size_t size = ROM_SIZE;
-        [[maybe_unused]] bool ret = readFile(filename, (char*)(m_ROM + offset), size, true);
+        [[maybe_unused]] bool ret = readFile(filename, reinterpret_cast<char*>(m_ROM + offset), size, true);
         assert(ret && "File read failed!");
         offset += ROM_SIZE;
     }
