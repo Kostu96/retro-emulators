@@ -19,7 +19,8 @@ public:
                 .rendererWidth = 6 * 32,
                 .rendererHeight = 8 * 32, // TODO: extract magic values as in PSX
                 .scale = 2,
-                .border = 16
+                .border = 16,
+                .hasMenuBar = false
         } }
     {}
 private:

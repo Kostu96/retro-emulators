@@ -1,5 +1,5 @@
 #pragma once
-#include "shared/source/devices/cpu6502/cpu6502.hpp"
+#include "cpu6502/cpu6502.hpp"
 #include "cia.hpp"
 #include "sid.hpp"
 #include "vic_ii.hpp"

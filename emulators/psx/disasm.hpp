@@ -1,6 +1,6 @@
 #pragma once
 #include "cpu.hpp"
-#include "shared/source/disassembly_line.hpp"
+#include "utils/disassembly_line.hpp"
 
 namespace PSX {
 

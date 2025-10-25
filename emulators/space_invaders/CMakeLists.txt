@@ -18,6 +18,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${INVADERS_SOU
 
 target_link_libraries(${INVADERS_TARGET_NAME} PRIVATE
     shared_lib
+    utils
+    cpu8080
 )
 
 set_target_properties(${INVADERS_TARGET_NAME} PROPERTIES

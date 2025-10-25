@@ -1,10 +1,11 @@
 #include "gameboy.hpp"
 #include "gb_doctor.hpp"
-#include "shared/source/address_range.hpp"
+#include "utils/address_range.hpp"
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
 static const AddressRange16 ROM_RANGE{       0x0000, 0x7FFF };
 static const AddressRange16 VRAM_RANGE{      0x8000, 0x9FFF };
@@ -49,7 +50,7 @@ Gameboy::~Gameboy()
 
 void Gameboy::reset()
 {
-    std::memset(m_WRAM, 0, 0x2000);
+    memset(m_WRAM, 0, 0x2000);
     m_PPU.clearVRAM();
 
     m_CPU.reset();

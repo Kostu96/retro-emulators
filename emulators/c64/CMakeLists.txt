@@ -25,6 +25,8 @@ target_compile_options(${C64_TARGET_NAME} PRIVATE
 
 target_link_libraries(${C64_TARGET_NAME} PRIVATE
     shared_lib
+    utils
+    cpu6502
 )
 
 set_target_properties(${C64_TARGET_NAME} PROPERTIES

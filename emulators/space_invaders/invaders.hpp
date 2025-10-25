@@ -1,5 +1,5 @@
 #pragma once
-#include "shared/source/devices/cpu8080/cpu8080.hpp"
+#include "cpu8080/cpu8080.hpp"
 #include "video.hpp"
 #include "io.hpp"
 

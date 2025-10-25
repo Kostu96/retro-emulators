@@ -1,6 +1,6 @@
 #include "cartridge.hpp"
 
-#include "shared/source/file_io.hpp"
+#include "utils/file_io.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -133,7 +133,7 @@ void Cartridge::store8(u16 address, u8 data)
     case 1:
     case 2:
     case 3:
-        if (address >= 0x0000 && address < 0x2000) {
+        if (address < 0x2000) {
             m_MBC1RAMEnable = data & 0xF;
             return;
         }
@@ -144,14 +144,14 @@ void Cartridge::store8(u16 address, u8 data)
     }
     
     std::cerr << "Unexpected write to cartridge - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address;
-    std::cerr << ':' << std::hex << std::setw(2) << (u16)data << '\n';
+    std::cerr << ':' << std::hex << std::setw(2) << static_cast<u16>(data) << '\n';
 }
 
 u8 Cartridge::load8ExtRAM(u16 address) const
 {
     if (m_MBC1RAMEnable == 0xA)
     {
-        m_RAM[address];
+        return m_RAM[address];
     }
 
     return 0xFF;
@@ -178,13 +178,13 @@ bool Cartridge::loadFromFile(const char* filename, bool quiet)
     }
 
     delete[] m_data;
-    m_data = new uint8_t[m_size];
-    if (!readFile(filename, (char*)m_data, m_size, true)) {
+    m_data = new u8[m_size];
+    if (!readFile(filename, reinterpret_cast<char*>(m_data), m_size, true)) {
         std::cerr << "Failed to read cartridge ROM file: " << filename << '\n';
         return false;
     }
 
-    m_header = (Header*)(m_data + 0x100);
+    m_header = reinterpret_cast<Header*>(m_data + 0x100);
 
     u16 x = 0;
     for (u16 i = 0x0134; i <= 0x014C; i++)

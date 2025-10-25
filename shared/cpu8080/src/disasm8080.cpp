@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <iomanip>
+#include <cstring>
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte1)
 #define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)
@@ -283,8 +284,7 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
         default: INST1("???");
         }
 
-        assert(ss.str().size() <= sizeof(line.buffer));
-        strcpy_s(line.buffer, ss.str().c_str());
+        strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer));
         output.push_back(line);
     }
 
@@ -295,9 +295,9 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
 
 void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
 {
-#define INST1(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic)
-#define INST2(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic " 0x%02X", byte1)
-#define INSTW(mnemonic) sprintf_s(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic " 0x%04X", (u16)byte2 << 8 | byte1)
+#define INST1(mnemonic) snprintf(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic)
+#define INST2(mnemonic) snprintf(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic " 0x%02X", byte1)
+#define INSTW(mnemonic) snprintf(output.buffer, DisassemblyLine::BUFFER_SIZE, mnemonic " 0x%04X", (u16)byte2 << 8 | byte1)
 
     switch (opcode)
     {

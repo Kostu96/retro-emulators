@@ -10,6 +10,7 @@ class RetroEmulatorsConan(ConanFile):
     
     def requirements(self):
         self.requires("gtest/[>1.17.0]")
+        self.requires("portable-file-dialogs/0.1.0")
     
     
     def layout(self):

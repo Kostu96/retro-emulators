@@ -384,7 +384,7 @@ void CPU::standardInstruction(u8 opcode)
     case 0xE7: RST(4); break;
     case 0xE8: {
         s8 imm = load8(m_state.PC++);
-        u16 result8bit = (m_state.SP & 0xFF) + (u8)imm;
+        u16 result8bit = (m_state.SP & 0xFF) + to_u8(imm);
         u8 result4bit = (m_state.SP & 0xF) + (imm & 0xF);
         m_state.SP = m_state.SP + imm;
         m_state.F.Carry = result8bit >> 8;
@@ -410,7 +410,7 @@ void CPU::standardInstruction(u8 opcode)
     case 0xF7: RST(6); break;
     case 0xF8: {
         s8 imm = load8(m_state.PC++);
-        u16 result8bit = (m_state.SP & 0xFF) + (u8)imm;
+        u16 result8bit = (m_state.SP & 0xFF) + to_u8(imm);
         u8 result4bit = (m_state.SP & 0xF) + (imm & 0xF);
         m_state.HL = m_state.SP + imm;
         m_state.F.Carry = result8bit >> 8;
@@ -717,7 +717,7 @@ void CPU::XTHL()
 
 void CPU::DECR(u8& reg)
 {
-    u8 halfResult = (s8)(reg & 0xF) - 1;
+    u8 halfResult = to_s8(reg & 0xF) - 1;
     reg--;
     m_state.F.HalfCarry = halfResult >> 4;
     m_state.F.Subtract = 1;
@@ -852,8 +852,8 @@ void CPU::ADDHL(u16 value)
 
 void CPU::SUB(u8 value)
 {
-    u16 result = (s16)m_state.A - (s16)value;
-    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
+    u16 result = to_s16(m_state.A) - to_s16(value);
+    u8 result4bit = to_s8(m_state.A & 0xF) - to_s8(value & 0xF);
     m_state.A = result & 0xFF;
     m_state.F.Carry = result >> 8;
     m_state.F.HalfCarry = result4bit >> 4;
@@ -863,8 +863,8 @@ void CPU::SUB(u8 value)
 
 void CPU::SBB(u8 value)
 {
-    u16 result = (s16)m_state.A - (s16)value - m_state.F.Carry;
-    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF) - m_state.F.Carry;
+    u16 result = to_s16(m_state.A) - to_s16(value) - m_state.F.Carry;
+    u8 result4bit = to_s8(m_state.A & 0xF) - to_s8(value & 0xF) - m_state.F.Carry;
     m_state.A = result & 0xFF;
     m_state.F.Carry = result >> 8;
     m_state.F.HalfCarry = result4bit >> 4;
@@ -874,8 +874,8 @@ void CPU::SBB(u8 value)
 
 void CPU::CMP(u8 value)
 {
-    u16 result = (s16)m_state.A - (s16)value;
-    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
+    u16 result = to_s16(m_state.A) - to_s16(value);
+    u8 result4bit = to_s8(m_state.A & 0xF) - to_s8(value & 0xF);
     m_state.F.Carry = result >> 8;
     m_state.F.HalfCarry = result4bit >> 4;
     m_state.F.Subtract = 1;

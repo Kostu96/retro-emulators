@@ -1,7 +1,10 @@
 #pragma once
-#include "shared/source/types.hpp"
+#include "utils/types.hpp"
 
 #include <functional>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 
 class CPU
 {
@@ -157,3 +160,5 @@ private:
     bool m_EIRequested;
     u8 m_cyclesLeft;
 };
+
+#pragma GCC diagnostic pop

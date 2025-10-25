@@ -1,6 +1,6 @@
 #include "c64.hpp"
-#include "shared/source/address_range.hpp"
-#include "shared/source/file_io.hpp"
+#include "utils/address_range.hpp"
+#include "utils/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -18,15 +18,15 @@ namespace C64 {
     Emulator::Emulator()
     {
         size_t size = 0x2000;
-        if (!readFile("rom/c64c/kernal.bin", (char*)m_KERNAL, size, true))
+        if (!readFile("rom/c64c/kernal.bin", reinterpret_cast<char*>(m_KERNAL), size, true))
             std::cerr << "Could not read KERNAL ROM file!\n";
 
         size = 0x1000;
-        if (!readFile("rom/c64c/characters.bin", (char*)m_characters, size, true))
+        if (!readFile("rom/c64c/characters.bin", reinterpret_cast<char*>(m_characters), size, true))
             std::cerr << "Could not read characters ROM file!\n";
 
         size = 0x2000;
-        if (!readFile("rom/c64c/basic.bin", (char*)m_BASIC, size, true))
+        if (!readFile("rom/c64c/basic.bin", reinterpret_cast<char*>(m_BASIC), size, true))
             std::cerr << "Could not read BASIC ROM file!\n";
 
         m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });

@@ -1,11 +1,12 @@
 #include "cpu40xx/cpu40xx.hpp"
 
 #include <cassert>
+#include <cstring>
 
 void CPU40xx::reset()
 {
-    std::memset(m_regs, 0, REGS_SIZE);
-    std::memset(m_stack, 0, STACK_SIZE * 2);
+    memset(m_regs, 0, REGS_SIZE);
+    memset(m_stack, 0, STACK_SIZE * 2);
     SP = 0;
     ACC = 0;
     CY = 0;

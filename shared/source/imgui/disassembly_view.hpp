@@ -13,11 +13,11 @@ namespace imgui {
         const Disassembly& disassembly;
         unsigned int addressWidth;
 
-        void updateWindow(uint32_t pc);
+        void updateWindow(unsigned int pc);
 
-        DisassemblyView(const Disassembly& disassembly, unsigned int addressWidth) :
-            disassembly{ disassembly },
-            addressWidth{ addressWidth } {}
+        DisassemblyView(const Disassembly& disasm, unsigned int addrWidth) :
+            disassembly{ disasm },
+            addressWidth{ addrWidth } {}
     };
 
 } // namespace imgui

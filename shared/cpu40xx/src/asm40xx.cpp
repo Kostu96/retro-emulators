@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <iomanip>
+#include <cstring>
 
 namespace ASM40xx {
 
@@ -106,8 +107,7 @@ namespace ASM40xx {
             default: INST1("???");
             }
 
-            assert(ss.str().size() <= sizeof(line.buffer));
-            strcpy_s(line.buffer, ss.str().c_str());
+            strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer));
             output.push_back(line);
         }
     }

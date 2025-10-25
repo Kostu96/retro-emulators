@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iomanip>
 #include <unordered_map>
+#include <cstring>
 
 #define PRINT1 printBytes(ss, code, addr, 1, &byte1)
 #define PRINT2 printBytes(ss, code, addr, 2, &byte1, &byte2)
@@ -78,8 +79,7 @@ namespace ASM8008
             default: INST1("???");
             }*/
 
-            assert(ss.str().size() <= sizeof(line.buffer));
-            strcpy_s(line.buffer, ss.str().c_str());
+            strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer));
             output.push_back(line);
         }
     }

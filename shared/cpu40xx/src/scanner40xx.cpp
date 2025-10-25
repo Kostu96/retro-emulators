@@ -1,6 +1,8 @@
 #include "scanner40xx.hpp"
 #include "utils/asm_common.hpp"
 
+#include <cstring>
+
 namespace ASM40xx {
 
     Scanner::Scanner(const char* source) :
@@ -137,7 +139,7 @@ namespace ASM40xx {
         Token token;
         token.type = Token::Type::Error;
         token.start = message;
-        token.length = std::strlen(message);
+        token.length = strlen(message);
         return token;
     }
 

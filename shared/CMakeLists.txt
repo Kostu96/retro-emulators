@@ -1,4 +1,5 @@
 find_package(OpenGL REQUIRED)
+find_package(portable-file-dialogs REQUIRED)
 
 set(SHARED_LIB_TARGET_NAME shared_lib)
 set(SHARED_LIB_TESTS_TARGET_NAME ${SHARED_LIB_TARGET_NAME}_tests)
@@ -16,15 +17,15 @@ set(SHARED_LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/application.hpp
 )
 
-set(SHARED_LIB_3RD_PARTY
-    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c
-    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.h
-)
+#set(SHARED_LIB_3RD_PARTY
+#    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c
+#    ${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.h
+#)
 
 add_library(${SHARED_LIB_TARGET_NAME} STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     ${SHARED_LIB_SOURCES}
-    ${SHARED_LIB_3RD_PARTY}
+#    ${SHARED_LIB_3RD_PARTY}
 )
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/third_party/tinyfiledialogs/tinyfiledialogs.c PROPERTIES LANGUAGE CXX)
@@ -46,4 +47,6 @@ target_link_libraries(${SHARED_LIB_TARGET_NAME} PUBLIC
     glw
     imgui
     OpenGL::GL
+    portable-file-dialogs::portable-file-dialogs
+    utils
 )

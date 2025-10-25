@@ -1,5 +1,5 @@
 #pragma once
-#include "shared/source/types.hpp"
+#include "utils/types.hpp"
 
 #include <functional>
 
@@ -22,12 +22,12 @@ namespace PSX {
         u32 opcode() const { return word >> 26; }
         u32 subfn() const { return word & 0x3F; }
         u32 copfn() const { return (word >> 21) & 0x1F; }
-        RegIndex regS() const { return RegIndex{ (word >> 21) & 0x1F }; }
-        RegIndex regT() const { return RegIndex{ (word >> 16) & 0x1F }; }
-        RegIndex regD() const { return RegIndex{ (word >> 11) & 0x1F }; }
+        RegIndex regS() const { return RegIndex{ to_u8((word >> 21) & 0x1F) }; }
+        RegIndex regT() const { return RegIndex{ to_u8((word >> 16) & 0x1F) }; }
+        RegIndex regD() const { return RegIndex{ to_u8((word >> 11) & 0x1F) }; }
         u32 imm() const { return word & 0xFFFF; }
-        u32 imm_se() const { return static_cast<s16>(word & 0xFFFF); }
-        u32 imm_se_jump() const { return static_cast<u32>(static_cast<s16>(word & 0xFFFF)) << 2; }
+        u32 imm_se() const { return to_s16(word & 0xFFFF); }
+        u32 imm_se_jump() const { return to_u32(to_s16(word & 0xFFFF)) << 2; }
         u32 imm_jump() const { return (word & 0x3FFFFFF) << 2; }
         u32 shift() const { return (word >> 6) & 0x1F; }
     };
@@ -51,6 +51,9 @@ namespace PSX {
         static constexpr size_t CPU_GPR_COUNT = 32;
         static constexpr size_t CPU_REGISTER_COUNT = 35;
         static constexpr size_t COP0_REGISTER_COUNT = 16;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 
         union CPUStatus {
             struct {
@@ -98,6 +101,8 @@ namespace PSX {
             u32 regs[COP0_REGISTER_COUNT];
         };
         static_assert(sizeof(COP0Status) == COP0_REGISTER_COUNT * 4);
+
+#pragma GCC diagnostic pop
 
         void reset();
         void clock();

@@ -33,6 +33,7 @@ target_compile_options(${GAMEBOY_LIB_TARGET_NAME} PRIVATE
 
 target_link_libraries(${GAMEBOY_LIB_TARGET_NAME} PUBLIC
     shared_lib
+    utils
 )
 
 set_target_properties(${GAMEBOY_LIB_TARGET_NAME} PROPERTIES

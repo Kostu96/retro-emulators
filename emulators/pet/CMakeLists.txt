@@ -23,6 +23,8 @@ target_compile_options(${PET_TARGET_NAME} PRIVATE
 
 target_link_libraries(${PET_TARGET_NAME} PUBLIC
     shared_lib
+    utils
+    cpu6502
 )
 
 set_target_properties(${PET_TARGET_NAME} PROPERTIES
