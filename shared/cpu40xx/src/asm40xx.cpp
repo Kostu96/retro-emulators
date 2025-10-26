@@ -17,19 +17,19 @@ namespace ASM40xx {
 #define PRINT1 printBytes(ss, code, addr, 1, &byte)
 #define INST1(str) ss << "    " str
 #define INSTR(str, reg) ss << "    " str " " << (reg)
-#define INST2(str) do { PRINT1; ss << " " str << std::setw(2) << (u16)byte; } while(false)
-#define INST3(str, x) do { PRINT1; ss << " " str " " << (u16)(x) << ", " << std::setw(2) << (u16)byte; } while(false)
+#define INST2(str) do { PRINT1; ss << " " str << std::setw(2) << to_u16(byte); } while(false)
+#define INST3(str, x) do { PRINT1; ss << " " str " " << to_u16(x) << ", " << std::setw(2) << to_u16(byte); } while(false)
 
     void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)
     {
         for (size_t addr = 0; addr < code_size; )
         {
             DisassemblyLine line;
-            line.address = (u16)addr;
+            line.address = to_u16(addr);
             std::stringstream ss;
             ss << std::uppercase << std::hex << std::setw(4) << std::setfill('0') << addr << ":  ";
             u8 opcode = code[addr++];
-            ss << std::hex << std::setw(2) << (u16)opcode << ' ';
+            ss << std::hex << std::setw(2) << to_u16(opcode) << ' ';
 
             u8 byte;
             switch (opcode >> 4)
@@ -53,8 +53,8 @@ namespace ASM40xx {
                 else
                     INSTR("FIN", (opcode & 0xE) / 2);
                 break;
-            case 0x4: PRINT1; ss << " JUN " << std::setw(3) << (((u16)opcode & 0xF) << 8 | byte); break;
-            case 0x5: PRINT1; ss << " JMS " << std::setw(3) << (((u16)opcode & 0xF) << 8 | byte); break;
+            case 0x4: PRINT1; ss << " JUN " << std::setw(3) << ((to_u16(opcode) & 0xF) << 8 | byte); break;
+            case 0x5: PRINT1; ss << " JMS " << std::setw(3) << ((to_u16(opcode) & 0xF) << 8 | byte); break;
             case 0x6: INSTR("INC", opcode & 0xF); break;
             case 0x7: INST3("ISZ", opcode & 0xF); break;
             case 0x8: INSTR("ADD", opcode & 0xF); break;
@@ -107,7 +107,7 @@ namespace ASM40xx {
             default: INST1("???");
             }
 
-            strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer));
+            strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer) - 1);
             output.push_back(line);
         }
     }

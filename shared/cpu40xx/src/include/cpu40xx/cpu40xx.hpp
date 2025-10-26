@@ -2,10 +2,39 @@
 #include "utils/types.hpp"
 
 #include <functional>
+#include <vector>
 
 class CPU40xx
 {
 public:
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
+    struct State {
+        std::vector<u8> regs;
+        std::vector<u16> stack;
+        u8 ACC : 4;
+        u8 CMRAM : 4;
+        u8 SP : 3;
+        u8 CY : 1;
+        u8 test : 1;
+        union {
+            struct {
+                u8 RAMCharIdx : 4;
+                u8 RAMRegIdx  : 2;
+                u8 RAMChip    : 2;
+            };
+            struct {
+                u8 unused  : 4;
+                u8 ROMChip : 4;
+            };
+            u8 SRCReg;
+        };
+    };
+
+#pragma GCC diagnostic pop
+
     using ReadROMCallback = std::function<u8(u16)>;
     using ReadRAMCallback = std::function<u8(u8)>;
     using WriteRAMCallback = std::function<void(u8, u8)>;
@@ -30,17 +59,12 @@ public:
     void reset();
     void clock();
 
-    const u8* getRegs() const { return m_regs; }
-    const u16* getStack() const { return m_stack; }
-    u16 getPC() const { return m_stack[getSP()] % 0xFFF; }
-    u8 getSP() const { return SP % STACK_SIZE; }
-    u8 getACC() const { return ACC; }
-    u8 getCY() const { return CY; }
-    u8 getSRCReg() const { return SRCReg; }
-    u8 getCMRAM() const { return CMRAM; }
+    const State& getState() const { return m_state; }
+    State& getState() { return m_state; }
+    u16 getPC() const { return m_state.stack[getSP()] % 0xFFF; }
+    u8 getSP() const { return m_state.SP % m_state.stack.size(); }
 
     explicit CPU40xx(Mode mode);
-    ~CPU40xx();
     CPU40xx(const CPU40xx&) = delete;
     CPU40xx& operator=(const CPU40xx&) = delete;
 private:
@@ -52,8 +76,8 @@ private:
     ReadStatusCallback loadStatus8 = nullptr;
     WriteStatusCallback storeStatus8 = nullptr;
 
-    u8 getRAMAddress() const { return (CMRAM >> 1) | SRCReg; }
-    void incPC() { m_stack[getSP()]++; }
+    u8 getRAMAddress() const { return (m_state.CMRAM >> 1) | m_state.SRCReg; }
+    void incPC() { m_state.stack[getSP()]++; }
 
     void ADD(const u8* regs, u8 idx);
     void ADM();
@@ -95,26 +119,5 @@ private:
     void XCH(u8* regs, u8 idx);
 
     const Mode m_mode;
-    const u8 REGS_SIZE;
-    const u8 STACK_SIZE;
-    
-    u8* m_regs;
-    u16* m_stack;
-    u8 SP : 3;
-    u8 ACC : 4;
-    u8 CY : 1;
-    u8 m_test : 1;
-    union {
-        struct {
-            u8 RAMCharIdx : 4;
-            u8 RAMRegIdx  : 2;
-            u8 RAMChip    : 2;
-        };
-        struct {
-            u8 unused  : 4;
-            u8 ROMChip : 4;
-        };
-        u8 SRCReg;
-    };
-    u8 CMRAM : 4;
+    State m_state;
 };

@@ -36,7 +36,7 @@ void Trie<Value>::emplace(const std::string_view& key, const Value& value)
     for (char c : key)
     {
         int index = c - 'A';
-        if (index < 0 || index >= ALPHABET_SIZE)
+        if (index < 0 || index >= static_cast<int>(ALPHABET_SIZE))
             return;
 
         if (!current->children[index])
@@ -56,7 +56,7 @@ inline bool Trie<Value>::find(const std::string_view& key, Value& value)
     for (char c : key)
     {
         int index = c - 'A';
-        if (index < 0 || index >= ALPHABET_SIZE)
+        if (index < 0 || index >= static_cast<int>(ALPHABET_SIZE))
             return false;
 
         if (!current->children[index])

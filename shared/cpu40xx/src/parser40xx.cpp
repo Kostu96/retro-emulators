@@ -1,5 +1,6 @@
 #include "parser40xx.hpp"
 
+#include <cassert>
 #include <cstdio>
 
 namespace ASM40xx {
@@ -369,6 +370,8 @@ namespace ASM40xx {
             m_output.push_back(0xB0 | (reg & 0xF));
             m_address++;
         } break;
+        default:
+            assert(false);
         }
     }
 

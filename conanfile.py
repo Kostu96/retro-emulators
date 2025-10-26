@@ -21,4 +21,4 @@ class RetroEmulatorsConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-        cmake.test()
+        cmake.ctest(cli_args=["--output-on-failure"])
