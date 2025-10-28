@@ -35,12 +35,12 @@ void CPU40xx::clock() {
         break;
     case 0x4: JUN(opcode & 0xF); break;
     case 0x5: JMS(opcode & 0xF); break;
-    case 0x6: INC(m_state.regs.data(), opcode & 0xF); break;
-    case 0x7: ISZ(m_state.regs.data(), opcode & 0xF); break;
-    case 0x8: ADD(m_state.regs.data(), opcode & 0xF); break;
-    case 0x9: SUB(m_state.regs.data(), opcode & 0xF); break;
-    case 0xA: LD(m_state.regs.data(), opcode & 0xF); break;
-    case 0xB: XCH(m_state.regs.data(), opcode & 0xF); break;
+    case 0x6: INC(opcode & 0xF); break;
+    case 0x7: ISZ(opcode & 0xF); break;
+    case 0x8: ADD(opcode & 0xF); break;
+    case 0x9: SUB(opcode & 0xF); break;
+    case 0xA: LD(opcode & 0xF); break;
+    case 0xB: XCH(opcode & 0xF); break;
     case 0xC: BBL(opcode & 0xF); break;
     case 0xD: LDM(opcode & 0xF); break;
     case 0xE:
@@ -93,62 +93,61 @@ void CPU40xx::clock() {
 
 CPU40xx::CPU40xx(Mode mode) :
     m_mode{ mode } {
-    m_state.regs = std::vector<u8>(mode == Mode::Intel4004 ? 8u : 12u);
+    m_state.regs = std::vector<u8>(mode == Mode::Intel4004 ? 16u : 24u);
     m_state.stack = std::vector<u16>(mode == Mode::Intel4004 ? 4u : 8u);
 }
 
-void CPU40xx::ADD(const u8* regs, u8 idx) {
-    u8 value = regs[idx / 2];
-    u8 temp = ACC + (idx % 2 ? value & 0xF : value >> 4) + CY;
-    ACC = temp;
-    CY = temp >> 4;
+void CPU40xx::ADD(u8 idx) {
+    u8 temp = m_state.ACC + m_state.regs[idx] + m_state.CY;
+    m_state.ACC = temp;
+    m_state.CY = temp >> 4;
 }
 
 void CPU40xx::ADM() {
-    u8 temp = ACC + (loadRAM8(getRAMAddress()) & 0xF) + CY;
-    ACC = temp;
-    CY = temp >> 4;
+    u8 temp = m_state.ACC + (loadRAM8(getRAMAddress()) & 0xF) + m_state.CY;
+    m_state.ACC = temp;
+    m_state.CY = temp >> 4;
 }
 
 void CPU40xx::BBL(u8 data) {
-    SP--;
-    ACC = data;
+    m_state.SP--;
+    m_state.ACC = data;
 }
 
 void CPU40xx::CLB() {
-    ACC = 0;
-    CY = 0;
+    m_state.ACC = 0;
+    m_state.CY = 0;
 }
 
 void CPU40xx::CLC() {
-    CY = 0;
+    m_state.CY = 0;
 }
 
 void CPU40xx::CMA() {
-    ACC = ~ACC;
+    m_state.ACC = ~m_state.ACC;
 }
 
 void CPU40xx::CMC() {
-    CY = ~CY;
+    m_state.CY = ~m_state.CY;
 }
 
 void CPU40xx::DAA() {
-    if (ACC > 9 || CY) {
-        u8 temp = ACC + 6;
-        ACC = temp;
-        CY = temp >> 4;
+    if (m_state.ACC > 9 || m_state.CY) {
+        u8 temp = m_state.ACC + 6;
+        m_state.ACC = temp;
+        m_state.CY = temp >> 4;
     }
 }
 
 void CPU40xx::DAC() {
-    u8 temp = ACC + 0xF;
-    ACC = temp;
-    CY = temp >> 4;;
+    u8 temp = m_state.ACC + 0xF;
+    m_state.ACC = temp;
+    m_state.CY = temp >> 4;;
 }
 
 void CPU40xx::DCL() {
-    if (ACC == 0) CMRAM = 1;
-    else CMRAM = ACC << 1;
+    if (m_state.ACC == 0) m_state.CMRAM = 1;
+    else m_state.CMRAM = m_state.ACC << 1;
 }
 
 void CPU40xx::FIM(u8* reg) {
@@ -163,31 +162,24 @@ void CPU40xx::FIN(u8* reg) {
 }
 
 void CPU40xx::IAC() {
-    u8 temp = ACC + 1;
-    ACC = temp;
-    CY = temp >> 4;
+    u8 temp = m_state.ACC + 1;
+    m_state.ACC = temp;
+    m_state.CY = temp >> 4;
 }
 
-void CPU40xx::INC(u8* regs, u8 idx) {
-    regs += idx / 2;
-    u8 temp = (idx % 2 ? *regs & 0xF : *regs >> 4) + 1;
-    temp &= 0xF;
-    *regs &= idx % 2 ? 0xF0 : 0x0F;
-    *regs |= idx % 2 ? temp : temp << 4;
+void CPU40xx::INC(u8 idx) {
+    m_state.regs[idx]++;
+    m_state.regs[idx] &= 0xF;
 }
 
-void CPU40xx::ISZ(u8* regs, u8 idx) {
+void CPU40xx::ISZ(u8 idx) {
     u8 address = loadROM8(getPC());
     incPC();
 
-    regs += idx / 2;
-    u8 temp = (idx % 2 ? *regs & 0xF : *regs >> 4) + 1;
-    temp &= 0xF;
-    *regs &= idx % 2 ? 0xF0 : 0x0F;
-    *regs |= idx % 2 ? temp : temp << 4;
+    m_state.regs[idx]++;
+    m_state.regs[idx] &= 0xF;
 
-    if (temp)
-    {
+    if (m_state.regs[idx] != 0) {
         if ((getPC() & 0xFFu) == 0xFE) m_state.stack[getSP()] += 2;
         m_state.stack[getSP()] &= 0x0300u;
         m_state.stack[getSP()] |= address;
@@ -223,7 +215,7 @@ void CPU40xx::JIN(const u8* /*reg*/) {
 void CPU40xx::JMS(u16 highNibble) {
     u16 addr = (highNibble << 8) | loadROM8(getPC());
     incPC();
-    SP++;
+    m_state.SP++;
     m_state.stack[getSP()] = addr;
 }
 
@@ -232,103 +224,99 @@ void CPU40xx::JUN(u16 highNibble) {
 }
 
 void CPU40xx::KBP() {
-    u8 temp = ACC & 0x0Fu;
+    u8 temp = m_state.ACC & 0x0Fu;
     switch (temp)
     {
     case 0b0000:
     case 0b0001:
     case 0b0010: return;
-    case 0b0100: ACC = 0b0011; return;
-    case 0b1000: ACC = 0b0100; return;
-    default:     ACC = 0b1111; return;
+    case 0b0100: m_state.ACC = 0b0011; return;
+    case 0b1000: m_state.ACC = 0b0100; return;
+    default:     m_state.ACC = 0b1111; return;
     }
 }
 
-void CPU40xx::LD(const u8* regs, u8 idx) {
-    u8 value = regs[idx / 2];
-    ACC = idx % 2 ? value : value >> 4;
+void CPU40xx::LD(u8 idx) {
+    m_state.ACC = m_state.regs[idx];
 }
 
 void CPU40xx::LDM(u8 data) {
-    ACC = data;
+    m_state.ACC = data;
 }
 
 void CPU40xx::RAL() {
-    CY = ACC >> 3;
-    ACC <<= 1;
-    ACC |= CY;
+    m_state.CY = m_state.ACC >> 3;
+    m_state.ACC <<= 1;
+    m_state.ACC |= m_state.CY;
 }
 
 void CPU40xx::RAR() {
-    CY = ACC & 1;
-    ACC >>= 1;
-    ACC |= CY << 3;
+    m_state.CY = m_state.ACC & 1;
+    m_state.ACC >>= 1;
+    m_state.ACC |= m_state.CY << 3;
 }
 
 void CPU40xx::RDM() {
-    ACC = loadRAM8(getRAMAddress()) & 0xF;
+    m_state.ACC = loadRAM8(getRAMAddress()) & 0xF;
 }
 
 void CPU40xx::RDR() {
-    ACC = loadIO8(ROMChip) & 0xF;
+    m_state.ACC = loadIO8(m_state.ROMChip) & 0xF;
 }
 
 void CPU40xx::RDX(u8 charIdx) {
-    ACC = loadStatus8((RAMChip << 4) | (RAMRegIdx << 2) | charIdx) & 0xF;
+    m_state.ACC = loadStatus8((m_state.RAMChip << 4) | (m_state.RAMRegIdx << 2) | charIdx) & 0xF;
 }
 
 void CPU40xx::SBM() {
     u8 value = ~loadRAM8(getRAMAddress()) & 0xF;
-    u8 temp = ACC + value + CY;
-    ACC = temp;
-    CY = temp >> 4;
+    u8 temp = m_state.ACC + value + m_state.CY;
+    m_state.ACC = temp;
+    m_state.CY = temp >> 4;
 }
 
 void CPU40xx::SRC(const u8* reg) {
-    SRCReg = *reg;
+    m_state.SRCReg = *reg;
 }
 
 void CPU40xx::STC() {
-    CY = 1;
+    m_state.CY = 1;
 }
 
-void CPU40xx::SUB(const u8* regs, u8 idx) {
-    u8 value = ~regs[idx / 2];
-    u8 temp = ACC + (idx % 2 ? value & 0xF : value >> 4) + CY;
-    ACC = temp;
-    CY = temp >> 4;
+void CPU40xx::SUB(u8 idx) {
+    u8 temp = m_state.ACC + (~m_state.regs[idx] & 0xF) + m_state.CY;
+    m_state.ACC = temp;
+    m_state.CY = temp >> 4;
 }
 
 void CPU40xx::TCC() {
-    ACC = CY;
-    CY = 0;
+    m_state.ACC = m_state.CY;
+    m_state.CY = 0;
 }
 
 void CPU40xx::TCS() {
-    ACC = 9 + CY;
-    CY = 0;
+    m_state.ACC = 9 + m_state.CY;
+    m_state.CY = 0;
 }
 
 void CPU40xx::WMP() {
-    storeIO8(RAMChip, ACC);
+    storeIO8(m_state.RAMChip, m_state.ACC);
 }
 
 void CPU40xx::WRM() {
-    storeRAM8(getRAMAddress(), ACC);
+    storeRAM8(getRAMAddress(), m_state.ACC);
 }
 
 void CPU40xx::WRR() {
-    storeIO8(ROMChip, ACC);
+    storeIO8(m_state.ROMChip, m_state.ACC);
 }
 
 void CPU40xx::WRX(u8 charIdx) {
-    storeStatus8((RAMChip << 4) | (RAMRegIdx << 2) | charIdx, ACC);
+    storeStatus8((m_state.RAMChip << 4) | (m_state.RAMRegIdx << 2) | charIdx, m_state.ACC);
 }
 
-void CPU40xx::XCH(u8* regs, u8 idx) {
-    u8 temp = ACC;
-    u8 value = regs[idx / 2];
-    ACC = idx % 2 ? value : value >> 4;
-    regs[idx / 2] &= idx % 2 ? 0xF0 : 0x0F;
-    regs[idx / 2] |= idx % 2 ? temp : temp << 4;
+void CPU40xx::XCH(u8 idx) {
+    u8 temp = m_state.ACC;
+    m_state.ACC = m_state.regs[idx];
+    m_state.regs[idx] = temp;
 }

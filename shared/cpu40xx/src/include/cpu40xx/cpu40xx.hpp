@@ -79,7 +79,7 @@ private:
     u8 getRAMAddress() const { return (m_state.CMRAM >> 1) | m_state.SRCReg; }
     void incPC() { m_state.stack[getSP()]++; }
 
-    void ADD(const u8* regs, u8 idx);
+    void ADD(u8 idx);
     void ADM();
     void BBL(u8 data);
     void CLB();
@@ -92,14 +92,14 @@ private:
     void FIM(u8* reg);
     void FIN(u8* reg);
     void IAC();
-    void INC(u8* regs, u8 idx);
-    void ISZ(u8* regs, u8 idx);
+    void INC(u8 idx);
+    void ISZ(u8 idx);
     void JCN(u8 condition);
     void JIN(const u8* reg);
     void JMS(u16 highNibble);
     void JUN(u16 highNibble);
     void KBP();
-    void LD(const u8* regs, u8 idx);
+    void LD(u8 idx);
     void LDM(u8 data);
     void RAL();
     void RAR();
@@ -109,14 +109,14 @@ private:
     void SBM();
     void SRC(const u8* reg);
     void STC();
-    void SUB(const u8* regs, u8 idx);
+    void SUB(u8 idx);
     void TCC();
     void TCS();
     void WMP();
     void WRM();
     void WRR();
     void WRX(u8 charIdx);
-    void XCH(u8* regs, u8 idx);
+    void XCH(u8 idx);
 
     const Mode m_mode;
     State m_state;
