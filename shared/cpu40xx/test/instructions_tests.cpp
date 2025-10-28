@@ -7,10 +7,7 @@ namespace {
 
 struct CPU4004InstructionsTests :
     public ::testing::Test {
-    static constexpr u16 ROM_SIZE = 0x10;
-
-    u8 rom[ROM_SIZE]{};
-
+        
     CPU4004InstructionsTests() :
         cpu(CPU40xx::Mode::Intel4004) {
         cpu.mapReadROMCallback([this](u16 address) -> u8 {
@@ -18,11 +15,11 @@ struct CPU4004InstructionsTests :
             return 0u;
         });
     }
-
+    
     void SetUp() override {
         memset(rom, 0, ROM_SIZE);
         cpu.reset();
-
+        
         // give some different values to all registers
         u8 value = 0;
         for (u8& reg : cpu.getState().regs) {
@@ -33,14 +30,14 @@ struct CPU4004InstructionsTests :
             slot = value++;
         }
     }
-
+    
     void TearDown() override {}
-
+    
     CPU40xx::State captureCPUState() const {
         return cpu.getState();
     }
-
-    void compareCPUStates(const CPU40xx::State& state1, const CPU40xx::State& state2) {
+    
+    void compareCPUStates(const CPU40xx::State& state1, const CPU40xx::State& state2) const {
         EXPECT_EQ(state1.regs, state2.regs);
         EXPECT_EQ(state1.stack, state2.stack);
         EXPECT_EQ(state1.ACC, state2.ACC);
@@ -50,70 +47,56 @@ struct CPU4004InstructionsTests :
         EXPECT_EQ(state1.CMRAM, state2.CMRAM);
         EXPECT_EQ(state1.SRCReg, state2.SRCReg);
     }
+    
+    void execute(u8 cycles, void (*stateChanges)(CPU40xx::State& state)) {
+        auto preExecutionState = captureCPUState();
+        while (cycles--) cpu.clock();
+        auto postExecutionState = captureCPUState();
+        stateChanges(preExecutionState);
+        compareCPUStates(preExecutionState, postExecutionState);
+    }
+
+    static constexpr u16 ROM_SIZE = 0x100;
 
     CPU40xx cpu;
+    u8 rom[ROM_SIZE]{};
 };
 
 TEST_F(CPU4004InstructionsTests, NOPTest) {
     rom[0] = 0x0; // NOP
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, LDMTest) {
     rom[0] = 0xDA; // LDM 10
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 10;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 10;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, LDTest) {
     rom[0] = 0xAC; // LD 12
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 12;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 12;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, XCHTest) {
     rom[0] = 0xBC; // XCH 12
     cpu.getState().ACC = 4;
-    
-    u8 value = 0;
-    for (u8& reg : cpu.getState().regs) {
-        reg = value++;
-    }
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 12;
-    preExecutionState.regs[12] = 4;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 12;
+        state.regs[12] = 4;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, ADDTest) {
@@ -127,47 +110,27 @@ TEST_F(CPU4004InstructionsTests, ADDTest) {
     cpu.getState().regs[14] = 14;
     cpu.getState().regs[15] = 2;
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 9;
+    });
 
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 9;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 1;
+        state.CY = 1;
+    });
 
-    preExecutionState = postExecutionState;
-    cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    postExecutionState = captureCPUState();
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 0;
+    });
 
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 1;
-    preExecutionState.CY = 1;
-    compareCPUStates(preExecutionState, postExecutionState);
-
-    preExecutionState = postExecutionState;
-    cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 0;
-    compareCPUStates(preExecutionState, postExecutionState);
-
-    preExecutionState = postExecutionState;
-    cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 3;
-    preExecutionState.CY = 0;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 3;
+        state.CY = 0;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, SUBTest) {
@@ -182,48 +145,28 @@ TEST_F(CPU4004InstructionsTests, SUBTest) {
     cpu.getState().regs[14] = 14;
     cpu.getState().regs[15] = 2;
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 2;
+        state.CY = 1;
+    });
 
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 2;
-    preExecutionState.CY = 1;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 10;
+        state.CY = 0;
+    });
 
-    preExecutionState = postExecutionState;
-    cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    postExecutionState = captureCPUState();
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 11;
+    });
 
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 10;
-    preExecutionState.CY = 0;
-    compareCPUStates(preExecutionState, postExecutionState);
-
-    preExecutionState = postExecutionState;
-    cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 11;
-    compareCPUStates(preExecutionState, postExecutionState);
-
-    preExecutionState = postExecutionState;
-    cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.ACC = 8;
-    preExecutionState.CY = 1;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 8;
+        state.CY = 1;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, INCTest) {
@@ -231,43 +174,63 @@ TEST_F(CPU4004InstructionsTests, INCTest) {
     rom[1] = 0x6C; // INC 12
     cpu.getState().regs[12] = 14;
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.regs[12] = 15;
+    });
 
-    preExecutionState.stack[0]++;
-    preExecutionState.regs[12] = 15;
-    compareCPUStates(preExecutionState, postExecutionState);
-
-    preExecutionState = postExecutionState;
-    cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    postExecutionState = captureCPUState();
-
-    preExecutionState.stack[0]++;
-    preExecutionState.regs[12] = 0;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.regs[12] = 0;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, BBLTest) {
     rom[0] = 0xC7; // BBL 7
-    cpu.getState().stack[0] = 0x123;
+    rom[5] = 0xC0; // BBL 0
+    cpu.getState().stack[0] = 5;
     cpu.getState().stack[1] = 0;
     cpu.getState().SP = 1;
 
-    auto preExecutionState = captureCPUState();
-    u8 cycles = 1;
-    while (cycles--)
-        cpu.clock();
-    auto postExecutionState = captureCPUState();
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[1]++;
+        state.ACC = 7;
+        state.SP = 0;
+    });
 
-    preExecutionState.ACC = 7;
-    preExecutionState.SP = 0;
-    preExecutionState.stack[1]++;
-    compareCPUStates(preExecutionState, postExecutionState);
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.ACC = 0;
+        state.SP = 3;
+    });
+}
+
+TEST_F(CPU4004InstructionsTests, JINTest) {
+    rom[0] = 0x31; // JIN 0
+    rom[0xFF] = 0x33; // JIN 1P
+    cpu.getState().regs[0] = 0xF;
+    cpu.getState().regs[1] = 0xF;
+    cpu.getState().regs[2] = 0x1;
+    cpu.getState().regs[3] = 0x2;
+
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0] = 0xFF;
+    });
+
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0] = 0x121;
+    });
+}
+
+TEST_F(CPU4004InstructionsTests, SRCTest) {
+    rom[0] = 0x21; // SRC 0
+    cpu.getState().regs[0] = 0x2;
+    cpu.getState().regs[1] = 0x4;
+
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.SRCReg = 0x42;
+    });
 }
 
 } // namespace

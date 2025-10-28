@@ -95,7 +95,7 @@ private:
     void INC(u8 idx);
     void ISZ(u8 idx);
     void JCN(u8 condition);
-    void JIN(const u8* reg);
+    void JIN(u8 idx);
     void JMS(u16 highNibble);
     void JUN(u16 highNibble);
     void KBP();
@@ -107,7 +107,7 @@ private:
     void RDR();
     void RDX(u8 charIdx);
     void SBM();
-    void SRC(const u8* reg);
+    void SRC(u8 idx);
     void STC();
     void SUB(u8 idx);
     void TCC();

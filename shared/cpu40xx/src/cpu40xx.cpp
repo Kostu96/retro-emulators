@@ -21,18 +21,18 @@ void CPU40xx::clock() {
     switch (opcode >> 4)
     {
     case 0x1: JCN(opcode & 0xF); break;
-    case 0x2:
+    case 0x2: {
         if (opcode & 1)
-            SRC(m_state.regs.data() + (opcode & 0xE) / 2);
+            SRC(opcode & 0xE);
         else
             FIM(m_state.regs.data() + (opcode & 0xE) / 2);
-        break;
-    case 0x3:
+    } break;
+    case 0x3: {
         if (opcode & 1)
-            JIN(m_state.regs.data() + (opcode & 0xE) / 2);
+            JIN(opcode & 0xE);
         else
             FIN(m_state.regs.data() + (opcode & 0xE) / 2);
-        break;
+    } break;
     case 0x4: JUN(opcode & 0xF); break;
     case 0x5: JMS(opcode & 0xF); break;
     case 0x6: INC(opcode & 0xF); break;
@@ -110,8 +110,9 @@ void CPU40xx::ADM() {
 }
 
 void CPU40xx::BBL(u8 data) {
-    m_state.SP--;
     m_state.ACC = data;
+    m_state.SP--;
+    m_state.SP &= (m_mode == Mode::Intel4004 ? 0b11 : 0b111);
 }
 
 void CPU40xx::CLB() {
@@ -206,10 +207,10 @@ void CPU40xx::JCN(u8 condition) {
     }
 }
 
-void CPU40xx::JIN(const u8* /*reg*/) {
-    if ((getPC() & 0xFF) == 0xFF) incPC();
+void CPU40xx::JIN(u8 idx) {
+    u8 address = (m_state.regs[idx + 1] << 4) | m_state.regs[idx];
     m_state.stack[getSP()] &= 0xF00;
-    m_state.stack[getSP()] |= m_state.regs[0];
+    m_state.stack[getSP()] |= address;
 }
 
 void CPU40xx::JMS(u16 highNibble) {
@@ -275,8 +276,8 @@ void CPU40xx::SBM() {
     m_state.CY = temp >> 4;
 }
 
-void CPU40xx::SRC(const u8* reg) {
-    m_state.SRCReg = *reg;
+void CPU40xx::SRC(u8 idx) {
+    m_state.SRCReg = (m_state.regs[idx + 1] << 4) | m_state.regs[idx];
 }
 
 void CPU40xx::STC() {
