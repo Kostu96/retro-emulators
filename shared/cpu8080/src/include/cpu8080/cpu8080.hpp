@@ -1,5 +1,6 @@
 #pragma once
 #include "utils/types.hpp"
+#include "utils/warnings.hpp"
 
 #include <functional>
 
@@ -7,9 +8,7 @@ class CPU8080
 {
 public:
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-
+BEGIN_ALLOW_ANON_STRUCTS
     union Flags {
         struct {
             u8 Carry          : 1; // 0
@@ -54,8 +53,7 @@ public:
             u16 HL;
         };
     };
-
-#pragma GCC diagnostic pop
+END_ALLOW_ANON_STRUCTS
 
     using ReadMemoryCallback = std::function<u8(u16)>;
     using WriteMemoryCallback = std::function<void(u16, u8)>;

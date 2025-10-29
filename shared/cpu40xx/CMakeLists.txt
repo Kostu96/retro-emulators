@@ -1,25 +1,21 @@
 set(CPU40XX_LIB_TARGET_NAME cpu40xx)
 
-add_library(${CPU40XX_LIB_TARGET_NAME} STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/asm40xx.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/asm40xx.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpu40xx.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/parser40xx.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/parser40xx.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/scanner40xx.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/scanner40xx.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/include/cpu40xx/cpu40xx.hpp
-)
-
-set_target_warnings(${CPU40XX_LIB_TARGET_NAME})
-
-target_include_directories(${CPU40XX_LIB_TARGET_NAME} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/include
-)
-
-target_link_libraries(${CPU40XX_LIB_TARGET_NAME} PUBLIC
-    utils
+add_device_library(
+    TARGET_NAME ${CPU40XX_LIB_TARGET_NAME}
+    SOURCES
+        CMakeLists.txt
+        src/asm40xx.cpp
+        src/asm40xx.hpp
+        src/cpu40xx.cpp
+        src/parser40xx.cpp
+        src/parser40xx.hpp
+        src/scanner40xx.cpp
+        src/scanner40xx.hpp
+        src/include/cpu40xx/cpu40xx.hpp
+    INCLUDE_DIRS
+        src/include
+    LIBRARIES
+        utils
 )
 
 set(CPU40XX_TEST_TARGET_NAME cpu40xx_test)
