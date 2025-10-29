@@ -48,7 +48,7 @@ jobs:
         if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
           conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=20 --build=missing
         else
-          sudo apt-get update && sudo apt-get install -y libegl-dev
+          sudo apt-get update && sudo apt-get install -y libegl-dev libudev-dev
           conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=gnu20 --build=missing
         fi
     
