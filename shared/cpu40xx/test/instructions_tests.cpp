@@ -290,16 +290,53 @@ TEST_F(CPU4004InstructionsTests, JMSTest) {
     });
 }
 
-TEST_F(CPU4004InstructionsTests, JCNTest) {
+struct JCNParametrizedTests :
+    public CPU4004InstructionsTests,
+    public ::testing::WithParamInterface<std::tuple<u8, u8>>
+{};
+
+TEST_P(JCNParametrizedTests, JCNTest) {
     // TODO(Kostu): 16 permutations of conditions
-    rom[0] = 0x10; 
-    rom[1] = 0x00; // JCN TODO
-    rom[2] = 0x10;
-    rom[3] = 0x00; // JCN TODO
+    rom[0x00] = 0x10;
+    rom[0x01] = 0x00; // JCN 0b0000 - ACC != 0 && CY == 0 && test == 1 ; skip
+    rom[0x02] = 0x10;
+    rom[0x03] = 0x00; // JCN 0b0000 - ACC != 0 && CY == 0 && test == 1 ; jump
+
+    rom[0x00] = 0x10; 
+    rom[0x01] = 0x00; // JCN 0b0001 - ACC != 0 && CY == 0 && test == 0 ; skip
+    rom[0x02] = 0x10;
+    rom[0x03] = 0x00; // JCN 0b0001 - ACC != 0 && CY == 0 && test == 0 ; jump
+
     rom[0x10] = 0x10;
-    rom[0x11] = 0x00; // JCN TODO
+    rom[0x11] = 0x00; // JCN 0b0010 - ACC != 0 && CY == 1 && test == 1 ; skip
     rom[0x12] = 0x10;
-    rom[0x13] = 0x00; // JCN TODO
+    rom[0x13] = 0x00; // JCN 0b0010 - ACC != 0 && CY == 1 && test == 1 ; jump
+
+    rom[0x20] = 0x10;
+    rom[0x21] = 0x00; // JCN 0b0011 - ACC != 0 && CY == 1 && test == 0 ; skip
+    rom[0x22] = 0x10;
+    rom[0x23] = 0x00; // JCN 0b0011 - ACC != 0 && CY == 1 && test == 0 ; jump
+
+    rom[0x30] = 0x10;
+    rom[0x31] = 0x00; // JCN 0b0100 - ACC == 0 && CY == 0 && test == 1 ; skip
+    rom[0x32] = 0x10;
+    rom[0x33] = 0x00; // JCN 0b0100 - ACC == 0 && CY == 0 && test == 1 ; jump
+
+    rom[0x40] = 0x10;
+    rom[0x41] = 0x00; // JCN 0b0101 - ACC == 0 && CY == 0 && test == 0 ; skip
+    rom[0x42] = 0x10;
+    rom[0x43] = 0x00; // JCN 0b0101 - ACC == 0 && CY == 0 && test == 0 ; jump
+
+    rom[0x50] = 0x10;
+    rom[0x51] = 0x00; // JCN 0b0110 - ACC == 0 && CY == 1 && test == 1 ; skip
+    rom[0x52] = 0x10;
+    rom[0x53] = 0x00; // JCN 0b0110 - ACC == 0 && CY == 1 && test == 1 ; jump
+
+    rom[0x50] = 0x10;
+    rom[0x51] = 0x00; // JCN 0b0111 - ACC == 0 && CY == 1 && test == 0 ; skip
+    rom[0x52] = 0x10;
+    rom[0x53] = 0x00; // JCN 0b0111 - ACC == 0 && CY == 1 && test == 0 ; jump
+
     cpu.getState().regs[0] = 0x2;
     cpu.getState().regs[1] = 0x4;
     cpu.getState().stack[0] = 0xFE;
@@ -318,6 +355,13 @@ TEST_F(CPU4004InstructionsTests, JCNTest) {
         state.regs[3] = 0x2;
         });
 }
+
+INSTANTIATE_TEST_SUITE_P(JCNParams, JCNParametrizedTests,
+    ::testing::Combine(
+        ::testing::Range(0, 16),
+        ::testing::Range(0, 8)
+    )
+);
 
 TEST_F(CPU4004InstructionsTests, SubroutineTest) {
     // TODO(Kostu):
