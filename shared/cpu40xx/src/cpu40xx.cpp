@@ -32,7 +32,7 @@ void CPU40xx::clock() {
         if (opcode & 1)
             JIN(opcode & 0xE);
         else
-            FIN(m_state.regs.data() + (opcode & 0xE) / 2);
+            FIN(opcode & 0xE);
     } break;
     case 0x4: JUN(opcode & 0xF); break;
     case 0x5: JMS(opcode & 0xF); break;
@@ -112,8 +112,7 @@ void CPU40xx::ADM() {
 
 void CPU40xx::BBL(u8 data) {
     m_state.ACC = data;
-    m_state.SP--;
-    m_state.SP &= (m_mode == Mode::Intel4004 ? 0b11 : 0b111);
+    decSP();
 }
 
 void CPU40xx::CLB() {
@@ -157,10 +156,11 @@ void CPU40xx::FIM(u8* reg) {
     incPC();
 }
 
-void CPU40xx::FIN(u8* reg) {
-    u16 addr = m_state.regs[0];
-    if ((getPC() & 0xFF) == 0xFF) addr += 0x100;
-    *reg = loadROM8(addr);
+void CPU40xx::FIN(u8 idx) {
+    u16 address = (getPC() & 0xF00) | (m_state.regs[1] << 4) | m_state.regs[0];
+    u8 value = loadROM8(address);
+    m_state.regs[idx] = value & 0xF;
+    m_state.regs[idx + 1] = value >> 4;
 }
 
 void CPU40xx::IAC() {
@@ -182,9 +182,8 @@ void CPU40xx::ISZ(u8 idx) {
     m_state.regs[idx] &= 0xF;
 
     if (m_state.regs[idx] != 0) {
-        if ((getPC() & 0xFFu) == 0xFE) m_state.stack[getSP()] += 2;
-        m_state.stack[getSP()] &= 0x0300u;
-        m_state.stack[getSP()] |= address;
+        getPC() &= 0xF00u;
+        getPC() |= address;
     }
 }
 
@@ -199,30 +198,28 @@ void CPU40xx::JCN(u8 condition) {
 
     u8 isACCZero = m_state.ACC == 0;
     u8 allTests = (isACCZero & c2) | (m_state.CY & c3) | (~m_state.test & c4);
-    bool shouldJump = (~c1 & allTests) | (c1 & !allTests);
 
-    if (shouldJump) {
-        if ((getPC() & 0xFFu) == 0xFE) m_state.stack[getSP()] += 2;
-        m_state.stack[getSP()] &= 0x0300u;
-        m_state.stack[getSP()] |= address;
+    if (c1 ^ allTests) {
+        getPC() &= 0xF00;
+        getPC() |= address;
     }
 }
 
 void CPU40xx::JIN(u8 idx) {
     u8 address = (m_state.regs[idx + 1] << 4) | m_state.regs[idx];
-    m_state.stack[getSP()] &= 0xF00;
-    m_state.stack[getSP()] |= address;
+    getPC() &= 0xF00;
+    getPC() |= address;
 }
 
 void CPU40xx::JMS(u16 highNibble) {
     u16 addr = (highNibble << 8) | loadROM8(getPC());
     incPC();
-    m_state.SP++;
-    m_state.stack[getSP()] = addr;
+    incSP();
+    getPC() = addr;
 }
 
 void CPU40xx::JUN(u16 highNibble) {
-    m_state.stack[getSP()] = (highNibble << 8) | loadROM8(getPC());
+    getPC() = (highNibble << 8) | loadROM8(getPC());
 }
 
 void CPU40xx::KBP() {

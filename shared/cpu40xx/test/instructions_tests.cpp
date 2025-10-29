@@ -56,7 +56,7 @@ struct CPU4004InstructionsTests :
         compareCPUStates(preExecutionState, postExecutionState);
     }
 
-    static constexpr u16 ROM_SIZE = 0x100;
+    static constexpr u16 ROM_SIZE = 0x200;
 
     CPU40xx cpu;
     u8 rom[ROM_SIZE]{};
@@ -206,7 +206,7 @@ TEST_F(CPU4004InstructionsTests, BBLTest) {
 }
 
 TEST_F(CPU4004InstructionsTests, JINTest) {
-    rom[0] = 0x31; // JIN 0
+    rom[0] = 0x31; // JIN 0P
     rom[0xFF] = 0x33; // JIN 1P
     cpu.getState().regs[0] = 0xF;
     cpu.getState().regs[1] = 0xF;
@@ -223,7 +223,7 @@ TEST_F(CPU4004InstructionsTests, JINTest) {
 }
 
 TEST_F(CPU4004InstructionsTests, SRCTest) {
-    rom[0] = 0x21; // SRC 0
+    rom[0] = 0x21; // SRC 0P
     cpu.getState().regs[0] = 0x2;
     cpu.getState().regs[1] = 0x4;
 
@@ -231,6 +231,96 @@ TEST_F(CPU4004InstructionsTests, SRCTest) {
         state.stack[0]++;
         state.SRCReg = 0x42;
     });
+}
+
+TEST_F(CPU4004InstructionsTests, FINTest) {
+    rom[0xFE] = 0x30; // FIN 0P
+    rom[0xFF] = 0x32; // FIN 1P
+    rom[0x42] = 0x12;
+    rom[0x112] = 0x21;
+    cpu.getState().regs[0] = 0x2;
+    cpu.getState().regs[1] = 0x4;
+    cpu.getState().stack[0] = 0xFE;
+
+    // TODO(Kostu): this should take 2 cycles
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.regs[0] = 0x2;
+        state.regs[1] = 0x1;
+    });
+
+    // TODO(Kostu): this should take 2 cycles
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.regs[2] = 0x1;
+        state.regs[3] = 0x2;
+    });
+}
+
+TEST_F(CPU4004InstructionsTests, JUNTest) {
+    rom[0] = 0x41;
+    rom[1] = 0x23; // JUN 0x123
+
+    // TODO(Kostu): this should take 2 cycles
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0] = 0x123;
+    });
+}
+
+TEST_F(CPU4004InstructionsTests, JMSTest) {
+    rom[0] = 0x51;
+    rom[1] = 0x23;     // JMS 0x123
+    rom[0x123] = 0x54;
+    rom[0x124] = 0x56; // JMS 0
+    cpu.getState().stack[2] = 0;
+    cpu.getState().SP = 2;
+
+    // TODO(Kostu): this should take 2 cycles
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[2] += 2;
+        state.stack[3] = 0x123;
+        state.SP = 3;
+    });
+
+    // TODO(Kostu): this should take 2 cycles
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[3] += 2;
+        state.stack[0] = 0x456;
+        state.SP = 0;
+    });
+}
+
+TEST_F(CPU4004InstructionsTests, JCNTest) {
+    // TODO(Kostu): 16 permutations of conditions
+    rom[0] = 0x10; 
+    rom[1] = 0x00; // JCN TODO
+    rom[2] = 0x10;
+    rom[3] = 0x00; // JCN TODO
+    rom[0x10] = 0x10;
+    rom[0x11] = 0x00; // JCN TODO
+    rom[0x12] = 0x10;
+    rom[0x13] = 0x00; // JCN TODO
+    cpu.getState().regs[0] = 0x2;
+    cpu.getState().regs[1] = 0x4;
+    cpu.getState().stack[0] = 0xFE;
+
+    // TODO(Kostu): this should take 2 cycles
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.regs[0] = 0x2;
+        state.regs[1] = 0x1;
+        });
+
+    // TODO(Kostu): this should take 2 cycles
+    execute(1, [](CPU40xx::State& state) {
+        state.stack[0]++;
+        state.regs[2] = 0x1;
+        state.regs[3] = 0x2;
+        });
+}
+
+TEST_F(CPU4004InstructionsTests, SubroutineTest) {
+    // TODO(Kostu):
 }
 
 } // namespace

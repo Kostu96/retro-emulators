@@ -48,8 +48,7 @@ END_ALLOW_ANON_STRUCTS
     void mapReadRAMStatus(ReadStatusCallback func) { loadStatus8 = func; }
     void mapWriteRAMStatus(WriteStatusCallback func) { storeStatus8 = func; }
 
-    enum class Mode : u8
-    {
+    enum class Mode : u8 {
         Intel4004,
         Intel4040
     };
@@ -59,8 +58,8 @@ END_ALLOW_ANON_STRUCTS
 
     const State& getState() const { return m_state; }
     State& getState() { return m_state; }
-    u16 getPC() const { return m_state.stack[getSP()] % 0xFFF; }
-    u8 getSP() const { return m_state.SP % m_state.stack.size(); }
+    u16 getPC() const { return m_state.stack[m_state.SP]; }
+    u16& getPC() { return m_state.stack[m_state.SP]; }
 
     explicit CPU40xx(Mode mode);
     CPU40xx(const CPU40xx&) = delete;
@@ -75,7 +74,9 @@ private:
     WriteStatusCallback storeStatus8 = nullptr;
 
     u8 getRAMAddress() const { return (m_state.CMRAM >> 1) | m_state.SRCReg; }
-    void incPC() { m_state.stack[getSP()]++; }
+    void incPC() { m_state.stack[m_state.SP]++; m_state.stack[m_state.SP] &= 0xFFF; }
+    void incSP() { m_state.SP++; m_state.SP &= (m_mode == Mode::Intel4004 ? 0b11 : 0b111); }
+    void decSP() { m_state.SP--; m_state.SP &= (m_mode == Mode::Intel4004 ? 0b11 : 0b111); }
 
     void ADD(u8 idx);
     void ADM();
@@ -88,7 +89,7 @@ private:
     void DAC();
     void DCL();
     void FIM(u8* reg);
-    void FIN(u8* reg);
+    void FIN(u8 idx);
     void IAC();
     void INC(u8 idx);
     void ISZ(u8 idx);

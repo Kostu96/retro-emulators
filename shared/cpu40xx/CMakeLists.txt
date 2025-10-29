@@ -1,7 +1,6 @@
 set(CPU40XX_LIB_TARGET_NAME cpu40xx)
 
-add_device_library(
-    TARGET_NAME ${CPU40XX_LIB_TARGET_NAME}
+add_device_library(TARGET_NAME ${CPU40XX_LIB_TARGET_NAME}
     SOURCES
         CMakeLists.txt
         src/asm40xx.cpp
@@ -18,19 +17,10 @@ add_device_library(
         utils
 )
 
-set(CPU40XX_TEST_TARGET_NAME cpu40xx_test)
-
-add_executable(${CPU40XX_TEST_TARGET_NAME}
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/test/instructions_tests.cpp
+add_device_test(TARGET_NAME ${CPU40XX_LIB_TARGET_NAME}_test
+    SOURCES
+        CMakeLists.txt
+        test/instructions_tests.cpp
+    LIBRARIES
+        ${CPU40XX_LIB_TARGET_NAME}
 )
-
-set_target_warnings(${CPU40XX_TEST_TARGET_NAME})
-
-target_link_libraries(${CPU40XX_TEST_TARGET_NAME} PRIVATE
-    ${CPU40XX_LIB_TARGET_NAME}
-    GTest::gtest
-    GTest::gtest_main
-)
-
-gtest_discover_tests(${CPU40XX_TEST_TARGET_NAME})
