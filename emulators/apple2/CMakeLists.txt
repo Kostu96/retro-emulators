@@ -20,6 +20,7 @@ target_compile_options(${APPLE2_TARGET_NAME} PRIVATE
 target_link_libraries(${APPLE2_TARGET_NAME} PRIVATE
     emu_common_lib
     cpu6502_lib
+    utils
 )
 
 set_target_properties(${APPLE2_TARGET_NAME} PROPERTIES

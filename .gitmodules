@@ -1,15 +1,9 @@
-[submodule "GLFW"]
-	path = third_party/glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "glw"]
 	path = third_party/glw
 	url = https://github.com/Kostu96/opengl-wrapper.git
 [submodule "ImGui"]
 	path = third_party/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "gtest"]
-	path = third_party/googletest
-	url = https://github.com/google/googletest.git
 [submodule "gb-test-roms"]
 	path = third_party/gb-test-roms
 	url = https://github.com/retrio/gb-test-roms.git

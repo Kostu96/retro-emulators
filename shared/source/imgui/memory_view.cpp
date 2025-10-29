@@ -1,6 +1,7 @@
 #include "shared/source/imgui/memory_view.hpp"
 
 #include <imgui.h>
+#include <cmath>
 
 namespace imgui {
 
@@ -12,8 +13,8 @@ namespace imgui {
             s.AddrDigitsCount++;
         s.LineHeight = ImGui::GetTextLineHeight();
         s.GlyphWidth = ImGui::CalcTextSize("F").x + 1;                  // We assume the font is mono-space
-        s.HexCellWidth = (float)(int)(s.GlyphWidth * 2.5f);             // "FF " we include trailing space in the width to easily catch clicks everywhere
-        s.SpacingBetweenMidCols = (float)(int)(s.HexCellWidth * 0.25f); // Every OptMidColsCount columns we add a bit of extra spacing
+        s.HexCellWidth = floorf(s.GlyphWidth * 2.5f);             // "FF " we include trailing space in the width to easily catch clicks everywhere
+        s.SpacingBetweenMidCols = floorf(s.HexCellWidth * 0.25f); // Every OptMidColsCount columns we add a bit of extra spacing
         s.PosHexStart = (s.AddrDigitsCount + 2) * s.GlyphWidth;
         s.PosHexEnd = s.PosHexStart + (s.HexCellWidth * cols);
         s.PosAsciiStart = s.PosAsciiEnd = s.PosHexEnd;
@@ -41,25 +42,22 @@ namespace imgui {
 
             ImGui::BeginChild("##scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav);
 
-            const int line_total_count = (int)((mem_size + cols - 1) / cols);
+            const int line_total_count = static_cast<int>((mem_size + cols - 1) / cols);
             ImGuiListClipper clipper;
             clipper.Begin(line_total_count, ImGui::GetTextLineHeight());
-
-            const char* format_address = "%0*IX: ";
-            const char* format_byte_space = "%02X ";
 
             while (clipper.Step())
                 for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++) // display only visible lines
                 {
-                    size_t addr = (size_t)(line_i * cols);
-                    ImGui::Text(format_address, s.AddrDigitsCount, base_display_addr + addr);
+                    size_t addr = line_i * cols;
+                    ImGui::Text("%0*zX: ", s.AddrDigitsCount, base_display_addr + addr);
 
                     // Draw Hexadecimal
                     for (unsigned int n = 0; n < cols && addr < mem_size; n++, addr++)
                     {
                         float byte_pos_x = s.PosHexStart + s.HexCellWidth * n;
                         if (OptMidColsCount > 0)
-                            byte_pos_x += (float)(n / OptMidColsCount) * s.SpacingBetweenMidCols;
+                            byte_pos_x += (n / OptMidColsCount) * s.SpacingBetweenMidCols;
                         ImGui::SameLine(byte_pos_x);
 
                         //// Draw highlight
@@ -153,14 +151,14 @@ namespace imgui {
                                 else if (b == 0x00)
                                     ImGui::Text("   ");
                                 else
-                                    ImGui::Text(format_byte_space, b);
+                                    ImGui::Text("%02X ", b);
                             }
                             else
                             {*/
                                 if (b == 0 /*&& OptGreyOutZeroes*/)
                                     ImGui::TextDisabled("00 ");
                                 else
-                                    ImGui::Text(format_byte_space, b);
+                                    ImGui::Text("%02X ", b);
                             //}
                             /*if (!ReadOnly && ImGui::IsItemHovered() && ImGui::IsMouseClicked(0))
                             {

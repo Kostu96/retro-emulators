@@ -1,5 +1,8 @@
 #pragma once
-#include "shared/source/types.hpp"
+#include "utils/types.hpp"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 
 union Instruction
 {
@@ -17,3 +20,5 @@ union Instruction
     };
     u16 word;
 };
+
+#pragma GCC diagnostic pop

@@ -16,8 +16,12 @@ add_executable(${INVADERS_TARGET_NAME}
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX source FILES ${INVADERS_SOURCES})
 
+set_target_warnings(${INVADERS_TARGET_NAME})
+
 target_link_libraries(${INVADERS_TARGET_NAME} PRIVATE
     shared_lib
+    utils
+    cpu8080
 )
 
 set_target_properties(${INVADERS_TARGET_NAME} PROPERTIES

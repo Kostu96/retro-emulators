@@ -1,5 +1,5 @@
 #pragma once
-#include "shared/source/types.hpp"
+#include "utils/types.hpp"
 
 #include <functional>
 
@@ -21,10 +21,12 @@ public:
 
     PIA6520() = default;
 private:
-    union Control
-    {
-        struct
-        {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
+    union Control {
+        struct {
             u8 C1IRQEnable : 1;            // 0
             u8 C1ActiveTransition : 1;     // 1
             u8 PortControl : 1;            // 2
@@ -34,9 +36,10 @@ private:
             u8 C2ActiveTransitionFlag : 1; // 6
             u8 C1ActiveTransitionFlag : 1; // 7
         };
-
         u8 byte = 0;
     };
+
+#pragma GCC diagnostic pop
 
     u8 m_PRA = 0;            // Port A
     u8 m_DDRA = 0;           // Data Direction Register A

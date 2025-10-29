@@ -1,6 +1,7 @@
 #include "cpu.hpp"
 
 #include <cassert>
+#include <cstring>
 
 namespace PSX {
 
@@ -114,7 +115,7 @@ namespace PSX {
             assert(false && "Unhandled opcode!");
         }
 
-        std::memcpy(m_cpuStatus.GPR, m_helperCPURegs, CPU_GPR_COUNT * sizeof(u32));
+        memcpy(m_cpuStatus.GPR, m_helperCPURegs, CPU_GPR_COUNT * sizeof(u32));
 
         assert(getReg(RegIndex{ 0 }) == 0 && "GPR zero value was changed!");
     }
@@ -128,8 +129,8 @@ namespace PSX {
 
     CPU::CPU()
     {
-        std::memset(m_cpuStatus.regs, 0, CPU_GPR_COUNT * sizeof(u32));
-        std::memset(m_helperCPURegs, 0, CPU_GPR_COUNT * sizeof(u32));
+        memset(m_cpuStatus.regs, 0, CPU_GPR_COUNT * sizeof(u32));
+        memset(m_helperCPURegs, 0, CPU_GPR_COUNT * sizeof(u32));
     }
 
     void CPU::setReg(RegIndex index, u32 value)
@@ -264,7 +265,7 @@ namespace PSX {
     {
         // TODO: check this code for egde cases
         s32 a = getReg(s);
-        s32 b = (s32)rhs;
+        s32 b = to_s32(rhs);
         s32 result = a + b;
         if ((a > 0 && b > 0 && result < 0) || (a < 0 && b < 0 && result > 0))
             exception(Exception::Overflow);

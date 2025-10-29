@@ -2,6 +2,7 @@
 #include "../cpu.hpp"
 
 #include <gtest/gtest.h>
+#include <cstring>
 
 struct CPUTests :
     public testing::Test
@@ -40,8 +41,8 @@ struct CPUTests :
 
     void SetUp() override
     {
-        std::memset(rom, 0, ROM_SIZE);
-        std::memset(ram, 0, RAM_SIZE);
+        memset(rom, 0, ROM_SIZE);
+        memset(ram, 0, RAM_SIZE);
         cpu.reset();
     }
 

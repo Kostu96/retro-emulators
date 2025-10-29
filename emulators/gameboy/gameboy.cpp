@@ -1,10 +1,11 @@
 #include "gameboy.hpp"
 #include "gb_doctor.hpp"
-#include "shared/source/address_range.hpp"
+#include "utils/address_range.hpp"
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
 static const AddressRange16 ROM_RANGE{       0x0000, 0x7FFF };
 static const AddressRange16 VRAM_RANGE{      0x8000, 0x9FFF };
@@ -21,6 +22,7 @@ static const AddressRange16 UNUSED3_RANGE{   0xFF7F, 0xFF7F };
 static const AddressRange16 HRAM_RANGE{      0xFF80, 0xFFFE };
 
 Gameboy::Gameboy() :
+    m_interruptFlags{ 0 },
     m_PPU{ m_interruptFlags },
     m_WRAM{ new u8[0x2000] },
     m_timer{ m_interruptFlags },
@@ -49,7 +51,7 @@ Gameboy::~Gameboy()
 
 void Gameboy::reset()
 {
-    std::memset(m_WRAM, 0, 0x2000);
+    memset(m_WRAM, 0, 0x2000);
     m_PPU.clearVRAM();
 
     m_CPU.reset();
@@ -219,7 +221,7 @@ void Gameboy::memoryWrite(u16 address, u8 data)
 
     if (address >= 0xFF00) {
         std::cerr << "Unexpected IO region write - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address;
-        std::cerr << ':' << std::hex << std::setw(2) << (u16)data << '\n';
+        std::cerr << ':' << std::hex << std::setw(2) << to_u16(data) << '\n';
         return;
     }
 

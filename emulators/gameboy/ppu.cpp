@@ -19,8 +19,8 @@ static u8 s_bgColorMap[4]{
 PPU::PPU(u8& interruptFlagsRef) :
     m_VRAM{ new u8[VRAM_SIZE] },
     m_screenPixels{ new u32[LCD_WIDTH * LCD_HEIGHT] },
-    m_tileDataPixels{ new u32[TILE_DATA_WIDTH * TILE_DATA_HEIGHT] },
-    m_interruptFlagsRef{ interruptFlagsRef }
+    m_interruptFlagsRef{ interruptFlagsRef },
+    m_tileDataPixels{ new u32[TILE_DATA_WIDTH * TILE_DATA_HEIGHT] }
 {}
 
 PPU::~PPU()
@@ -77,13 +77,13 @@ void PPU::clock()
         }
     };
 
-    switch ((Mode)m_LCDStatus.Mode)
+    switch (static_cast<Mode>(m_LCDStatus.Mode))
     {
     case Mode::HBlank:
         if (ticks >= TICKS_PER_LINE)
         {
             ticks = 0;
-            m_LCDStatus.Mode = (u8)((m_LY >= LCD_HEIGHT) ? Mode::VBlank : Mode::OAMSearch);
+            m_LCDStatus.Mode = to_u8((m_LY >= LCD_HEIGHT) ? Mode::VBlank : Mode::OAMSearch);
 
             checkForLYC();
         }
@@ -96,7 +96,7 @@ void PPU::clock()
         {
             ticks = 0;
             if (m_LY >= LINES_PER_FRAME) {
-                m_LCDStatus.Mode = (u8)Mode::OAMSearch;
+                m_LCDStatus.Mode = to_u8(Mode::OAMSearch);
                 m_LY = 0;
             }
 
@@ -105,7 +105,7 @@ void PPU::clock()
         break;
     case Mode::OAMSearch:
         if (ticks >= 20)
-            m_LCDStatus.Mode = (u8)Mode::PixelTransfer;
+            m_LCDStatus.Mode = to_u8(Mode::PixelTransfer);
         break;
     case Mode::PixelTransfer:
         if (!m_pixelFIFONeedFetch) {
@@ -129,7 +129,7 @@ void PPU::clock()
             u16 tileIndex = ((m_SCY + m_LY - 1) / 8) * 32 + m_SCX / 8 + m_fetcherTileX++;
             u16 tileAddressBase = m_LCDControl.BGTileMap ? 0x1C00 : 0x1800;
             u8 tile = m_VRAM[tileAddressBase + tileIndex];
-            m_tileDataAddress = (m_LCDControl.WinBGTileData ? tile : 0x100 + (s8)tile) * 16;
+            m_tileDataAddress = (m_LCDControl.WinBGTileData ? tile : 0x100 + to_s8(tile)) * 16;
             fetchedColorL = m_VRAM[m_tileDataAddress + ((m_SCY + m_LY - 1) % 8) * 2];
             fetchedPaletteL = m_LCDControl.WinBGEnable ? 0xFF : 0x00; // temp cause only one palette
             m_fetcherMode = 1;
@@ -185,9 +185,9 @@ void PPU::storeVRAM8(u16 address, u8 data)
 
     // debug:
     if (address < 0x1800) {
-        u16 x = (address / 16u) % 16;
-        u16 y = (address / 16u) / 16;
-        redrawTileData((u8)x, (u8)y, 1, 1);
+        u8 x = (address / 16u) % 16;
+        u8 y = (address / 16u) / 16;
+        redrawTileData(x, y, 1, 1);
     }
 }
 
@@ -259,7 +259,7 @@ void PPU::store8(u16 address, u8 data)
     }
 
     std::cerr << "Unexpected write to PPU - " << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << address;
-    std::cerr << ':' << std::hex << std::setw(2) << (u16)data << '\n';
+    std::cerr << ':' << std::hex << std::setw(2) << to_u16(data) << '\n';
 }
 
 void PPU::handleDMA()

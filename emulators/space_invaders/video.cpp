@@ -1,5 +1,5 @@
 #include "video.hpp"
-#include "shared/source/devices/cpu8080/cpu8080.hpp"
+#include "cpu8080/cpu8080.hpp"
 
 void Video::reset()
 {

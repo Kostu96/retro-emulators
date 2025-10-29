@@ -1,3 +1,5 @@
+find_package(portable-file-dialogs REQUIRED)
+
 set(GAMEBOY_TARGET_NAME gameboy)
 set(GAMEBOY_FOLDER_NAME emulators/gameboy)
 set(GAMEBOY_LIB_TARGET_NAME ${GAMEBOY_TARGET_NAME}_lib)
@@ -33,6 +35,7 @@ target_compile_options(${GAMEBOY_LIB_TARGET_NAME} PRIVATE
 
 target_link_libraries(${GAMEBOY_LIB_TARGET_NAME} PUBLIC
     shared_lib
+    utils
 )
 
 set_target_properties(${GAMEBOY_LIB_TARGET_NAME} PROPERTIES
@@ -57,6 +60,7 @@ target_compile_options(${GAMEBOY_APP_TARGET_NAME} PRIVATE
 
 target_link_libraries(${GAMEBOY_APP_TARGET_NAME} PRIVATE
     ${GAMEBOY_LIB_TARGET_NAME}
+    portable-file-dialogs::portable-file-dialogs
 )
 
 set_target_properties(${GAMEBOY_APP_TARGET_NAME} PROPERTIES

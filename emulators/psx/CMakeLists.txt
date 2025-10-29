@@ -23,6 +23,7 @@ target_compile_options(${PSX_LIB_TARGET_NAME} PRIVATE
 
 target_link_libraries(${PSX_LIB_TARGET_NAME} PUBLIC
     shared_lib
+    utils
 )
 
 set_target_properties(${PSX_LIB_TARGET_NAME} PROPERTIES

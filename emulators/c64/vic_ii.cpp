@@ -21,7 +21,7 @@ namespace C64 {
         case 0x1D: m_SpriteX_expansion = data; return;
         case 0x1E:
         case 0x1F: return; // ignore writes to collision registers
-        case 0x20: m_border_color; return;
+        case 0x20: m_border_color = data; return;
         case 0x21: m_bg_color0 = data; return;
         case 0x22: m_bg_color1 = data; return;
         case 0x23: m_bg_color2 = data; return;

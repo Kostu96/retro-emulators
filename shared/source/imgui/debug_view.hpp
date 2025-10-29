@@ -12,7 +12,7 @@ namespace imgui {
 
 		void updateWindow();
 
-		DebugView(bool& isPaused) : isPaused{ isPaused } {}
+		DebugView(bool& paused) : isPaused{ paused } {}
 	};
 
 } // namespace imgui

@@ -22,6 +22,7 @@ target_compile_options(${CHIP8_TARGET_NAME} PRIVATE
 
 target_link_libraries(${CHIP8_TARGET_NAME} PRIVATE
     shared_lib
+    utils
 )
 
 set_target_properties(${CHIP8_TARGET_NAME}

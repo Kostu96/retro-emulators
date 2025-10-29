@@ -47,6 +47,9 @@ public:
 private:
 	static constexpr u16 VRAM_SIZE = 0x2000;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 	struct OAMEntry {
 		u8 YPosition;
 		u8 XPosition;
@@ -98,6 +101,8 @@ private:
 		};
 		u8 byte;
 	} m_LCDStatus;
+
+#pragma GCC diagnostic pop
 
 	u8 m_SCY, m_SCX;
 	u8 m_LY, m_LYC;

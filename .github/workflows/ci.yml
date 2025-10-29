@@ -1,37 +1,20 @@
-name: GHActions
+name: CI
 
 on:
-  pull_request:
-    branches:    
-      - main
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  ci:
-    name: ${{matrix.config.name}}
-    runs-on: ${{matrix.config.os}}
+  build:
     strategy:
       fail-fast: false
       matrix:
-        config:
-        - {
-            name: "Windows MSVC Debug",
-            os: windows-2022,
-            build_type: "Debug",
-            cc: "cl",
-            cxx: "cl",
-            environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-          }
-        - {
-            name: "Windows MSVC Release",
-            os: windows-2022,
-            build_type: "Release",
-            cc: "cl",
-            cxx: "cl",
-            environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
-          }
+        os: [ windows-latest, ubuntu-latest ]
+        build_type: [ Release, Debug ]
+    
+    runs-on: ${{matrix.os}}
     
     steps:
     - name: Checkout
@@ -39,76 +22,40 @@ jobs:
       with:
         submodules: true
     
-    - name: Configure
-      shell: cmake -P {0}
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+    
+    - name: Install Conan
+      shell: bash
       run: |
-        execute_process(COMMAND git submodule update --init WORKING_DIRECTORY ./third_party/SDL_ttf)
-        
-        set(ENV{CC} ${{matrix.config.cc}})
-        set(ENV{CXX} ${{matrix.config.cxx}})
-        
-        execute_process(COMMAND "${{matrix.config.environment_script}}" && set OUTPUT_FILE environment_script_output.txt)
-        file(STRINGS environment_script_output.txt output_lines)
-        foreach(line IN LISTS output_lines)
-          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-          endif()
-        endforeach()
-        
-        execute_process(COMMAND ${CMAKE_COMMAND}
-          -S .
-          -B build
-          -D CMAKE_BUILD_TYPE=${{matrix.config.build_type}}
-          -G Ninja
-          -D CMAKE_MAKE_PROGRAM=ninja
-          RESULT_VARIABLE result)
-          
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
-        endif()
+        pip install conan==2.*
+        conan config install conan
+        if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.build_type }}" == "Debug" ]]; then
+          echo "PROFILE=win_debug" >> $GITHUB_ENV
+        elif [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.build_type }}" == "Release" ]]; then
+          echo "PROFILE=win_release" >> $GITHUB_ENV
+        elif [[ "${{ matrix.os }}" == "ubuntu-latest" && "${{ matrix.build_type }}" == "Debug" ]]; then
+          echo "PROFILE=lin_debug" >> $GITHUB_ENV
+        elif [[ "${{ matrix.os }}" == "ubuntu-latest" && "${{ matrix.build_type }}" == "Release" ]]; then
+          echo "PROFILE=lin_release" >> $GITHUB_ENV
+        fi
+    
+    - name: Configure Conan cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.conan2
+        key: ${{ runner.os }}-conan-${{ hashFiles('conanfile.py') }}
+        restore-keys: |
+          ${{ runner.os }}-conan-
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        conan install . -pr:a $PROFILE --build=missing -c tools.system.package_manager:sudo=True -c tools.system.package_manager:mode=install
     
     - name: Build
-      shell: cmake -P {0}
+      shell: bash
       run: |
-        set(ENV{NINJA_STATUS} "[%f/%t] ")
-        
-        file(STRINGS environment_script_output.txt output_lines)
-        foreach(line IN LISTS output_lines)
-          if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-            set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-          endif()
-        endforeach()
-        
-        execute_process(COMMAND ${CMAKE_COMMAND} --build build -j RESULT_VARIABLE result)
-        
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
-        endif()
-    
-    - name: Run Tests
-      shell: cmake -P {0}
-      run: |
-        set(TESTS
-          shared_lib_tests.exe
-          gameboy_tests.exe
-          psx_tests.exe
-        )
-        set(ERROR false)
-        set(TEST_DIR build/output/${{matrix.config.build_type}}/bin)
-        
-        foreach(TEST ${TESTS})
-          message(STATUS "Running ${TEST} ...")
-          execute_process(COMMAND ${TEST}
-                          WORKING_DIRECTORY ${TEST_DIR}
-                          RESULT_VARIABLE result)
-          if (NOT result EQUAL 0)
-            set(ERROR true)
-            message(ERROR "${TEST} failed!")
-          else()
-            message(STATUS "${TEST} passed.")
-          endif()
-        endforeach()
-        
-        if (ERROR)
-          message(FATAL_ERROR "Some tests failed!")
-        endif()
+        conan build . -pr:a $PROFILE

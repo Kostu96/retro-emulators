@@ -1,6 +1,6 @@
 #include "kim1.hpp"
-#include "shared/source/address_range.hpp"
-#include "shared/source/file_io.hpp"
+#include "utils/address_range.hpp"
+#include "utils/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -16,11 +16,11 @@ static constexpr AddressRange16 FIRMWARE_RANGE{ 0x1800, 0x1FFF };
 KIM1::KIM1()
 {
     size_t size = 0x400;
-    if (!readFile("rom/kim1/firmware_1800-1BFF.bin", (char*)m_FIRMWARE, size, true))
+    if (!readFile("rom/kim1/firmware_1800-1BFF.bin", reinterpret_cast<char*>(m_FIRMWARE), size, true))
         std::cerr << "Could not read firmware_1800-1BFF.bin ROM file!\n";
 
     size = 0x400;
-    if (!readFile("rom/kim1/firmware_1C00-1FFF.bin", (char*)(m_FIRMWARE + 0x400), size, true))
+    if (!readFile("rom/kim1/firmware_1C00-1FFF.bin", reinterpret_cast<char*>(m_FIRMWARE + 0x400), size, true))
         std::cerr << "Could not read firmware_1C00-1FFF.bin ROM file!\n";
 
     m_cpu.mapReadMemoryCallback([this](u16 address) { return memoryRead(address); });

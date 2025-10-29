@@ -32,6 +32,7 @@ PRIVATE:
     u8 memoryRead(u16 address);
     void memoryWrite(u16 address, u8 data);
 
+    u8 m_interruptFlags;
     CPU m_CPU;
     PPU m_PPU;
     Cartridge m_cartridge;
@@ -40,7 +41,6 @@ PRIVATE:
     u8 m_serialData;
     u8 m_serialControl;
     Timer m_timer;
-    u8 m_interruptFlags;
     APU m_APU;
     u8 m_unmapBootloader;
     u8 m_HRAM[0x7F];

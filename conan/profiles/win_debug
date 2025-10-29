@@ -1,0 +1,5 @@
+include(win_base)
+
+[settings]
+build_type=Debug
+compiler.runtime_type=Debug

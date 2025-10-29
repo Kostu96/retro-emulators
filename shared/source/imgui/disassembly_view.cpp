@@ -1,11 +1,11 @@
 #include "shared/source/imgui/disassembly_view.hpp"
-#include "shared/source/disassembly_line.hpp"
+#include "utils/disassembly_line.hpp"
 
 #include <imgui.h>
 
 namespace imgui {
 
-    void DisassemblyView::updateWindow(uint32_t pc)
+    void DisassemblyView::updateWindow(unsigned int pc)
     {
         if (!open) return;
 
@@ -14,7 +14,7 @@ namespace imgui {
             ImGui::BeginChild("##scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav);
 
             ImGuiListClipper clipper;
-            clipper.Begin((int)disassembly.size(), ImGui::GetTextLineHeight());
+            clipper.Begin(static_cast<int>(disassembly.size()), ImGui::GetTextLineHeight());
 
             while (clipper.Step())
                 for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++)
@@ -24,10 +24,10 @@ namespace imgui {
                         auto& prev_line = disassembly[line_i - 1];
                         if (line.address - prev_line.address > 4) ImGui::Separator();
                     }
-                    constexpr const char* fmt = "%0*X:  %.*s";
+                    constexpr const char* fmt = "%0*X:  %.s";
                     (pc == line.address) ?
-                    ImGui::TextColored({ 1.f, 0.f, 0.f, 1.f }, fmt, addressWidth, line.address, DisassemblyLine::BUFFER_SIZE, line.buffer) :
-                    ImGui::Text(fmt, addressWidth, line.address, DisassemblyLine::BUFFER_SIZE, line.buffer);
+                    ImGui::TextColored({ 1.f, 0.f, 0.f, 1.f }, fmt, addressWidth, line.address, line.str.c_str()) :
+                    ImGui::Text(fmt, addressWidth, line.address, line.str.c_str());
                 }
 
             ImGui::EndChild();

@@ -1,6 +1,6 @@
 #pragma once
-#include "shared/source/disassembly_line.hpp"
-#include "shared/source/types.hpp"
+#include "utils/disassembly_line.hpp"
+#include "utils/types.hpp"
 
 #include <span>
 #include <vector>

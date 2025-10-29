@@ -2,7 +2,7 @@
 #include "disasm_chip8.hpp"
 #include "chip8_instruction.hpp"
 
-#include "shared/source/file_io.hpp"
+#include "utils/file_io.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -10,7 +10,7 @@
 
 void CHIP8::loadProgram(const char* filename)
 {
-    const void* PROGRAM_START = m_memory + 0x200;
+    u8* PROGRAM_START = m_memory + 0x200;
     const size_t MAX_PROGRAM_SIZE = MEMORY_SIZE - 0x200;
 
     constexpr u8 CHARSET_SIZE = 80;
@@ -36,12 +36,12 @@ void CHIP8::loadProgram(const char* filename)
     std::memcpy(m_memory, charset, CHARSET_SIZE);
 
     size_t size = MAX_PROGRAM_SIZE;
-    bool ret = readFile(filename, (char*)PROGRAM_START, size, true);
+    bool ret = readFile(filename, reinterpret_cast<char*>(PROGRAM_START), size, true);
     if (!ret) {
         std::cerr << "Could not read ROM file: " << filename << '\n';
     }
 
-    disassemble((u8*)PROGRAM_START, size, m_disassembly);
+    disassemble(PROGRAM_START, size, m_disassembly);
 }
 
 void CHIP8::reset()
@@ -135,12 +135,12 @@ void CHIP8::update(double dt)
             GPR[instruction.n3] ^= GPR[instruction.n2];
             break;
         case 0x4: {
-            u16 temp = (u16)GPR[instruction.n3] + (u16)GPR[instruction.n2];
+            u16 temp = to_u16(GPR[instruction.n3]) + to_u16(GPR[instruction.n2]);
             GPR[0xF] = temp >> 8;
             GPR[instruction.n3] = temp & 0xFF;
         } break;
         case 0x5: {
-            s16 temp = (s16)GPR[instruction.n3] - (s16)GPR[instruction.n2];
+            s16 temp = to_s16(GPR[instruction.n3]) - to_s16(GPR[instruction.n2]);
             GPR[instruction.n3] = temp & 0xFF;
             GPR[0xF] = temp < 0 ? 0 : 1;
         } break;
@@ -150,7 +150,7 @@ void CHIP8::update(double dt)
             GPR[0xF] = temp;
         } break;
         case 0x7: {
-            s16 temp = (s16)GPR[instruction.n2] - (s16)GPR[instruction.n3];
+            s16 temp = to_s16(GPR[instruction.n2]) - to_s16(GPR[instruction.n3]);
             GPR[instruction.n3] = temp & 0xFF;
             GPR[0xF] = temp < 0 ? 0 : 1;
         } break;

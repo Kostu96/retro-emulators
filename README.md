@@ -17,8 +17,7 @@ Emulalators of microcomputers, game consoles and arcades.
  - Space Invaders Arcade - WIP
 
 ### CPUs:
- - Intel 4004
- - Intel 4040
+ - Intel 4004/4040
  - Intel 8080
  - MOS 6502/WDC 65C02
  - Sharp LR35902 (GameBoy)

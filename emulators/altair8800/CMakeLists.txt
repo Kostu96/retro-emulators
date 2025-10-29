@@ -18,6 +18,7 @@ target_compile_options(${ALTAIR_LIB_TARGET_NAME} PRIVATE
 
 target_link_libraries(${ALTAIR_LIB_TARGET_NAME} PUBLIC
     cpu8080_lib
+    utils
 )
 
 set_target_properties(${ALTAIR_LIB_TARGET_NAME} PROPERTIES

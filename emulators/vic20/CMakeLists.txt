@@ -19,6 +19,8 @@ target_compile_options(${VIC20_TARGET_NAME} PRIVATE
 
 target_link_libraries(${VIC20_TARGET_NAME} PRIVATE
     shared_lib
+    utils
+    cpu6502
 )
 
 set_target_properties(${VIC20_TARGET_NAME} PROPERTIES

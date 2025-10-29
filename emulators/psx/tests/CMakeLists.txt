@@ -16,8 +16,8 @@ target_compile_definitions(${PSX_TESTS_TARGET_NAME} PRIVATE
 
 target_link_libraries(${PSX_TESTS_TARGET_NAME} PRIVATE
     ${PSX_LIB_TARGET_NAME}
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
 )
 
 set_target_properties(${PSX_TESTS_TARGET_NAME} PROPERTIES

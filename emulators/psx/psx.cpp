@@ -1,15 +1,16 @@
 #include "psx.hpp"
 #include "disasm.hpp"
 
-#include "shared/source/address_range.hpp"
-#include "shared/source/disassembly_line.hpp"
-#include "shared/source/file_io.hpp"
+#include "utils/address_range.hpp"
+#include "utils/disassembly_line.hpp"
+#include "utils/file_io.hpp"
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
-#define HEX(value, w) "0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(w) << (u32)value
+#define HEX(value, w) "0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(w) << to_u32(value)
 
 #define PRINT_UNHANDLED_WRITE(bits, label, offsetW, dataW) std::cerr << "Unhandled "#bits" bit write to: " << HEX(address, 8) << " "#label"(" << HEX(offset, offsetW) << "): " << HEX(data, dataW) << '\n'
 
@@ -90,7 +91,7 @@ namespace PSX {
         m_disasm{ disasm }
     {
         size_t size = BIOS_SIZE;
-        if (!readFile("rom/psx/SCPH-1001.bin", (char*)m_BIOS, size, true)) {
+        if (!readFile("rom/psx/SCPH-1001.bin", reinterpret_cast<char*>(m_BIOS), size, true)) {
             std::cerr << "Could not read BIOS ROM file!\n";
             assert(false);
         }
@@ -125,7 +126,7 @@ namespace PSX {
             }
 
             if (isMemcpyValid) {
-                std::memcpy(dstPtr, srcPtr, status.regs[6]);
+                memcpy(dstPtr, srcPtr, status.regs[6]);
                 m_CPU.overrideCPURegister(6, 0);
                 std::cout << "BIOS memcpy patch successful!\n";
             }

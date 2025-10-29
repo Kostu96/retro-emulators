@@ -1,5 +1,5 @@
 #pragma once
-#include "shared/source/types.hpp"
+#include "utils/types.hpp"
 
 class Timer
 {
@@ -20,6 +20,9 @@ private:
 	u8 m_counter;
 	u8 m_modulo;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 	union {
 		struct {
 			u8 clockSelect : 2; // 0-1
@@ -28,6 +31,8 @@ private:
 		};
 		u8 byte;
 	} m_control;
+
+#pragma GCC diagnostic pop
 
 	u8& m_interruptFlagsRef;
 	bool m_overflow;
