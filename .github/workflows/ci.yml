@@ -53,9 +53,9 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        conan install . -pr $PROFILE --build=missing -c tools.system.package_manager:sudo=True -c tools.system.package_manager:mode=install
+        conan install . -pr:a $PROFILE --build=missing -c tools.system.package_manager:sudo=True -c tools.system.package_manager:mode=install
     
     - name: Build
       shell: bash
       run: |
-        conan build . -pr $PROFILE
+        conan build . -pr:a $PROFILE
