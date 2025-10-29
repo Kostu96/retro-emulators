@@ -1,0 +1,4 @@
+include(lin_base)
+
+[settings]
+build_type=Release
