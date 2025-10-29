@@ -24,10 +24,10 @@ namespace imgui {
                         auto& prev_line = disassembly[line_i - 1];
                         if (line.address - prev_line.address > 4) ImGui::Separator();
                     }
-                    constexpr const char* fmt = "%0*X:  %.*s";
+                    constexpr const char* fmt = "%0*X:  %.s";
                     (pc == line.address) ?
-                    ImGui::TextColored({ 1.f, 0.f, 0.f, 1.f }, fmt, addressWidth, line.address, static_cast<int>(DisassemblyLine::BUFFER_SIZE), line.buffer) :
-                    ImGui::Text(fmt, addressWidth, line.address, static_cast<int>(DisassemblyLine::BUFFER_SIZE), line.buffer);
+                    ImGui::TextColored({ 1.f, 0.f, 0.f, 1.f }, fmt, addressWidth, line.address, line.str.c_str()) :
+                    ImGui::Text(fmt, addressWidth, line.address, line.str.c_str());
                 }
 
             ImGui::EndChild();

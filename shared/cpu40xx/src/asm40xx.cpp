@@ -24,7 +24,9 @@ namespace ASM40xx {
     {
         for (size_t addr = 0; addr < code_size; )
         {
-            DisassemblyLine line;
+            output.emplace_back();
+            DisassemblyLine& line = output.back();
+
             line.address = to_u16(addr);
             std::stringstream ss;
             ss << std::uppercase << std::hex << std::setw(4) << std::setfill('0') << addr << ":  ";
@@ -107,8 +109,7 @@ namespace ASM40xx {
             default: INST1("???");
             }
 
-            strncpy(line.buffer, ss.str().c_str(), sizeof(line.buffer) - 1);
-            output.push_back(line);
+            line.str = std::move(ss).str();
         }
     }
 

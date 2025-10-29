@@ -1,5 +1,4 @@
 find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
 
 set(SHARED_LIB_TARGET_NAME shared_lib)
 set(SHARED_LIB_TESTS_TARGET_NAME ${SHARED_LIB_TARGET_NAME}_tests)
@@ -36,7 +35,6 @@ target_include_directories(${SHARED_LIB_TARGET_NAME} PUBLIC
 )
 
 target_link_libraries(${SHARED_LIB_TARGET_NAME} PUBLIC
-    glfw::glfw
     glw
     imgui
     OpenGL::GL

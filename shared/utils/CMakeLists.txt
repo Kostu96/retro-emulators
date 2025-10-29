@@ -11,6 +11,7 @@ add_library(${UTILS_LIB_TARGET_NAME} STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/include/utils/file_io.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/include/utils/trie.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/include/utils/types.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/include/utils/warnings.hpp
 )
 
 target_include_directories(${UTILS_LIB_TARGET_NAME} PUBLIC

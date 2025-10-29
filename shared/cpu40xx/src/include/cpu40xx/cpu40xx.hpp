@@ -1,5 +1,6 @@
 #pragma once
 #include "utils/types.hpp"
+#include "utils/warnings.hpp"
 
 #include <functional>
 #include <vector>
@@ -8,9 +9,7 @@ class CPU40xx
 {
 public:
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-
+BEGIN_ALLOW_ANON_STRUCTS
     struct State {
         std::vector<u8> regs;
         std::vector<u16> stack;
@@ -32,8 +31,7 @@ public:
             u8 SRCReg;
         };
     };
-
-#pragma GCC diagnostic pop
+END_ALLOW_ANON_STRUCTS
 
     using ReadROMCallback = std::function<u8(u16)>;
     using ReadRAMCallback = std::function<u8(u8)>;
