@@ -20,6 +20,7 @@ void CPU40xx::clock() {
 
     switch (opcode >> 4)
     {
+    case 0x0: break;
     case 0x1: JCN(opcode & 0xF); break;
     case 0x2: {
         if (opcode & 1)
