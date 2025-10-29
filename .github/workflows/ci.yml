@@ -46,9 +46,9 @@ jobs:
       shell: bash
       run: |
         if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=20 --build=missing
+          conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=20 --build=missing -c tools.system.package_manager:mode=install
         else
-          conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=gnu20 --build=missing
+          conan install . --output-folder=build --settings=build_type=${{ matrix.build_type }} --settings=compiler.cppstd=gnu20 --build=missing -c tools.system.package_manager:mode=install
         fi
     
     - name: Build
