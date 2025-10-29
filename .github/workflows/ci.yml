@@ -28,6 +28,7 @@ jobs:
         python-version: '3.x'
     
     - name: Install Conan
+      shell: bash
       run: |
         pip install conan==2.*
         conan config install conan
