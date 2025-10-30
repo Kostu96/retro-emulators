@@ -1,12 +1,14 @@
 #pragma once
 #include "utils/types.hpp"
+#include "utils/warnings.hpp"
 
 #include <vector>
 
 class CPU8008
 {
 public:
-union Flags
+BEGIN_ALLOW_ANON_STRUCTS
+    union Flags
     {
         struct {
             u8 C      : 1; // 0
@@ -17,6 +19,7 @@ union Flags
         };
         u8 byte;
     };
+END_ALLOW_ANON_STRUCTS
 
     void reset();
     void clock();

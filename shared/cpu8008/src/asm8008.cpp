@@ -68,11 +68,11 @@ namespace ASM8008
             output.emplace_back();
             DisassemblyLine& line = output.back();
 
-            line.address = (u16)addr;
+            line.address = to_u16(addr);
             std::stringstream ss;
             ss << std::uppercase << std::hex << std::setw(4) << std::setfill('0') << addr << ":  ";
             u8 byte = code[addr++];
-            ss << std::hex << std::setw(2) << (u16)byte << ' ';
+            ss << std::hex << std::setw(2) << to_u16(byte) << ' ';
 
             /*u8 byte1, byte2;
             switch (byte)

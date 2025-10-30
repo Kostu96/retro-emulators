@@ -429,8 +429,8 @@ void CPU8080::CALL(bool flag)
 
 void CPU8080::CMP(u8 value)
 {
-    u16 result = (s16)m_state.A - (s16)value;
-    u8 result4bit = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
+    u16 result = to_s16(m_state.A) - to_s16(value);
+    u8 result4bit = to_s8(m_state.A & 0xF) - to_s8(value & 0xF);
 
     m_state.F.Zero = (result == 0);
     m_state.F.AuxiliaryCarry = (result4bit >> 4);
@@ -463,7 +463,7 @@ void CPU8080::DECM()
 
 void CPU8080::DECR(u8& reg)
 {
-    u8 auxResult = (s8)(reg & 0xF) - 1;
+    u8 auxResult = to_s8(reg & 0xF) - 1;
     reg--;
 
     setFlagsArithmeticINCAndDEC(reg, auxResult);
@@ -558,8 +558,8 @@ void CPU8080::RST(u8 vector)
 
 void CPU8080::SUB(u8 value)
 {
-    u16 result = (s16)m_state.A - (s16)value;
-    u8 auxiliaryResult = (s8)(m_state.A & 0xF) - (s8)(value & 0xF);
+    u16 result = to_s16(m_state.A) - to_s16(value);
+    u8 auxiliaryResult = to_s8(m_state.A & 0xF) - to_s8(value & 0xF);
     m_state.A = result & 0xFF;
 
     setFlagsArithmeticStandard(result, auxiliaryResult);
@@ -567,8 +567,8 @@ void CPU8080::SUB(u8 value)
 
 void CPU8080::SBB(u8 value)
 {
-    u16 result = (s16)m_state.A - (s16)value - m_state.F.Carry;
-    u8 auxiliaryResult = (s8)(m_state.A & 0xF) - (s8)(value & 0xF) - m_state.F.Carry;
+    u16 result = to_s16(m_state.A) - to_s16(value) - m_state.F.Carry;
+    u8 auxiliaryResult = to_s8(m_state.A & 0xF) - to_s8(value & 0xF) - m_state.F.Carry;
     m_state.A = result & 0xFF;
 
     setFlagsArithmeticStandard(result, auxiliaryResult);

@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <cstring>
+#include <functional>
 
 namespace {
 
@@ -48,7 +49,7 @@ struct CPU4004InstructionsTests :
         EXPECT_EQ(state1.SRCReg, state2.SRCReg);
     }
     
-    void execute(u8 cycles, void (*stateChanges)(CPU40xx::State& state)) {
+    void execute(u8 cycles, std::function<void(CPU40xx::State& state)> stateChanges) {
         auto preExecutionState = captureCPUState();
         while (cycles--) cpu.clock();
         auto postExecutionState = captureCPUState();
@@ -295,72 +296,54 @@ struct JCNParametrizedTests :
     public ::testing::WithParamInterface<std::tuple<u8, u8>>
 {};
 
-TEST_P(JCNParametrizedTests, JCNTest) {
-    // TODO(Kostu): 16 permutations of conditions
-    rom[0x00] = 0x10;
-    rom[0x01] = 0x00; // JCN 0b0000 - ACC != 0 && CY == 0 && test == 1 ; skip
-    rom[0x02] = 0x10;
-    rom[0x03] = 0x00; // JCN 0b0000 - ACC != 0 && CY == 0 && test == 1 ; jump
+TEST_P(JCNParametrizedTests, JCNConditionsTest) {
+    u8 condition = std::get<0>(GetParam());
+    bool invert = (condition >> 3) & 1;
+    condition &= 0x07;
+    u8 flags = std::get<1>(GetParam());
+    bool clearACC = (flags >> 2) & 1;
+    bool setCarry = (flags >> 1) & 1;
+    bool clearTest = flags & 1;
 
-    rom[0x00] = 0x10; 
-    rom[0x01] = 0x00; // JCN 0b0001 - ACC != 0 && CY == 0 && test == 0 ; skip
-    rom[0x02] = 0x10;
-    rom[0x03] = 0x00; // JCN 0b0001 - ACC != 0 && CY == 0 && test == 0 ; jump
+    rom[0] = 0x10 | condition;
+    rom[1] = 0x42;
 
-    rom[0x10] = 0x10;
-    rom[0x11] = 0x00; // JCN 0b0010 - ACC != 0 && CY == 1 && test == 1 ; skip
-    rom[0x12] = 0x10;
-    rom[0x13] = 0x00; // JCN 0b0010 - ACC != 0 && CY == 1 && test == 1 ; jump
+    cpu.getState().ACC = clearACC ? 0 : 5;
+    cpu.getState().CY = setCarry ? 1 : 0;
+    cpu.getState().test = clearTest ? 0 : 1;
 
-    rom[0x20] = 0x10;
-    rom[0x21] = 0x00; // JCN 0b0011 - ACC != 0 && CY == 1 && test == 0 ; skip
-    rom[0x22] = 0x10;
-    rom[0x23] = 0x00; // JCN 0b0011 - ACC != 0 && CY == 1 && test == 0 ; jump
-
-    rom[0x30] = 0x10;
-    rom[0x31] = 0x00; // JCN 0b0100 - ACC == 0 && CY == 0 && test == 1 ; skip
-    rom[0x32] = 0x10;
-    rom[0x33] = 0x00; // JCN 0b0100 - ACC == 0 && CY == 0 && test == 1 ; jump
-
-    rom[0x40] = 0x10;
-    rom[0x41] = 0x00; // JCN 0b0101 - ACC == 0 && CY == 0 && test == 0 ; skip
-    rom[0x42] = 0x10;
-    rom[0x43] = 0x00; // JCN 0b0101 - ACC == 0 && CY == 0 && test == 0 ; jump
-
-    rom[0x50] = 0x10;
-    rom[0x51] = 0x00; // JCN 0b0110 - ACC == 0 && CY == 1 && test == 1 ; skip
-    rom[0x52] = 0x10;
-    rom[0x53] = 0x00; // JCN 0b0110 - ACC == 0 && CY == 1 && test == 1 ; jump
-
-    rom[0x50] = 0x10;
-    rom[0x51] = 0x00; // JCN 0b0111 - ACC == 0 && CY == 1 && test == 0 ; skip
-    rom[0x52] = 0x10;
-    rom[0x53] = 0x00; // JCN 0b0111 - ACC == 0 && CY == 1 && test == 0 ; jump
-
-    cpu.getState().regs[0] = 0x2;
-    cpu.getState().regs[1] = 0x4;
-    cpu.getState().stack[0] = 0xFE;
-
+    bool shouldJump = (!invert && (condition & flags)) || (invert && (condition & (~flags & 0x7)));
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state) {
-        state.stack[0]++;
-        state.regs[0] = 0x2;
-        state.regs[1] = 0x1;
-        });
-
-    // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state) {
-        state.stack[0]++;
-        state.regs[2] = 0x1;
-        state.regs[3] = 0x2;
-        });
+    execute(1, [shouldJump](CPU40xx::State& state) {
+        if (shouldJump)
+            state.stack[0] = 0x042;
+        else
+            state.stack[0] += 2;
+    });
 }
 
-INSTANTIATE_TEST_SUITE_P(JCNParams, JCNParametrizedTests,
+INSTANTIATE_TEST_SUITE_P(, JCNParametrizedTests,
     ::testing::Combine(
-        ::testing::Range(0, 16),
-        ::testing::Range(0, 8)
-    )
+        ::testing::Range<u8>(0, 16),
+        ::testing::Range<u8>(0, 8)
+    ),
+    [](const ::testing::TestParamInfo<JCNParametrizedTests::ParamType>& paramInfo) {
+        u8 condition = std::get<0>(paramInfo.param);
+        u8 flags = std::get<1>(paramInfo.param);
+        bool invert = (condition >> 3) & 1;
+        condition &= 0x07;
+        std::stringstream ss;
+        if (condition == 0) ss << (invert ? "IvertedNo" : "No");
+        ss << "Condition";
+        if ((condition >> 2) & 1) ss << (invert ? "ACCIsNotZero" : "ACCIsZero");
+        if ((condition >> 1) & 1) ss << (invert ? "CarryIsNotSet" : "CarryIsSet");
+        if ((condition >> 0) & 1) ss << (invert ? "TestIsNotZero" : "TestIsZero");
+        ss << "_State";
+        ss << ((flags >> 2) & 1 ? "ACCIsZero" : "ACCIsNotZero");
+        ss << ((flags >> 1) & 1 ? "CarryIsSet" : "CarryIsNotSet");
+        ss << ((flags >> 0) & 1 ? "TestIsZero" : "TestIsNotZero");
+        return ss.str();
+    }
 );
 
 TEST_F(CPU4004InstructionsTests, SubroutineTest) {
