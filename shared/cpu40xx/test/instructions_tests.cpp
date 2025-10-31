@@ -1,142 +1,8 @@
-#include <cpu40xx/cpu40xx.hpp>
-
-#include <gtest/gtest.h>
-#include <cstring>
-#include <functional>
+#include "cpu4004_test_fixture.hpp"
 
 namespace {
 
-struct CPU4004InstructionsTests :
-    public ::testing::Test {
-    
-    static constexpr u8 SRC_REG_COUNT = 2; // for 2 rom chips and 2 ram banks
-    static constexpr u16 ROM_SIZE = SRC_REG_COUNT * 0x100; // 2 i4001s a.k.a. 2 pages
-    static constexpr u16 RAM_DATA_SIZE = SRC_REG_COUNT * 0x100; // 2 banks of 4 i4002s
-    static constexpr u16 RAM_STATUS_SIZE = SRC_REG_COUNT * 0x40; // 2 banks of 4 i4002s
-
-    struct RAM {
-        u8 data[RAM_DATA_SIZE]{};
-        u8 status[RAM_STATUS_SIZE]{};
-
-        bool operator==(const RAM&) const = default;
-    };
-
-    CPU4004InstructionsTests() :
-        cpu(CPU40xx::Mode::Intel4004) {
-        cpu.mapReadROMCallback([this](u16 address) -> u8 {
-            if (address < ROM_SIZE) return rom[address];
-            return 0;
-        });
-
-        cpu.mapWriteSRCRegisterCallback([this](u8 cmRam, u8 value) {
-            switch (cmRam) {
-            case 0b0001: srcRegs[0] = value; break;
-            case 0b0010: srcRegs[1] = value; break;
-            }
-        });
-
-        cpu.mapReadRAMDataCallback([this](u8 cmRam) -> u8 {
-            u16 address = 0;
-            switch (cmRam) {
-            case 0b0001: address = srcRegs[0]; break;
-            case 0b0010: address = srcRegs[1]; break;
-            }
-            address |= ((cmRam >> 1) << 8);
-            EXPECT_LT(address, RAM_DATA_SIZE);
-            return ram.data[address];
-        });
-
-        cpu.mapWriteRAMDataCallback([this](u8 cmRam, u8 value) {
-            u16 address = 0;
-            switch (cmRam) {
-            case 0b0001: address = srcRegs[0]; break;
-            case 0b0010: address = srcRegs[1]; break;
-            }
-            address |= ((cmRam >> 1) << 8);
-            EXPECT_LT(address, RAM_DATA_SIZE);
-            EXPECT_EQ(value & 0xF0, 0);
-            ram.data[address] = value;
-        });
-
-        cpu.mapReadRAMStatusCallback([this](u8 cmRam, u8 charIdx) -> u8 {
-            u16 address = 0;
-            switch (cmRam) {
-            case 0b0001: address = srcRegs[0]; break;
-            case 0b0010: address = srcRegs[1]; break;
-            }
-            address |= ((cmRam >> 1) << 8);
-            EXPECT_LT(address, RAM_DATA_SIZE);
-            return ram.data[address];
-        });
-
-        cpu.mapWriteRAMStatusCallback([this](u8 cmRam, u8 charIdx, u8 value) {
-            u16 address = 0;
-            switch (cmRam) {
-            case 0b0001: address = srcRegs[0]; break;
-            case 0b0010: address = srcRegs[1]; break;
-            }
-            address |= ((cmRam >> 1) << 8);
-            EXPECT_LT(address, RAM_DATA_SIZE);
-            EXPECT_EQ(value & 0xF0, 0);
-            ram.data[address] = value;
-        });
-    }
-    
-    void SetUp() override {
-        memset(rom, 0, ROM_SIZE);
-        memset(ram.data, 0, RAM_DATA_SIZE);
-        memset(ram.status, 0, RAM_STATUS_SIZE);
-        cpu.reset();
-        
-        // give some different values to all registers
-        u8 value = 0;
-        for (u8& reg : cpu.getState().regs) {
-            reg = value++;
-        }
-        value = 0;
-        for (u16& slot : cpu.getState().stack) {
-            slot = value++;
-        }
-        cpu.getState().ACC = 5;
-    }
-    
-    void TearDown() override {}
-    
-    CPU40xx::State captureCPUState() const {
-        return cpu.getState();
-    }
-    
-    void compareCPUStates(const CPU40xx::State& state1, const CPU40xx::State& state2) const {
-        EXPECT_EQ(state1.regs, state2.regs);
-        EXPECT_EQ(state1.stack, state2.stack);
-        EXPECT_EQ(state1.ACC, state2.ACC);
-        EXPECT_EQ(state1.SP, state2.SP);
-        EXPECT_EQ(state1.CY, state2.CY);
-        EXPECT_EQ(state1.test, state2.test);
-        EXPECT_EQ(state1.CMRAM, state2.CMRAM);
-    }
-    
-    void execute(u8 cycles, std::function<void(CPU40xx::State&, u8*, RAM&)> stateChanges) {
-        auto preExecutionState = captureCPUState();
-        u8 preSrcRegs[SRC_REG_COUNT];
-        memcpy(preSrcRegs, srcRegs, SRC_REG_COUNT);
-        RAM preRam = ram;
-        
-        while (cycles--) cpu.clock();
-        
-        auto postExecutionState = captureCPUState();
-        
-        stateChanges(preExecutionState, preSrcRegs, preRam);
-        compareCPUStates(preExecutionState, postExecutionState);
-        EXPECT_EQ(memcmp(preSrcRegs, srcRegs, SRC_REG_COUNT), 0);
-        EXPECT_EQ(preRam, ram);
-    }
-
-    CPU40xx cpu;
-    u8 srcRegs[SRC_REG_COUNT]{};
-    u8 rom[ROM_SIZE]{};
-    RAM ram;
-};
+using CPU4004InstructionsTests = CPU4004Tests;
 
 TEST_F(CPU4004InstructionsTests, NOPTest) {
     rom[0] = 0x0; // NOP
@@ -506,8 +372,40 @@ TEST_F(CPU4004InstructionsTests, RDMTest) {
 }
 
 TEST_F(CPU4004InstructionsTests, RDxTest) {
-    GTEST_SKIP() << "Not implemented!";
-    // TODO(Kostu): implement after DCL SRC and stuff
+    rom[0] = 0xEC; // RD0
+    rom[1] = 0xED; // RD1
+    rom[2] = 0xEE; // RD2
+    rom[3] = 0xEF; // RD3
+
+    cpu.getState().CMRAM = 0b0010; // bank 1
+    srcRegs[1] = 0xA0; // chip 1 register 1
+    ram.status[0x68] = 10;
+    ram.status[0x69] = 11;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 10;
+    });
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 11;
+    });
+
+    cpu.getState().CMRAM = 0b0001; // bank 0
+    srcRegs[0] = 0xB0; // chip 2 register 3
+    ram.status[0x2E] = 12;
+    ram.status[0x2F] = 13;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 12;
+    });
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 13;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, RDRTest) {
@@ -529,8 +427,42 @@ TEST_F(CPU4004InstructionsTests, WRMTest) {
 }
 
 TEST_F(CPU4004InstructionsTests, WRxTest) {
-    GTEST_SKIP() << "Not implemented!";
-    // TODO(Kostu): implement after DCL SRC and stuff
+    rom[0] = 0xE4; // RD0
+    rom[1] = 0xE5; // RD1
+    rom[2] = 0xE6; // RD2
+    rom[3] = 0xE7; // RD3
+
+    cpu.getState().CMRAM = 0b0010; // bank 1
+    srcRegs[1] = 0xA0; // chip 1 register 1
+    cpu.getState().ACC = 10;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& ram_) {
+        state.stack[0]++;
+        ram_.status[0x68] = 10;
+    });
+
+    cpu.getState().ACC = 11;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& ram_) {
+        state.stack[0]++;
+        ram_.status[0x69] = 11;
+    });
+
+    cpu.getState().CMRAM = 0b0001; // bank 0
+    srcRegs[0] = 0xB0; // chip 2 register 3
+    cpu.getState().ACC = 12;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& ram_) {
+        state.stack[0]++;
+        ram_.status[0x2E] = 12;
+    });
+
+    cpu.getState().ACC = 13;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& ram_) {
+        state.stack[0]++;
+        ram_.status[0x2F] = 13;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, WRRTest) {
@@ -915,26 +847,5 @@ TEST_P(KBPAndDCLParametrizedTests, DCLTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(, KBPAndDCLParametrizedTests, ::testing::Range<u8>(0, 16));
-
-// TODO(Kostu): assembler test programs? separate cpp file?
-TEST_F(CPU4004InstructionsTests, SubroutineTest) {
-    // TODO(Kostu):
-    GTEST_SKIP();
-}
-
-TEST_F(CPU4004InstructionsTests, CounterLoopTest) {
-    // TODO(Kostu): 8 bit ISZ loop
-    GTEST_SKIP();
-}
-
-TEST_F(CPU4004InstructionsTests, BCDMathTest) {
-    // TODO(Kostu):
-    GTEST_SKIP();
-}
-
-TEST_F(CPU4004InstructionsTests, RAMAccessTest) {
-    // TODO(Kostu): DCL, SRC, and instructions
-    GTEST_SKIP();
-}
 
 } // namespace

@@ -20,7 +20,9 @@ add_device_library(TARGET_NAME ${CPU40XX_LIB_TARGET_NAME}
 add_device_test(TARGET_NAME ${CPU40XX_LIB_TARGET_NAME}_test
     SOURCES
         CMakeLists.txt
+        test/cpu4004_test_fixture.hpp
         test/instructions_tests.cpp
+        test/programs_tests.cpp
     LIBRARIES
         ${CPU40XX_LIB_TARGET_NAME}
 )
