@@ -28,12 +28,12 @@ BEGIN_ALLOW_ANON_STRUCTS
                 u8 unused  : 4;
                 u8 ROMChip : 4;
             };
-            u8 SRCReg;
         };
     };
 END_ALLOW_ANON_STRUCTS
 
     using ReadROMCallback = std::function<u8(u16)>;
+    using WriteSRCRegisterCallback = std::function<void(u8, u8)>;
     using ReadRAMCallback = std::function<u8(u8)>;
     using WriteRAMCallback = std::function<void(u8, u8)>;
     using ReadIOCallback = std::function<u8(u8)>;
@@ -41,6 +41,7 @@ END_ALLOW_ANON_STRUCTS
     using ReadStatusCallback = std::function<u8(u8)>;
     using WriteStatusCallback = std::function<void(u8, u8)>;
     void mapReadROMCallback(ReadROMCallback callback) { loadROM8 = callback; }
+    void mapWriteSRCRegisterCallback(WriteSRCRegisterCallback func) { storeSRCReg = func; }
     void mapReadRAMCallback(ReadRAMCallback callback) { loadRAM8 = callback; }
     void mapWriteRAMCallback(WriteRAMCallback callback) { storeRAM8 = callback; }
     void mapReadIOCallback(ReadIOCallback callback) { loadIO8 = callback; }
@@ -65,6 +66,7 @@ END_ALLOW_ANON_STRUCTS
     CPU40xx& operator=(const CPU40xx&) = delete;
 private:
     ReadROMCallback loadROM8 = nullptr;
+    WriteSRCRegisterCallback storeSRCReg = nullptr;
     ReadRAMCallback loadRAM8 = nullptr;
     WriteRAMCallback storeRAM8 = nullptr;
     ReadIOCallback loadIO8 = nullptr;
@@ -72,7 +74,6 @@ private:
     ReadStatusCallback loadStatus8 = nullptr;
     WriteStatusCallback storeStatus8 = nullptr;
 
-    u8 getRAMAddress() const { return (m_state.CMRAM >> 1) | m_state.SRCReg; }
     u16& getPC() { return m_state.stack[m_state.SP]; }
     void incPC() { m_state.stack[m_state.SP]++; m_state.stack[m_state.SP] &= 0xFFF; }
     void incSP() { m_state.SP++; m_state.SP &= (m_mode == Mode::Intel4004 ? 0b11 : 0b111); }
@@ -88,7 +89,7 @@ private:
     void DAA();
     void DAC();
     void DCL();
-    void FIM(u8* reg);
+    void FIM(u8 idx);
     void FIN(u8 idx);
     void IAC();
     void INC(u8 idx);
@@ -104,7 +105,7 @@ private:
     void RAR();
     void RDM();
     void RDR();
-    void RDX(u8 charIdx);
+    void RDx(u8 charIdx);
     void SBM();
     void SRC(u8 idx);
     void STC();
@@ -114,7 +115,7 @@ private:
     void WMP();
     void WRM();
     void WRR();
-    void WRX(u8 charIdx);
+    void WRx(u8 charIdx);
     void XCH(u8 idx);
 
     const Mode m_mode;

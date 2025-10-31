@@ -10,8 +10,7 @@ void CPU40xx::reset() {
     m_state.ACC = 0;
     m_state.CY = 0;
     m_state.test = 0;
-    m_state.SRCReg = 0;
-    m_state.CMRAM = 0;
+    m_state.CMRAM = 1;
 }
 
 void CPU40xx::clock() {
@@ -22,18 +21,8 @@ void CPU40xx::clock() {
     {
     case 0x0: break;
     case 0x1: JCN(opcode & 0xF); break;
-    case 0x2: {
-        if (opcode & 1)
-            SRC(opcode & 0xE);
-        else
-            FIM(m_state.regs.data() + (opcode & 0xE) / 2);
-    } break;
-    case 0x3: {
-        if (opcode & 1)
-            JIN(opcode & 0xE);
-        else
-            FIN(opcode & 0xE);
-    } break;
+    case 0x2: (opcode & 1) ? SRC(opcode & 0xE) : FIM(opcode & 0xE); break;
+    case 0x3: (opcode & 1) ? JIN(opcode & 0xE) : FIN(opcode & 0xE); break;
     case 0x4: JUN(opcode & 0xF); break;
     case 0x5: JMS(opcode & 0xF); break;
     case 0x6: INC(opcode & 0xF); break;
@@ -50,18 +39,18 @@ void CPU40xx::clock() {
         case 0x0: WRM(); break;
         case 0x1: WMP(); break;
         case 0x2: WRR(); break;
-        case 0x4: WRX(0); break;
-        case 0x5: WRX(1); break;
-        case 0x6: WRX(2); break;
-        case 0x7: WRX(3); break;
+        case 0x4: WRx(0); break;
+        case 0x5: WRx(1); break;
+        case 0x6: WRx(2); break;
+        case 0x7: WRx(3); break;
         case 0x8: SBM(); break;
         case 0x9: RDM(); break;
         case 0xA: RDR(); break;
         case 0xB: ADM(); break;
-        case 0xC: RDX(0); break;
-        case 0xD: RDX(1); break;
-        case 0xE: RDX(2); break;
-        case 0xF: RDX(3); break;
+        case 0xC: RDx(0); break;
+        case 0xD: RDx(1); break;
+        case 0xE: RDx(2); break;
+        case 0xF: RDx(3); break;
         default:
             assert(false && "Unhandled instruction");
         }
@@ -105,7 +94,7 @@ void CPU40xx::ADD(u8 idx) {
 }
 
 void CPU40xx::ADM() {
-    u8 temp = m_state.ACC + (loadRAM8(getRAMAddress()) & 0xF) + m_state.CY;
+    u8 temp = m_state.ACC + loadRAM8(m_state.CMRAM) + m_state.CY;
     m_state.ACC = temp;
     m_state.CY = temp >> 4;
 }
@@ -147,13 +136,16 @@ void CPU40xx::DAC() {
 }
 
 void CPU40xx::DCL() {
-    if (m_state.ACC == 0) m_state.CMRAM = 1;
+    if ((m_state.ACC & 0b111) == 0) m_state.CMRAM = 1;
     else m_state.CMRAM = m_state.ACC << 1;
 }
 
-void CPU40xx::FIM(u8* reg) {
-    *reg = loadROM8(getPC());
+void CPU40xx::FIM(u8 idx) {
+    u8 value = loadROM8(getPC());
     incPC();
+
+    m_state.regs[idx] = value & 0xF;
+    m_state.regs[idx + 1] = value >> 4;
 }
 
 void CPU40xx::FIN(u8 idx) {
@@ -223,8 +215,7 @@ void CPU40xx::JUN(u16 highNibble) {
 }
 
 void CPU40xx::KBP() {
-    u8 temp = m_state.ACC & 0x0Fu;
-    switch (temp)
+    switch (m_state.ACC)
     {
     case 0b0000:
     case 0b0001:
@@ -244,38 +235,41 @@ void CPU40xx::LDM(u8 data) {
 }
 
 void CPU40xx::RAL() {
+    u8 carry = m_state.CY;
     m_state.CY = m_state.ACC >> 3;
     m_state.ACC <<= 1;
-    m_state.ACC |= m_state.CY;
+    m_state.ACC |= carry;
 }
 
 void CPU40xx::RAR() {
+    u8 carry = m_state.CY;
     m_state.CY = m_state.ACC & 1;
     m_state.ACC >>= 1;
-    m_state.ACC |= m_state.CY << 3;
+    m_state.ACC |= carry << 3;
 }
 
 void CPU40xx::RDM() {
-    m_state.ACC = loadRAM8(getRAMAddress()) & 0xF;
+    m_state.ACC = loadRAM8(m_state.CMRAM);
 }
 
 void CPU40xx::RDR() {
     m_state.ACC = loadIO8(m_state.ROMChip) & 0xF;
 }
 
-void CPU40xx::RDX(u8 charIdx) {
+void CPU40xx::RDx(u8 charIdx) {
     m_state.ACC = loadStatus8((m_state.RAMChip << 4) | (m_state.RAMRegIdx << 2) | charIdx) & 0xF;
 }
 
 void CPU40xx::SBM() {
-    u8 value = ~loadRAM8(getRAMAddress()) & 0xF;
+    u8 value = ~loadRAM8(m_state.CMRAM) & 0xF;
     u8 temp = m_state.ACC + value + m_state.CY;
     m_state.ACC = temp;
     m_state.CY = temp >> 4;
 }
 
 void CPU40xx::SRC(u8 idx) {
-    m_state.SRCReg = (m_state.regs[idx + 1] << 4) | m_state.regs[idx];
+    u8 value = (m_state.regs[idx + 1] << 4) | m_state.regs[idx];
+    storeSRCReg(m_state.CMRAM, value);
 }
 
 void CPU40xx::STC() {
@@ -303,14 +297,14 @@ void CPU40xx::WMP() {
 }
 
 void CPU40xx::WRM() {
-    storeRAM8(getRAMAddress(), m_state.ACC);
+    storeRAM8(m_state.CMRAM, m_state.ACC);
 }
 
 void CPU40xx::WRR() {
     storeIO8(m_state.ROMChip, m_state.ACC);
 }
 
-void CPU40xx::WRX(u8 charIdx) {
+void CPU40xx::WRx(u8 charIdx) {
     storeStatus8((m_state.RAMChip << 4) | (m_state.RAMRegIdx << 2) | charIdx, m_state.ACC);
 }
 
