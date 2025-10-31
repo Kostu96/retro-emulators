@@ -8,8 +8,6 @@
 class CPU40xx
 {
 public:
-
-BEGIN_ALLOW_ANON_STRUCTS
     struct State {
         std::vector<u8> regs;
         std::vector<u16> stack;
@@ -18,36 +16,21 @@ BEGIN_ALLOW_ANON_STRUCTS
         u8 SP : 3;
         u8 CY : 1;
         u8 test : 1;
-        union {
-            struct {
-                u8 RAMCharIdx : 4;
-                u8 RAMRegIdx  : 2;
-                u8 RAMChip    : 2;
-            };
-            struct {
-                u8 unused  : 4;
-                u8 ROMChip : 4;
-            };
-        };
     };
-END_ALLOW_ANON_STRUCTS
 
     using ReadROMCallback = std::function<u8(u16)>;
-    using WriteSRCRegisterCallback = std::function<void(u8, u8)>;
-    using ReadRAMCallback = std::function<u8(u8)>;
-    using WriteRAMCallback = std::function<void(u8, u8)>;
-    using ReadIOCallback = std::function<u8(u8)>;
-    using WriteIOCallback = std::function<void(u8, u8)>;
-    using ReadStatusCallback = std::function<u8(u8)>;
-    using WriteStatusCallback = std::function<void(u8, u8)>;
+    using ReadU8Callback = std::function<u8(u8)>;
+    using ReadU8U8Callback = std::function<u8(u8, u8)>;
+    using WriteU8Callback = std::function<void(u8, u8)>;
+    using WriteU8U8Callback = std::function<void(u8, u8, u8)>;
     void mapReadROMCallback(ReadROMCallback callback) { loadROM8 = callback; }
-    void mapWriteSRCRegisterCallback(WriteSRCRegisterCallback func) { storeSRCReg = func; }
-    void mapReadRAMCallback(ReadRAMCallback callback) { loadRAM8 = callback; }
-    void mapWriteRAMCallback(WriteRAMCallback callback) { storeRAM8 = callback; }
-    void mapReadIOCallback(ReadIOCallback callback) { loadIO8 = callback; }
-    void mapWriteIOCallback(WriteIOCallback callback) { storeIO8 = callback; }
-    void mapReadRAMStatus(ReadStatusCallback func) { loadStatus8 = func; }
-    void mapWriteRAMStatus(WriteStatusCallback func) { storeStatus8 = func; }
+    void mapWriteSRCRegisterCallback(WriteU8Callback func) { storeSRCReg = func; }
+    void mapReadRAMDataCallback(ReadU8Callback callback) { loadRAMData8 = callback; }
+    void mapWriteRAMDataCallback(WriteU8Callback callback) { storeRAMData8 = callback; }
+    void mapReadRAMStatusCallback(ReadU8U8Callback func) { loadRAMStatus8 = func; }
+    void mapWriteRAMStatusCallback(WriteU8U8Callback func) { storeRAMStatus8 = func; }
+    void mapReadIOCallback(ReadU8Callback callback) { loadIO8 = callback; }
+    void mapWriteIOCallback(WriteU8Callback callback) { storeIO8 = callback; }
 
     enum class Mode : u8 {
         Intel4004,
@@ -66,13 +49,13 @@ END_ALLOW_ANON_STRUCTS
     CPU40xx& operator=(const CPU40xx&) = delete;
 private:
     ReadROMCallback loadROM8 = nullptr;
-    WriteSRCRegisterCallback storeSRCReg = nullptr;
-    ReadRAMCallback loadRAM8 = nullptr;
-    WriteRAMCallback storeRAM8 = nullptr;
-    ReadIOCallback loadIO8 = nullptr;
-    WriteIOCallback storeIO8 = nullptr;
-    ReadStatusCallback loadStatus8 = nullptr;
-    WriteStatusCallback storeStatus8 = nullptr;
+    WriteU8Callback storeSRCReg = nullptr;
+    ReadU8Callback loadRAMData8 = nullptr;
+    WriteU8Callback storeRAMData8 = nullptr;
+    ReadU8U8Callback loadRAMStatus8 = nullptr;
+    WriteU8U8Callback storeRAMStatus8 = nullptr;
+    ReadU8Callback loadIO8 = nullptr;
+    WriteU8Callback storeIO8 = nullptr;
 
     u16& getPC() { return m_state.stack[m_state.SP]; }
     void incPC() { m_state.stack[m_state.SP]++; m_state.stack[m_state.SP] &= 0xFFF; }

@@ -94,7 +94,7 @@ void CPU40xx::ADD(u8 idx) {
 }
 
 void CPU40xx::ADM() {
-    u8 temp = m_state.ACC + loadRAM8(m_state.CMRAM) + m_state.CY;
+    u8 temp = m_state.ACC + loadRAMData8(m_state.CMRAM) + m_state.CY;
     m_state.ACC = temp;
     m_state.CY = temp >> 4;
 }
@@ -249,19 +249,19 @@ void CPU40xx::RAR() {
 }
 
 void CPU40xx::RDM() {
-    m_state.ACC = loadRAM8(m_state.CMRAM);
+    m_state.ACC = loadRAMData8(m_state.CMRAM);
 }
 
 void CPU40xx::RDR() {
-    m_state.ACC = loadIO8(m_state.ROMChip) & 0xF;
+    m_state.ACC = loadIO8(m_state.CMRAM);
 }
 
 void CPU40xx::RDx(u8 charIdx) {
-    m_state.ACC = loadStatus8((m_state.RAMChip << 4) | (m_state.RAMRegIdx << 2) | charIdx) & 0xF;
+    m_state.ACC = loadRAMStatus8(m_state.CMRAM, charIdx);
 }
 
 void CPU40xx::SBM() {
-    u8 value = ~loadRAM8(m_state.CMRAM) & 0xF;
+    u8 value = ~loadRAMData8(m_state.CMRAM) & 0xF;
     u8 temp = m_state.ACC + value + m_state.CY;
     m_state.ACC = temp;
     m_state.CY = temp >> 4;
@@ -293,19 +293,19 @@ void CPU40xx::TCS() {
 }
 
 void CPU40xx::WMP() {
-    storeIO8(m_state.RAMChip, m_state.ACC);
+    storeIO8(m_state.CMRAM, m_state.ACC);
 }
 
 void CPU40xx::WRM() {
-    storeRAM8(m_state.CMRAM, m_state.ACC);
+    storeRAMData8(m_state.CMRAM, m_state.ACC);
 }
 
 void CPU40xx::WRR() {
-    storeIO8(m_state.ROMChip, m_state.ACC);
+    storeIO8(m_state.CMRAM, m_state.ACC);
 }
 
 void CPU40xx::WRx(u8 charIdx) {
-    storeStatus8((m_state.RAMChip << 4) | (m_state.RAMRegIdx << 2) | charIdx, m_state.ACC);
+    storeRAMStatus8(m_state.CMRAM, charIdx, m_state.ACC);
 }
 
 void CPU40xx::XCH(u8 idx) {

@@ -8,24 +8,84 @@ namespace {
 
 struct CPU4004InstructionsTests :
     public ::testing::Test {
-        
+    
+    static constexpr u8 SRC_REG_COUNT = 2; // for 2 rom chips and 2 ram banks
+    static constexpr u16 ROM_SIZE = SRC_REG_COUNT * 0x100; // 2 i4001s a.k.a. 2 pages
+    static constexpr u16 RAM_DATA_SIZE = SRC_REG_COUNT * 0x100; // 2 banks of 4 i4002s
+    static constexpr u16 RAM_STATUS_SIZE = SRC_REG_COUNT * 0x40; // 2 banks of 4 i4002s
+
+    struct RAM {
+        u8 data[RAM_DATA_SIZE]{};
+        u8 status[RAM_STATUS_SIZE]{};
+
+        bool operator==(const RAM&) const = default;
+    };
+
     CPU4004InstructionsTests() :
         cpu(CPU40xx::Mode::Intel4004) {
         cpu.mapReadROMCallback([this](u16 address) -> u8 {
             if (address < ROM_SIZE) return rom[address];
             return 0;
         });
+
         cpu.mapWriteSRCRegisterCallback([this](u8 cmRam, u8 value) {
             switch (cmRam) {
             case 0b0001: srcRegs[0] = value; break;
             case 0b0010: srcRegs[1] = value; break;
             }
         });
+
+        cpu.mapReadRAMDataCallback([this](u8 cmRam) -> u8 {
+            u16 address = 0;
+            switch (cmRam) {
+            case 0b0001: address = srcRegs[0]; break;
+            case 0b0010: address = srcRegs[1]; break;
+            }
+            address |= ((cmRam >> 1) << 8);
+            EXPECT_LT(address, RAM_DATA_SIZE);
+            return ram.data[address];
+        });
+
+        cpu.mapWriteRAMDataCallback([this](u8 cmRam, u8 value) {
+            u16 address = 0;
+            switch (cmRam) {
+            case 0b0001: address = srcRegs[0]; break;
+            case 0b0010: address = srcRegs[1]; break;
+            }
+            address |= ((cmRam >> 1) << 8);
+            EXPECT_LT(address, RAM_DATA_SIZE);
+            EXPECT_EQ(value & 0xF0, 0);
+            ram.data[address] = value;
+        });
+
+        cpu.mapReadRAMStatusCallback([this](u8 cmRam, u8 charIdx) -> u8 {
+            u16 address = 0;
+            switch (cmRam) {
+            case 0b0001: address = srcRegs[0]; break;
+            case 0b0010: address = srcRegs[1]; break;
+            }
+            address |= ((cmRam >> 1) << 8);
+            EXPECT_LT(address, RAM_DATA_SIZE);
+            return ram.data[address];
+        });
+
+        cpu.mapWriteRAMStatusCallback([this](u8 cmRam, u8 charIdx, u8 value) {
+            u16 address = 0;
+            switch (cmRam) {
+            case 0b0001: address = srcRegs[0]; break;
+            case 0b0010: address = srcRegs[1]; break;
+            }
+            address |= ((cmRam >> 1) << 8);
+            EXPECT_LT(address, RAM_DATA_SIZE);
+            EXPECT_EQ(value & 0xF0, 0);
+            ram.data[address] = value;
+        });
     }
     
     void SetUp() override {
         memset(rom, 0, ROM_SIZE);
-        memset(ram, 0, RAM_SIZE);
+        memset(ram.data, 0, RAM_DATA_SIZE);
+        memset(ram.status, 0, RAM_STATUS_SIZE);
         cpu.reset();
         
         // give some different values to all registers
@@ -56,41 +116,32 @@ struct CPU4004InstructionsTests :
         EXPECT_EQ(state1.CMRAM, state2.CMRAM);
     }
     
-    void execute(u8 cycles, std::function<void(CPU40xx::State&, u8*, u8*)> stateChanges) {
+    void execute(u8 cycles, std::function<void(CPU40xx::State&, u8*, RAM&)> stateChanges) {
         auto preExecutionState = captureCPUState();
         u8 preSrcRegs[SRC_REG_COUNT];
         memcpy(preSrcRegs, srcRegs, SRC_REG_COUNT);
-        u8 preRam[RAM_SIZE];
-        memcpy(preRam, ram, RAM_SIZE);
+        RAM preRam = ram;
         
         while (cycles--) cpu.clock();
         
         auto postExecutionState = captureCPUState();
-        u8 postSrcRegs[SRC_REG_COUNT];
-        memcpy(postSrcRegs, srcRegs, SRC_REG_COUNT);
-        u8 postRam[RAM_SIZE];
-        memcpy(postRam, ram, RAM_SIZE);
         
         stateChanges(preExecutionState, preSrcRegs, preRam);
         compareCPUStates(preExecutionState, postExecutionState);
-        EXPECT_EQ(memcmp(preSrcRegs, postSrcRegs, SRC_REG_COUNT), 0);
-        EXPECT_EQ(memcmp(preRam, postRam, RAM_SIZE), 0);
+        EXPECT_EQ(memcmp(preSrcRegs, srcRegs, SRC_REG_COUNT), 0);
+        EXPECT_EQ(preRam, ram);
     }
-
-    static constexpr u8 SRC_REG_COUNT = 2; // for 2 rom chips and 2 ram banks
-    static constexpr u16 ROM_SIZE = SRC_REG_COUNT * 0x100; // 2 i4001s a.k.a. 2 pages
-    static constexpr u16 RAM_SIZE = SRC_REG_COUNT * 0x100; // 2 banks of 4 i4002s
 
     CPU40xx cpu;
     u8 srcRegs[SRC_REG_COUNT]{};
     u8 rom[ROM_SIZE]{};
-    u8 ram[RAM_SIZE]{};
+    RAM ram;
 };
 
 TEST_F(CPU4004InstructionsTests, NOPTest) {
     rom[0] = 0x0; // NOP
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
     });
 }
@@ -98,7 +149,7 @@ TEST_F(CPU4004InstructionsTests, NOPTest) {
 TEST_F(CPU4004InstructionsTests, LDMTest) {
     rom[0] = 0xDA; // LDM 10
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 10;
     });
@@ -107,7 +158,7 @@ TEST_F(CPU4004InstructionsTests, LDMTest) {
 TEST_F(CPU4004InstructionsTests, LDTest) {
     rom[0] = 0xAC; // LD 12
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 12;
     });
@@ -117,7 +168,7 @@ TEST_F(CPU4004InstructionsTests, XCHTest) {
     rom[0] = 0xBC; // XCH 12
     cpu.getState().ACC = 4;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 12;
         state.regs[12] = 4;
@@ -135,23 +186,23 @@ TEST_F(CPU4004InstructionsTests, ADDTest) {
     cpu.getState().regs[14] = 14;
     cpu.getState().regs[15] = 2;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 9;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 1;
         state.CY = 1;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 0;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 3;
         state.CY = 0;
@@ -170,24 +221,24 @@ TEST_F(CPU4004InstructionsTests, SUBTest) {
     cpu.getState().regs[14] = 14;
     cpu.getState().regs[15] = 2;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 2;
         state.CY = 1;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 10;
         state.CY = 0;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 11;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 8;
         state.CY = 1;
@@ -199,12 +250,12 @@ TEST_F(CPU4004InstructionsTests, INCTest) {
     rom[1] = 0x6C; // INC 12
     cpu.getState().regs[12] = 14;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.regs[12] = 15;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.regs[12] = 0;
     });
@@ -217,13 +268,13 @@ TEST_F(CPU4004InstructionsTests, BBLTest) {
     cpu.getState().stack[1] = 0;
     cpu.getState().SP = 1;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[1]++;
         state.ACC = 7;
         state.SP = 0;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 0;
         state.SP = 3;
@@ -238,11 +289,11 @@ TEST_F(CPU4004InstructionsTests, JINTest) {
     cpu.getState().regs[2] = 0x1;
     cpu.getState().regs[3] = 0x2;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0] = 0xFF;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0] = 0x121;
     });
 }
@@ -255,14 +306,14 @@ TEST_F(CPU4004InstructionsTests, SRCTest) {
 
     cpu.getState().CMRAM = 0b0001;
 
-    execute(1, [](CPU40xx::State& state, u8* srcRegs_, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* srcRegs_, RAM& /*ram_*/) {
         state.stack[0]++;
         srcRegs_[0] = 0x42;
     });
 
     cpu.getState().CMRAM = 0b0010;
 
-    execute(1, [](CPU40xx::State& state, u8* srcRegs_, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* srcRegs_, RAM& /*ram_*/) {
         state.stack[0]++;
         srcRegs_[1] = 0x42;
     });
@@ -278,14 +329,14 @@ TEST_F(CPU4004InstructionsTests, FINTest) {
     cpu.getState().stack[0] = 0xFE;
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.regs[0] = 0x2;
         state.regs[1] = 0x1;
     });
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.regs[2] = 0x1;
         state.regs[3] = 0x2;
@@ -297,7 +348,7 @@ TEST_F(CPU4004InstructionsTests, JUNTest) {
     rom[1] = 0x23; // JUN 0x123
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0] = 0x123;
     });
 }
@@ -311,14 +362,14 @@ TEST_F(CPU4004InstructionsTests, JMSTest) {
     cpu.getState().SP = 2;
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[2] += 2;
         state.stack[3] = 0x123;
         state.SP = 3;
     });
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[3] += 2;
         state.stack[0] = 0x456;
         state.SP = 0;
@@ -351,7 +402,7 @@ TEST_P(JCNParametrizedTests, JCNConditionsTest) {
     bool shouldJump = invert ^ static_cast<bool>(test);
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [shouldJump](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [shouldJump](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         if (shouldJump)
             state.stack[0] = 0x042;
         else
@@ -389,7 +440,7 @@ TEST_F(CPU4004InstructionsTests, JCNEndOfPageTest) {
     cpu.getState().stack[0] = 0xFE;
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0] = 0x142;
     });
 }
@@ -406,24 +457,24 @@ TEST_F(CPU4004InstructionsTests, ISZTest) {
     cpu.getState().regs[9] = 13;
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.regs[8]++;
     });
 
     // TODO(Kostu): this should take 10 cycles
-    execute(5, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(5, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.regs[8] = 0;
         state.stack[0] += 2;
     });
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.regs[9]++;
         state.stack[0] = 0xFE;
     });
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.regs[9]++;
         state.stack[0] = 0x142;
     });
@@ -434,7 +485,7 @@ TEST_F(CPU4004InstructionsTests, FIMTest) {
     rom[1] = 0x42; // FIM 1P, 0x42
 
     // TODO(Kostu): this should take 2 cycles
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0] += 2;
         state.regs[2] = 0x2;
         state.regs[3] = 0x4;
@@ -442,8 +493,16 @@ TEST_F(CPU4004InstructionsTests, FIMTest) {
 }
 
 TEST_F(CPU4004InstructionsTests, RDMTest) {
-    GTEST_SKIP() << "Not implemented!";
-    // TODO(Kostu): implement after DCL SRC and stuff
+    rom[0] = 0xE9; // RDM
+
+    cpu.getState().CMRAM = 0b0010;
+    srcRegs[1] = 0x42;
+    ram.data[0x142] = 10;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 10;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, RDxTest) {
@@ -457,8 +516,16 @@ TEST_F(CPU4004InstructionsTests, RDRTest) {
 }
 
 TEST_F(CPU4004InstructionsTests, WRMTest) {
-    GTEST_SKIP() << "Not implemented!";
-    // TODO(Kostu): implement after DCL SRC and stuff
+    rom[0] = 0xE0; // WRM
+
+    cpu.getState().ACC = 10;
+    cpu.getState().CMRAM = 0b0010;
+    srcRegs[1] = 0x42;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& ram_) {
+        state.stack[0]++;
+        ram_.data[0x142] = 10;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, WRxTest) {
@@ -477,13 +544,89 @@ TEST_F(CPU4004InstructionsTests, WMPTest) {
 }
 
 TEST_F(CPU4004InstructionsTests, ADMTest) {
-    GTEST_SKIP() << "Not implemented!";
-    // TODO(Kostu): implement after DCL SRC and stuff
+    rom[0] = 0xEB; // ADM (no carry)
+    rom[1] = 0xEB; // ADM (produces carry)
+    rom[2] = 0xEB; // ADM (consumes and produces carry)
+    rom[3] = 0xEB; // ADM (consumes carry)
+    cpu.getState().ACC = 4;
+    ram.data[0] = 5;
+    ram.data[1] = 8;
+    ram.data[2] = 14;
+    ram.data[3] = 2;
+
+    srcRegs[0] = 0;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 9;
+    });
+
+    srcRegs[0] = 1;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 1;
+        state.CY = 1;
+    });
+
+    srcRegs[0] = 2;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 0;
+    });
+
+    srcRegs[0] = 3;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 3;
+        state.CY = 0;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, SBMTest) {
-    GTEST_SKIP() << "Not implemented!";
-    // TODO(Kostu): implement after DCL SRC and stuff
+    rom[0] = 0xE8; // SBM (no borrow, CY = 1)
+    rom[1] = 0xE8; // SBM (produces borrow, CY = 0)
+    rom[2] = 0xE8; // SBM (consumes and produces borrow)
+    rom[3] = 0xE8; // SBM (consumes borrow)
+    cpu.getState().ACC = 5;
+    cpu.getState().CY = 1;
+    ram.data[0] = 3;
+    ram.data[1] = 8;
+    ram.data[2] = 14;
+    ram.data[3] = 2;
+
+    srcRegs[0] = 0;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 2;
+        state.CY = 1;
+    });
+
+    srcRegs[0] = 1;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 10;
+        state.CY = 0;
+    });
+
+    srcRegs[0] = 2;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 11;
+    });
+
+    srcRegs[0] = 3;
+
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
+        state.stack[0]++;
+        state.ACC = 8;
+        state.CY = 1;
+    });
 }
 
 TEST_F(CPU4004InstructionsTests, CLBTest) {
@@ -492,7 +635,7 @@ TEST_F(CPU4004InstructionsTests, CLBTest) {
     cpu.getState().ACC = 6;
     cpu.getState().CY = 1;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 0;
         state.CY = 0;
@@ -504,7 +647,7 @@ TEST_F(CPU4004InstructionsTests, CLCTest) {
 
     cpu.getState().CY = 1;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.CY = 0;
     });
@@ -516,12 +659,12 @@ TEST_F(CPU4004InstructionsTests, CMCTest) {
 
     cpu.getState().CY = 1;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.CY = 0;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.CY = 1;
     });
@@ -532,7 +675,7 @@ TEST_F(CPU4004InstructionsTests, STCTest) {
 
     cpu.getState().CY = 0;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.CY = 1;
     });
@@ -543,7 +686,7 @@ TEST_F(CPU4004InstructionsTests, CMATest) {
 
     cpu.getState().ACC = 10;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 5;
     });
@@ -556,12 +699,12 @@ TEST_F(CPU4004InstructionsTests, IACTest) {
     cpu.getState().ACC = 14;
     cpu.getState().CY = 0;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 15;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 0;
         state.CY = 1;
@@ -575,13 +718,13 @@ TEST_F(CPU4004InstructionsTests, DACTest) {
     cpu.getState().ACC = 1;
     cpu.getState().CY = 0;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 0;
         state.CY = 1;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 15;
         state.CY = 0;
@@ -595,13 +738,13 @@ TEST_F(CPU4004InstructionsTests, RALTest) {
     cpu.getState().ACC = 10;
     cpu.getState().CY = 0;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 4;
         state.CY = 1;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 9;
         state.CY = 0;
@@ -615,13 +758,13 @@ TEST_F(CPU4004InstructionsTests, RARTest) {
     cpu.getState().ACC = 5;
     cpu.getState().CY = 0;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 2;
         state.CY = 1;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 9;
         state.CY = 0;
@@ -635,13 +778,13 @@ TEST_F(CPU4004InstructionsTests, TCCTest) {
     cpu.getState().ACC = 6;
     cpu.getState().CY = 1;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 1;
         state.CY = 0;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 0;
     });
@@ -657,13 +800,13 @@ TEST_F(CPU4004InstructionsTests, DAATest) {
     cpu.getState().ACC = 5;
     cpu.getState().CY = 0;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
     });
 
     cpu.getState().ACC = 10;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 0;
         state.CY = 1;
@@ -671,7 +814,7 @@ TEST_F(CPU4004InstructionsTests, DAATest) {
 
     cpu.getState().ACC = 3;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 9;
         state.CY = 0;
@@ -680,7 +823,7 @@ TEST_F(CPU4004InstructionsTests, DAATest) {
     cpu.getState().ACC = 12;
     cpu.getState().CY = 1;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 2;
         state.CY = 1;
@@ -689,7 +832,7 @@ TEST_F(CPU4004InstructionsTests, DAATest) {
     cpu.getState().ACC = 15;
     cpu.getState().CY = 0;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 5;
         state.CY = 1;
@@ -702,13 +845,13 @@ TEST_F(CPU4004InstructionsTests, TCSTest) {
 
     cpu.getState().CY = 1;
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 10;
         state.CY = 0;
     });
 
-    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = 9;
     });
@@ -737,7 +880,7 @@ TEST_P(KBPAndDCLParametrizedTests, KBPTest) {
         }
     }(value);
 
-    execute(1, [result](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [result](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.ACC = result;
     });
@@ -765,7 +908,7 @@ TEST_P(KBPAndDCLParametrizedTests, DCLTest) {
     }(value);
     ASSERT_NE(result, 0b1111);
 
-    execute(1, [result](CPU40xx::State& state, u8* /*srcRegs_*/, u8* /*ram_*/) {
+    execute(1, [result](CPU40xx::State& state, u8* /*srcRegs_*/, RAM& /*ram_*/) {
         state.stack[0]++;
         state.CMRAM = result;
     });
@@ -776,14 +919,22 @@ INSTANTIATE_TEST_SUITE_P(, KBPAndDCLParametrizedTests, ::testing::Range<u8>(0, 1
 // TODO(Kostu): assembler test programs? separate cpp file?
 TEST_F(CPU4004InstructionsTests, SubroutineTest) {
     // TODO(Kostu):
+    GTEST_SKIP();
 }
 
 TEST_F(CPU4004InstructionsTests, CounterLoopTest) {
     // TODO(Kostu): 8 bit ISZ loop
+    GTEST_SKIP();
 }
 
 TEST_F(CPU4004InstructionsTests, BCDMathTest) {
     // TODO(Kostu):
+    GTEST_SKIP();
+}
+
+TEST_F(CPU4004InstructionsTests, RAMAccessTest) {
+    // TODO(Kostu): DCL, SRC, and instructions
+    GTEST_SKIP();
 }
 
 } // namespace
