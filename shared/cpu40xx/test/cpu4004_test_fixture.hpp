@@ -145,7 +145,7 @@ struct CPU4004Tests :
 
     void SetUp() override {
         memset(rom, 0, ROM_SIZE);
-        memset(&writables, 0, sizeof(Writables));
+        writables = Writables{};
         cpu.reset();
 
         // give some different values to all registers
