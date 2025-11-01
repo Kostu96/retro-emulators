@@ -14,7 +14,7 @@ void CPU40xx::reset() {
 }
 
 void CPU40xx::clock() {
-    u8 opcode = loadROM8(getPC());
+    u8 opcode = loadROM(getPC());
     incPC();
 
     switch (opcode >> 4)
@@ -94,7 +94,7 @@ void CPU40xx::ADD(u8 idx) {
 }
 
 void CPU40xx::ADM() {
-    u8 temp = m_state.ACC + loadRAMData8(m_state.CMRAM) + m_state.CY;
+    u8 temp = m_state.ACC + loadRAMData(m_state.CMRAM) + m_state.CY;
     m_state.ACC = temp;
     m_state.CY = temp >> 4;
 }
@@ -141,7 +141,7 @@ void CPU40xx::DCL() {
 }
 
 void CPU40xx::FIM(u8 idx) {
-    u8 value = loadROM8(getPC());
+    u8 value = loadROM(getPC());
     incPC();
 
     m_state.regs[idx] = value & 0xF;
@@ -150,7 +150,7 @@ void CPU40xx::FIM(u8 idx) {
 
 void CPU40xx::FIN(u8 idx) {
     u16 address = (getPC() & 0xF00) | (m_state.regs[1] << 4) | m_state.regs[0];
-    u8 value = loadROM8(address);
+    u8 value = loadROM(address);
     m_state.regs[idx] = value & 0xF;
     m_state.regs[idx + 1] = value >> 4;
 }
@@ -167,7 +167,7 @@ void CPU40xx::INC(u8 idx) {
 }
 
 void CPU40xx::ISZ(u8 idx) {
-    u8 address = loadROM8(getPC());
+    u8 address = loadROM(getPC());
     incPC();
 
     m_state.regs[idx]++;
@@ -180,7 +180,7 @@ void CPU40xx::ISZ(u8 idx) {
 }
 
 void CPU40xx::JCN(u8 condition) {
-    u8 address = loadROM8(getPC());
+    u8 address = loadROM(getPC());
     incPC();
 
     u8 c1 = (condition >> 3) & 1;
@@ -204,14 +204,14 @@ void CPU40xx::JIN(u8 idx) {
 }
 
 void CPU40xx::JMS(u16 highNibble) {
-    u16 addr = (highNibble << 8) | loadROM8(getPC());
+    u16 addr = (highNibble << 8) | loadROM(getPC());
     incPC();
     incSP();
     getPC() = addr;
 }
 
 void CPU40xx::JUN(u16 highNibble) {
-    getPC() = (highNibble << 8) | loadROM8(getPC());
+    getPC() = (highNibble << 8) | loadROM(getPC());
 }
 
 void CPU40xx::KBP() {
@@ -249,19 +249,19 @@ void CPU40xx::RAR() {
 }
 
 void CPU40xx::RDM() {
-    m_state.ACC = loadRAMData8(m_state.CMRAM);
+    m_state.ACC = loadRAMData(m_state.CMRAM);
 }
 
 void CPU40xx::RDR() {
-    m_state.ACC = loadIO8(m_state.CMRAM);
+    m_state.ACC = loadROMIO();
 }
 
 void CPU40xx::RDx(u8 charIdx) {
-    m_state.ACC = loadRAMStatus8(m_state.CMRAM, charIdx);
+    m_state.ACC = loadRAMStatus(m_state.CMRAM, charIdx);
 }
 
 void CPU40xx::SBM() {
-    u8 value = ~loadRAMData8(m_state.CMRAM) & 0xF;
+    u8 value = ~loadRAMData(m_state.CMRAM) & 0xF;
     u8 temp = m_state.ACC + value + m_state.CY;
     m_state.ACC = temp;
     m_state.CY = temp >> 4;
@@ -293,19 +293,19 @@ void CPU40xx::TCS() {
 }
 
 void CPU40xx::WMP() {
-    storeIO8(m_state.CMRAM, m_state.ACC);
+    storeRAMIO(m_state.CMRAM, m_state.ACC);
 }
 
 void CPU40xx::WRM() {
-    storeRAMData8(m_state.CMRAM, m_state.ACC);
+    storeRAMData(m_state.CMRAM, m_state.ACC);
 }
 
 void CPU40xx::WRR() {
-    storeIO8(m_state.CMRAM, m_state.ACC);
+    storeROMIO(m_state.ACC);
 }
 
 void CPU40xx::WRx(u8 charIdx) {
-    storeRAMStatus8(m_state.CMRAM, charIdx, m_state.ACC);
+    storeRAMStatus(m_state.CMRAM, charIdx, m_state.ACC);
 }
 
 void CPU40xx::XCH(u8 idx) {
