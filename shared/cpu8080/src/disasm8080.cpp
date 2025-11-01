@@ -11,19 +11,19 @@
 void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output)
 {
 #define INST1(str) ss << "       " str; break
-#define INST2(str) PRINT1; ss << "    " str << std::setw(2) << (u16)byte1; break
-#define INST3(str) PRINT2; ss << " " str << std::setw(2) << (u16)byte2 << std::setw(2) << (u16)byte1; break
+#define INST2(str) PRINT1; ss << "    " str << std::setw(2) << to_u16(byte1); break
+#define INST3(str) PRINT2; ss << " " str << std::setw(2) << to_u16(byte2) << std::setw(2) << to_u16(byte1); break
 
     for (size_t addr = 0; addr < code_size; )
     {
         output.emplace_back();
         DisassemblyLine& line = output.back();
 
-        line.address = (u16)addr;
+        line.address = to_u16(addr);
         std::stringstream ss;
         ss << std::uppercase << std::hex << std::setw(4) << std::setfill('0') << addr << ":  ";
         u8 byte = code[addr++];
-        ss << std::hex << std::setw(2) << (u16)byte << ' ';
+        ss << std::hex << std::setw(2) << to_u16(byte) << ' ';
 
         u8 byte1, byte2;
         switch (byte)
@@ -301,7 +301,7 @@ void disasmIntruction(u8 opcode, u8 byte1, u8 byte2, DisassemblyLine& output)
 
 #define INST1(mnemonic) snprintf(output.str.data(), LINE_STR_SIZE, mnemonic)
 #define INST2(mnemonic) snprintf(output.str.data(), LINE_STR_SIZE, mnemonic " 0x%02X", byte1)
-#define INSTW(mnemonic) snprintf(output.str.data(), LINE_STR_SIZE, mnemonic " 0x%04X", (u16)byte2 << 8 | byte1)
+#define INSTW(mnemonic) snprintf(output.str.data(), LINE_STR_SIZE, mnemonic " 0x%04X", to_u16(byte2) << 8 | byte1)
 
     switch (opcode)
     {

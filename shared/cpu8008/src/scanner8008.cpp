@@ -93,7 +93,7 @@ namespace ASM8008 {
         {
             while (isAlpha(*m_current) || isDigit(*m_current)) m_current++;
 
-            std::string_view str{ m_start, (size_t)(m_current - m_start) };
+            std::string_view str{ m_start, static_cast<size_t>(m_current - m_start) };
             Token::Type type;
             if (m_mnemonics.find(str, type))
                 return makeToken(type);

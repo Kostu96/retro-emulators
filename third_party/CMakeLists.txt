@@ -1,11 +1,5 @@
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-#set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-#set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-#set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-#set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-#add_subdirectory(glfw)
-
 add_subdirectory(glw)
 
 #set(IMGUI_SOURCES
@@ -31,15 +25,9 @@ add_subdirectory(glw)
 #    ${CMAKE_CURRENT_SOURCE_DIR}/imgui
 #)
 
-#target_link_libraries(imgui PUBLIC
-#    glfw
-#)
-
 set_target_properties(
-#    glfw
     glw
 #    imgui
-#    update_mappings
     PROPERTIES
     FOLDER third_party
 )
