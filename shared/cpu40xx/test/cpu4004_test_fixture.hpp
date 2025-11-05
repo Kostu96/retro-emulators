@@ -160,8 +160,6 @@ struct CPU4004Tests :
         cpu.getState().ACC = 5;
     }
 
-    void TearDown() override {}
-
     CPU40xx::State captureCPUState() const {
         return cpu.getState();
     }

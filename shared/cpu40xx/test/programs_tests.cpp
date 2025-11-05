@@ -15,7 +15,12 @@ TEST_F(CPU4004ProgramsTests, CounterLoopTest) {
     GTEST_SKIP();
 }
 
-TEST_F(CPU4004ProgramsTests, BCDMathTest) {
+TEST_F(CPU4004ProgramsTests, IntegerBCDMathTest) {
+    // TODO(Kostu):
+    GTEST_SKIP();
+}
+
+TEST_F(CPU4004ProgramsTests, FloatingPointBCDMathTest) {
     // TODO(Kostu):
     GTEST_SKIP();
 }

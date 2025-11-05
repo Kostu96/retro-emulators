@@ -1,5 +1,7 @@
 #pragma once
 #include <stddef.h>
+#include <string>
 
-bool readFile(const char* filename, char* data, size_t& size, bool binary = false);
+std::string readFile(const char* filename);
+bool readFileInto(const char* filename, char* data, size_t& size);
 bool writeFile(const char* filename, const char* data, size_t size, bool binary = false);
