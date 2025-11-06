@@ -3,71 +3,8 @@
 
 #include <cassert>
 #include <charconv>
-#include <cstring>
 #include <format>
 #include <iomanip>
-#include <iostream>
-
-namespace {
-
-//constexpr std::array<Mnemonic, 46> mnemonics = {
-//    Mnemonic{ "ADD", 1, 0x80, Mnemonic::Arg::Register },
-//    Mnemonic{ "ADM", 1, 0xEB, Mnemonic::Arg::None },
-//    Mnemonic{ "BBL", 1, 0xC0, Mnemonic::Arg::Immediate4 },
-//    Mnemonic{ "CLB", 1, 0xF0, Mnemonic::Arg::None },
-//    Mnemonic{ "CLC", 1, 0xF1, Mnemonic::Arg::None },
-//    Mnemonic{ "CMA", 1, 0xF4, Mnemonic::Arg::None },
-//    Mnemonic{ "CMC", 1, 0xF3, Mnemonic::Arg::None },
-//    Mnemonic{ "DAA", 1, 0xFB, Mnemonic::Arg::None },
-//    Mnemonic{ "DAC", 1, 0xF8, Mnemonic::Arg::None },
-//    Mnemonic{ "DCL", 1, 0xFD, Mnemonic::Arg::None },
-//    Mnemonic{ "FIM", 2, 0x20, Mnemonic::Arg::RegisterPairImmediate8 },
-//    Mnemonic{ "FIN", 1, 0x30, Mnemonic::Arg::RegisterPair },
-//    Mnemonic{ "IAC", 1, 0xF2, Mnemonic::Arg::None },
-//    Mnemonic{ "INC", 1, 0x60, Mnemonic::Arg::Register },
-//    Mnemonic{ "ISZ", 2, 0x70, Mnemonic::Arg::RegisterPairImmediate8 },
-//    Mnemonic{ "JCN", 2, 0x10, Mnemonic::Arg::ConditionImmediate8 },
-//    Mnemonic{ "JIN", 1, 0x31, Mnemonic::Arg::RegisterPair },
-//    Mnemonic{ "JMS", 2, 0x50, Mnemonic::Arg::Immediate12 },
-//    Mnemonic{ "JUN", 2, 0x40, Mnemonic::Arg::Immediate12 },
-//    Mnemonic{ "KBP", 1, 0xFC, Mnemonic::Arg::None },
-//    Mnemonic{ "LD",  1, 0xA0, Mnemonic::Arg::Register },
-//    Mnemonic{ "LDM", 1, 0xD0, Mnemonic::Arg::Immediate4 },
-//    Mnemonic{ "NOP", 1, 0x00, Mnemonic::Arg::None },
-//    Mnemonic{ "RAL", 1, 0xF5, Mnemonic::Arg::None },
-//    Mnemonic{ "RAR", 1, 0xF6, Mnemonic::Arg::None },
-//    Mnemonic{ "RD0", 1, 0xEC, Mnemonic::Arg::None },
-//    Mnemonic{ "RD1", 1, 0xED, Mnemonic::Arg::None },
-//    Mnemonic{ "RD2", 1, 0xEE, Mnemonic::Arg::None },
-//    Mnemonic{ "RD3", 1, 0xEF, Mnemonic::Arg::None },
-//    Mnemonic{ "RDM", 1, 0xE9, Mnemonic::Arg::None },
-//    Mnemonic{ "RDR", 1, 0xEA, Mnemonic::Arg::None },
-//    Mnemonic{ "SBM", 1, 0xE8, Mnemonic::Arg::None },
-//    Mnemonic{ "SRC", 1, 0x21, Mnemonic::Arg::RegisterPair },
-//    Mnemonic{ "STC", 1, 0xFA, Mnemonic::Arg::None },
-//    Mnemonic{ "SUB", 1, 0x90, Mnemonic::Arg::Register },
-//    Mnemonic{ "TCC", 1, 0xF7, Mnemonic::Arg::None },
-//    Mnemonic{ "TCS", 1, 0xF9, Mnemonic::Arg::None },
-//    Mnemonic{ "WMP", 1, 0xE1, Mnemonic::Arg::None },
-//    Mnemonic{ "WR0", 1, 0xE4, Mnemonic::Arg::None },
-//    Mnemonic{ "WR1", 1, 0xE5, Mnemonic::Arg::None },
-//    Mnemonic{ "WR2", 1, 0xE6, Mnemonic::Arg::None },
-//    Mnemonic{ "WR3", 1, 0xE7, Mnemonic::Arg::None },
-//    Mnemonic{ "WRM", 1, 0xE0, Mnemonic::Arg::None },
-//    Mnemonic{ "WRR", 1, 0xE2, Mnemonic::Arg::None },
-//    Mnemonic{ "XCH", 1, 0xB0, Mnemonic::Arg::Register }
-//};
-
-//constexpr std::optional<std::reference_wrapper<const Mnemonic>> find_mnemonic(std::string_view key) {
-//    for (auto& e : mnemonics) {
-//        if (e.key == key) {
-//            return std::cref(e);
-//        }
-//    }
-//    return std::nullopt;
-//}
-
-} // namespace
 
 Assembler40xx::Assembler40xx(std::string_view source) :
     m_source(source) {
@@ -134,38 +71,70 @@ Assembler40xx::Status Assembler40xx::assemble() {
 
     m_address = 0;
 
+    if (m_lines.empty()) {
+        m_logStream << "Warning[0]: source is empty.";
+    }
+
     for (auto& l : m_lines) {
         parseLine1stPass(l);
     }
 
-    // Remove line with size == 0 (origin and equate)
-    std::erase_if(m_lines, [](auto& e) { return e.size == 0; });
+    // Remove lines without instructions (origin and equate)
+    std::erase_if(m_lines, [](auto& e) { return !e.mnemonic.has_value(); });
 
     for (auto& l : m_lines) {
-        if (!l.isComplete) {
-            parseLine2ndPass(l);
-        }
+        parseLine2ndPass(l);
     }
 
-    std::stringstream hexStream;
+    std::ostringstream hexStream;
+    std::vector<std::pair<std::streampos, u8>> sizes;
+    u8 size = 0;
+    u8 checksum = 0;
     for (auto& l : m_lines) {
-        hexStream << ':';                               // start code
-        hexStream << "01";                              // byte count
-        hexStream << std::format("{:04X}", l.address);  // address
-        hexStream << "00";                              // record type
-        hexStream << std::format("{:02X}", l.bytes[0]); // data
-        hexStream << "FF";                              // checksum
+        if (size == 0) {
+            hexStream << ':';                              // start code
+            sizes.emplace_back(std::make_pair(hexStream.tellp(), to_u8(0)));
+            hexStream << "??";                             // byte count placeholder
+            hexStream << std::format("{:04X}", l.address); // address
+            hexStream << "00";                             // record type
+            checksum += l.address & 0xFF;
+            checksum += (l.address >> 8) & 0xFF;
+        }
+        size += l.mnemonic->size;
+        hexStream << std::format("{:02X}", l.bytes[0]); // data byte 0
+        checksum += l.bytes[0];
+        if (l.mnemonic->size > 1) {
+            hexStream << std::format("{:02X}", l.bytes[1]); // data byte 1
+            checksum += l.bytes[1];
+        }
+        if (size >= 0x08) {
+            checksum += size;
+            sizes.back().second = size;
+            size = 0;
+            checksum = ~checksum + 1;
+            hexStream << std::format("{:02X}", checksum); // checksum
+            hexStream << '\n';
+        }
+    }
+    if (size != 0) {
+        checksum += size;
+        sizes.back().second = size;
+        size = 0;
+        checksum = ~checksum + 1;
+        hexStream << std::format("{:02X}", checksum); // checksum
         hexStream << '\n';
     }
     hexStream << ":00000001FF";
     m_hex = hexStream.str();
 
-    return hasError ? Status::Error : Status::Success;
-}
+    for (auto& s : sizes) {
+        auto sizeStr = std::format("{:02X}", s.second);
+        m_hex.replace(static_cast<size_t>(s.first), 2, sizeStr);
+    }
 
-std::string Assembler40xx::getLog() const {
-    // TODO(Kostu): implement
-    return std::string();
+    m_log = m_logStream.str();
+
+    return hasError ? Status::Error : Status::Success;
 }
 
 void Assembler40xx::parseLine1stPass(Line& line) {
@@ -190,21 +159,8 @@ void Assembler40xx::parseLine1stPass(Line& line) {
         default: {
             auto maybeMnemonic = find_mnemonic(token);
             if (maybeMnemonic.has_value()) { // mnemonic
-                u16 size = maybeMnemonic->get().size;
-                m_address += size;
-                line.size = size;
-                line.bytes[0] = maybeMnemonic->get().byte;
-                switch (maybeMnemonic->get().arg) {
-                case Mnemonic::Arg::None:
-                    line.isComplete = true;
-                    break;
-                case Mnemonic::Arg::Immediate4: break;
-                case Mnemonic::Arg::Immediate12: break;
-                case Mnemonic::Arg::Register: break;
-                case Mnemonic::Arg::RegisterPair: break;
-                case Mnemonic::Arg::RegisterPairImmediate8: break;
-                case Mnemonic::Arg::ConditionImmediate8: break;
-                }
+                line.mnemonic = maybeMnemonic->get();
+                m_address += line.mnemonic->size;
 
                 pos = str.find_first_not_of(' ', pos);
                 if (pos != std::string_view::npos) {
@@ -214,7 +170,6 @@ void Assembler40xx::parseLine1stPass(Line& line) {
                 shouldBreak = true;
             }
             else { // SYM label for equate
-                std::cout << "test";
                 size_t equal = str.find_first_of('=');
                 if (equal == std::string_view::npos) {
                     // error!
@@ -240,43 +195,106 @@ void Assembler40xx::parseLine1stPass(Line& line) {
 }
 
 void Assembler40xx::parseLine2ndPass(Line& line) {
-    std::string_view str = line.argStr;
-    size_t blank = str.find_first_of(' ');
-    str = (blank != std::string_view::npos) ? str.substr(0, blank) : str;
-    [[maybe_unused]]u16 value = parseExpression(str);
+    size_t blank = line.argStr.find_first_of(' ');
+    bool hasTwoExpressions = blank != std::string_view::npos;
+    std::string_view str1 = (hasTwoExpressions) ? line.argStr.substr(0, blank) : line.argStr;
+    std::string_view str2 = (hasTwoExpressions) ? line.argStr.substr(blank) : "";
+
+    switch (line.mnemonic->arg) {
+    case Mnemonic::Arg::None:
+        if (!str1.empty() || !str2.empty()) {
+            // error! unexpeted argument
+            assert(false);
+        }
+        line.bytes[0] = line.mnemonic->byte;
+        break;
+    case Mnemonic::Arg::Immediate4: {
+        if (str1.empty()) {
+            // error! expected argument
+            assert(false);
+        }
+        if (!str2.empty()) {
+            // error! unexpected argument
+            assert(false);
+        }
+        u16 value = parseExpression(str1);
+        if ((value >> 4) > 0) {
+            // warning. argument truncated
+        }
+        line.bytes[0] = line.mnemonic->byte | (value & 0xF);
+    } break;
+    case Mnemonic::Arg::Immediate12:
+        assert(false);
+        break;
+    case Mnemonic::Arg::Register:
+        assert(false);
+        break;
+    case Mnemonic::Arg::RegisterPair:
+        assert(false);
+        break;
+    case Mnemonic::Arg::RegisterPairImmediate8:
+        assert(false);
+        break;
+    case Mnemonic::Arg::ConditionImmediate8:
+        assert(false);
+        break;
+    }
 }
 
 // TODO(Kostu): move to cpp only?
 u16 Assembler40xx::parseExpression(std::string_view str)
 {
-    size_t op = str.find_first_of("+-");
+    //size_t lastOp = 0;
+    size_t op = str.find_first_of("+-", 1);
     std::string_view token = (op != std::string_view::npos) ? str.substr(0, op) : str;
+    str = (op != std::string_view::npos) ? str.substr(op) : "";
 
     u16 value = 0;
-    if (std::isdigit(token.front())) {
-        int base = 10;
-        if (token.starts_with("0x") || token.starts_with("0X10")) {
-            base = 16;
-            token.remove_prefix(2);
-        }
-        else if (token.starts_with("0b") || token.starts_with("0B")) {
-            base = 2;
-            token.remove_prefix(2);
+    while (true) {
+        bool subtract = token.front() == '-';
+        if (token.front() == '-' || token.front() == '+') {
+            token.remove_prefix(1);
         }
 
-        auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), value, base);
-        if (ec != std::errc{}) {
-            // error!
-            assert(false);
-            return 0;
+        if (std::isdigit(token.front())) {
+            int base = 10;
+            if (token.starts_with("0x") || token.starts_with("0X10")) {
+                base = 16;
+                token.remove_prefix(2);
+            }
+            else if (token.starts_with("0b") || token.starts_with("0B")) {
+                base = 2;
+                token.remove_prefix(2);
+            }
+            else if (token.front() == '0') {
+                base = 8;
+            }
+
+            u16 parsedValue;
+            auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), parsedValue, base);
+            if (ec != std::errc{}) {
+                // error!
+                assert(false);
+                return 0;
+            }
+            value += subtract ? -parsedValue : parsedValue;
         }
-    }
-    else {
-        auto it = m_labels.find(token);
-        if (it == m_labels.end()) {
-            // error!
+        else {
+            auto it = m_labels.find(token);
+            if (it == m_labels.end()) {
+                // error!
+                assert(false);
+            }
+            value += subtract ? -it->second : it->second;
         }
-        value = it->second;
+
+        if (op != std::string_view::npos) {
+            op = str.find_first_of("+-", 1);
+            token = (op != std::string_view::npos) ? str.substr(0, op) : str;
+        }
+        else {
+            break;
+        }
     }
     
     return value;

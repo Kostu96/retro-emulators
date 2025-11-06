@@ -3,6 +3,7 @@
 
 #include <array>
 #include <optional>
+#include <sstream>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
@@ -17,7 +18,7 @@ public:
 
     Status assemble();
     std::string_view getHex() const { return m_hex; }
-    std::string getLog() const;
+    std::string_view getLog() const { return m_log; }
 private:
     struct Mnemonic {
         enum class Arg : u8 {
@@ -31,19 +32,19 @@ private:
         };
 
         std::string_view key;
-        u16 size;
+        u8 size;
         u8 byte;
         Arg arg;
     };
 
     struct Line {
+        std::optional<Mnemonic> mnemonic;
         std::string_view str;
         std::string_view argStr;
         u32 lineNumber = 0;
         u16 address = 0;
-        u16 size = 0;
         u8 bytes[2]{};
-        bool isComplete = false;
+        //bool isComplete = false;
     };
 
     void parseLine1stPass(Line& line);
@@ -54,6 +55,8 @@ private:
     std::vector<Line> m_lines;
     std::unordered_map<std::string_view, u16> m_labels;
     std::string m_hex;
+    std::ostringstream m_logStream;
+    std::string m_log;
     u16 m_address{};
     bool hasError = false;
 
