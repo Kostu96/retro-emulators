@@ -3,9 +3,23 @@
 #include <fstream>
 #include <limits>
 
-bool readFile(const char* filename, char* data, size_t& size, bool binary)
+std::string readFile(const char* filename)
 {
-    std::ifstream fin(filename, binary ? std::ios::binary : std::ios::in);
+    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    if (!file)
+        throw std::runtime_error("Failed to open file");
+
+    auto size = file.tellg();
+    std::string buffer(size, '\0');
+    file.seekg(0);
+    file.read(buffer.data(), size);
+    file.close();
+    return buffer;
+}
+
+bool readFileInto(const char* filename, char* data, size_t& size)
+{
+    std::ifstream fin(filename, std::ios::binary);
     if (!fin.is_open())
         return false;
 

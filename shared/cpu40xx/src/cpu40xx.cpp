@@ -1,4 +1,5 @@
 #include "cpu40xx/cpu40xx.hpp"
+#include "instruction_masks.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -19,59 +20,60 @@ void CPU40xx::clock() {
 
     switch (opcode >> 4)
     {
-    case 0x0: break;
-    case 0x1: JCN(opcode & 0xF); break;
-    case 0x2: (opcode & 1) ? SRC(opcode & 0xE) : FIM(opcode & 0xE); break;
-    case 0x3: (opcode & 1) ? JIN(opcode & 0xE) : FIN(opcode & 0xE); break;
-    case 0x4: JUN(opcode & 0xF); break;
-    case 0x5: JMS(opcode & 0xF); break;
-    case 0x6: INC(opcode & 0xF); break;
-    case 0x7: ISZ(opcode & 0xF); break;
-    case 0x8: ADD(opcode & 0xF); break;
-    case 0x9: SUB(opcode & 0xF); break;
-    case 0xA: LD(opcode & 0xF); break;
-    case 0xB: XCH(opcode & 0xF); break;
-    case 0xC: BBL(opcode & 0xF); break;
-    case 0xD: LDM(opcode & 0xF); break;
-    case 0xE:
+    case CPU40xxInstructionHighNibbleMasks::NOP: break;
+    case CPU40xxInstructionHighNibbleMasks::JCN: JCN(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::FIMorSRC: (opcode & 1) ? SRC(opcode & 0xE) : FIM(opcode & 0xE); break;
+    case CPU40xxInstructionHighNibbleMasks::FINorJIN: (opcode & 1) ? JIN(opcode & 0xE) : FIN(opcode & 0xE); break;
+    case CPU40xxInstructionHighNibbleMasks::JUN: JUN(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::JMS: JMS(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::INC: INC(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::ISZ: ISZ(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::ADD: ADD(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::SUB: SUB(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::LD: LD(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::XCH: XCH(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::BBL: BBL(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::LDM: LDM(opcode & 0xF); break;
+    case CPU40xxInstructionHighNibbleMasks::MemoryGroup:
         switch (opcode & 0xF)
         {
-        case 0x0: WRM(); break;
-        case 0x1: WMP(); break;
-        case 0x2: WRR(); break;
-        case 0x4: WRx(0); break;
-        case 0x5: WRx(1); break;
-        case 0x6: WRx(2); break;
-        case 0x7: WRx(3); break;
-        case 0x8: SBM(); break;
-        case 0x9: RDM(); break;
-        case 0xA: RDR(); break;
-        case 0xB: ADM(); break;
-        case 0xC: RDx(0); break;
-        case 0xD: RDx(1); break;
-        case 0xE: RDx(2); break;
-        case 0xF: RDx(3); break;
+        case CPU40xxInstructionLowNibbleMasks::WRM: WRM(); break;
+        case CPU40xxInstructionLowNibbleMasks::WMP: WMP(); break;
+        case CPU40xxInstructionLowNibbleMasks::WRR: WRR(); break;
+        case CPU40xxInstructionLowNibbleMasks::WPM: assert(false); break; // TODO(Kostu): WPM
+        case CPU40xxInstructionLowNibbleMasks::WR0: WRx(0); break;
+        case CPU40xxInstructionLowNibbleMasks::WR1: WRx(1); break;
+        case CPU40xxInstructionLowNibbleMasks::WR2: WRx(2); break;
+        case CPU40xxInstructionLowNibbleMasks::WR3: WRx(3); break;
+        case CPU40xxInstructionLowNibbleMasks::SBM: SBM(); break;
+        case CPU40xxInstructionLowNibbleMasks::RDM: RDM(); break;
+        case CPU40xxInstructionLowNibbleMasks::RDR: RDR(); break;
+        case CPU40xxInstructionLowNibbleMasks::ADM: ADM(); break;
+        case CPU40xxInstructionLowNibbleMasks::RD0: RDx(0); break;
+        case CPU40xxInstructionLowNibbleMasks::RD1: RDx(1); break;
+        case CPU40xxInstructionLowNibbleMasks::RD2: RDx(2); break;
+        case CPU40xxInstructionLowNibbleMasks::RD3: RDx(3); break;
         default:
             assert(false && "Unhandled instruction");
         }
         break;
-    case 0xF:
+    case CPU40xxInstructionHighNibbleMasks::AccumulatorGroup:
         switch (opcode & 0xF)
         {
-        case 0x0: CLB(); break;
-        case 0x1: CLC(); break;
-        case 0x2: IAC(); break;
-        case 0x3: CMC(); break;
-        case 0x4: CMA(); break;
-        case 0x5: RAL(); break;
-        case 0x6: RAR(); break;
-        case 0x7: TCC(); break;
-        case 0x8: DAC(); break;
-        case 0x9: TCS(); break;
-        case 0xA: STC(); break;
-        case 0xB: DAA(); break;
-        case 0xC: KBP(); break;
-        case 0xD: DCL(); break;
+        case CPU40xxInstructionLowNibbleMasks::CLB: CLB(); break;
+        case CPU40xxInstructionLowNibbleMasks::CLC: CLC(); break;
+        case CPU40xxInstructionLowNibbleMasks::IAC: IAC(); break;
+        case CPU40xxInstructionLowNibbleMasks::CMC: CMC(); break;
+        case CPU40xxInstructionLowNibbleMasks::CMA: CMA(); break;
+        case CPU40xxInstructionLowNibbleMasks::RAL: RAL(); break;
+        case CPU40xxInstructionLowNibbleMasks::RAR: RAR(); break;
+        case CPU40xxInstructionLowNibbleMasks::TCC: TCC(); break;
+        case CPU40xxInstructionLowNibbleMasks::DAC: DAC(); break;
+        case CPU40xxInstructionLowNibbleMasks::TCS: TCS(); break;
+        case CPU40xxInstructionLowNibbleMasks::STC: STC(); break;
+        case CPU40xxInstructionLowNibbleMasks::DAA: DAA(); break;
+        case CPU40xxInstructionLowNibbleMasks::KBP: KBP(); break;
+        case CPU40xxInstructionLowNibbleMasks::DCL: DCL(); break;
         default:
             assert(false && "Unhandled instruction");
         }

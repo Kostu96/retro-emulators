@@ -20,7 +20,7 @@ void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>&
         DisassemblyLine& line = output.back();
 
         line.address = to_u16(addr);
-        std::stringstream ss;
+        std::ostringstream ss;
         ss << std::uppercase << std::hex << std::setw(4) << std::setfill('0') << addr << ":  ";
         u8 byte = code[addr++];
         ss << std::hex << std::setw(2) << to_u16(byte) << ' ';

@@ -25,7 +25,7 @@ struct CPU6502Tests :
 
 TEST_F(CPU6502Tests, GivenROMFileWith6502FunctionalTestWhenExecutingUntilEndlessLoopThenIsSuccess) {
     size_t size = RAM_SIZE;
-    ASSERT_TRUE(readFile("test_files/6502/6502_functional_test.bin", reinterpret_cast<char*>(ram), size, true));
+    ASSERT_TRUE(readFileInto("test_files/6502/6502_functional_test.bin", reinterpret_cast<char*>(ram), size));
 
     cpu.setPC(0x0400);
 

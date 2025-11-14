@@ -5,7 +5,7 @@
 #include <cstring>
 
 struct CPU8080Tests :
-    public ::testing::Test {
+    ::testing::Test {
     static constexpr u16 ROM_SIZE = 0x10;
     static constexpr u16 RAM_SIZE = 0x10;
 

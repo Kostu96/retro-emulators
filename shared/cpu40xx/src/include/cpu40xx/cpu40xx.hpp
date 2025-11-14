@@ -2,12 +2,14 @@
 #include "utils/types.hpp"
 #include "utils/warnings.hpp"
 
+#include <array>
 #include <functional>
 #include <vector>
 
-class CPU40xx
-{
+class CPU40xx :
+    NonCopyable {
 public:
+BEGIN_ALLOW_ANON_STRUCTS
     struct State {
         std::vector<u8> regs;
         std::vector<u16> stack;
@@ -16,7 +18,16 @@ public:
         u8 SP : 3;
         u8 CY : 1;
         u8 test : 1;
+        union {
+            struct {
+                u8 cmdReg0 : 1;
+                u8 cmdReg1 : 1;
+                u8 cmdReg2 : 1;
+                u8 cmdReg3 : 1;
+            };
+        } cmdReg;
     };
+END_ALLOW_ANON_STRUCTS
 
     using ReadROMCallback = std::function<u8(u16)>;
     using ReadROMIOCallback = std::function<u8()>;
@@ -48,8 +59,6 @@ public:
     u16 getPC() const { return m_state.stack[m_state.SP]; }
 
     explicit CPU40xx(Mode mode);
-    CPU40xx(const CPU40xx&) = delete;
-    CPU40xx& operator=(const CPU40xx&) = delete;
 private:
     ReadROMCallback loadROM = nullptr;
     WriteU8Callback storeSRCReg = nullptr;
