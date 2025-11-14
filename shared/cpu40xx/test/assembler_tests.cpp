@@ -143,8 +143,8 @@ RD3
                         "Warning[1]: expression truncated to fit argument.\n" }
     ),
 
-    [](const testing::TestParamInfo<CPU40xxAssemblerParamTests::ParamType>& info) {
-        return std::string(info.param.name);
+    [](const testing::TestParamInfo<CPU40xxAssemblerParamTests::ParamType>& paramInfo) {
+        return std::string(paramInfo.param.name);
     }
 );
 
