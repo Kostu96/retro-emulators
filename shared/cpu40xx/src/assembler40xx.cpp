@@ -1,10 +1,11 @@
 #include "cpu40xx/assembler40xx.hpp"
+#include "instruction_masks.hpp"
 #include "utils/disassembly_line.hpp"
 
 #include <cassert>
 #include <charconv>
 #include <format>
-#include <iomanip>
+//#include <iomanip>
 
 Assembler40xx::Assembler40xx(std::string_view source) :
     m_source(source) {
@@ -72,7 +73,7 @@ Assembler40xx::Status Assembler40xx::assemble() {
     m_address = 0;
 
     if (m_lines.empty()) {
-        m_logStream << "Warning[0]: source is empty.";
+        m_logStream << "Warning[0]: source is empty.\n";
     }
 
     for (auto& l : m_lines) {
@@ -134,7 +135,7 @@ Assembler40xx::Status Assembler40xx::assemble() {
 
     m_log = m_logStream.str();
 
-    return hasError ? Status::Error : Status::Success;
+    return m_hasError ? Status::Error : Status::Success;
 }
 
 void Assembler40xx::parseLine1stPass(Line& line) {
@@ -144,8 +145,6 @@ void Assembler40xx::parseLine1stPass(Line& line) {
     while (true) {
         size_t pos = str.find_first_of(' ');
         std::string_view token = str.substr(0, pos);
-
-        //std::cout << "  [" << token << "]\n";
 
         char last = token.back();
         switch (last) {
@@ -173,6 +172,7 @@ void Assembler40xx::parseLine1stPass(Line& line) {
                 size_t equal = str.find_first_of('=');
                 if (equal == std::string_view::npos) {
                     // error!
+                    m_hasError = true;
                     assert(false);
                 }
                 size_t expStart = str.find_first_not_of(' ', equal + 1);
@@ -198,53 +198,90 @@ void Assembler40xx::parseLine2ndPass(Line& line) {
     size_t blank = line.argStr.find_first_of(' ');
     bool hasTwoExpressions = blank != std::string_view::npos;
     std::string_view str1 = (hasTwoExpressions) ? line.argStr.substr(0, blank) : line.argStr;
-    std::string_view str2 = (hasTwoExpressions) ? line.argStr.substr(blank) : "";
+    std::string_view str2 = (hasTwoExpressions) ? line.argStr.substr(blank + 1) : "";
 
     switch (line.mnemonic->arg) {
     case Mnemonic::Arg::None:
         if (!str1.empty() || !str2.empty()) {
             // error! unexpeted argument
+            m_hasError = true;
             assert(false);
         }
-        line.bytes[0] = line.mnemonic->byte;
         break;
-    case Mnemonic::Arg::Immediate4: {
+    case Mnemonic::Arg::Register:
+    case Mnemonic::Arg::RegisterPair:
+    case Mnemonic::Arg::Immediate4:
+    case Mnemonic::Arg::Immediate12:
         if (str1.empty()) {
             // error! expected argument
+            m_hasError = true;
             assert(false);
         }
         if (!str2.empty()) {
             // error! unexpected argument
+            m_hasError = true;
             assert(false);
         }
+        break;
+    case Mnemonic::Arg::RegisterImmediate8:
+    case Mnemonic::Arg::RegisterPairImmediate8:
+    case Mnemonic::Arg::ConditionImmediate8:
+        if (str1.empty()) {
+            // error! expected argument
+            m_hasError = true;
+            assert(false);
+        }
+        if (str2.empty()) {
+            // error! expected argument
+            m_hasError = true;
+            assert(false);
+        }
+        break;
+    }
+
+    if (m_hasError) return;
+
+    switch (line.mnemonic->arg) {
+    case Mnemonic::Arg::None:
+        line.bytes[0] = line.mnemonic->byte;
+        break;
+    case Mnemonic::Arg::Immediate4:
+    case Mnemonic::Arg::Register: {
         u16 value = parseExpression(str1);
         if ((value >> 4) > 0) {
-            // warning. argument truncated
+            m_logStream << "Warning[" << line.lineNumber << "]: expression truncated to fit argument.\n";
         }
         line.bytes[0] = line.mnemonic->byte | (value & 0xF);
     } break;
-    case Mnemonic::Arg::Immediate12:
-        assert(false);
-        break;
-    case Mnemonic::Arg::Register:
-        assert(false);
-        break;
-    case Mnemonic::Arg::RegisterPair:
-        assert(false);
-        break;
+    case Mnemonic::Arg::Immediate12: {
+        u16 value = parseExpression(str1);
+        line.bytes[0] = line.mnemonic->byte | (value >> 8);
+        line.bytes[1] = value & 0xFF;
+    } break;
+    case Mnemonic::Arg::RegisterPair: {
+        u16 value = parseExpression(str1);
+        if ((value >> 4) > 0) {
+            m_logStream << "Warning[" << line.lineNumber << "]: expression truncated to fit argument.\n";
+        }
+        if (value & 1) {
+            m_logStream << "Error[" << line.lineNumber << "]: invalid register pair index!\n";
+            m_hasError = true;
+        }
+        line.bytes[0] = line.mnemonic->byte | (value & 0xF);
+    } break;
+    case Mnemonic::Arg::RegisterImmediate8:
     case Mnemonic::Arg::RegisterPairImmediate8:
-        assert(false);
-        break;
-    case Mnemonic::Arg::ConditionImmediate8:
-        assert(false);
-        break;
+    case Mnemonic::Arg::ConditionImmediate8: {
+        u16 value1 = parseExpression(str1);
+        u16 value2 = parseExpression(str2);
+        line.bytes[0] = line.mnemonic->byte | (value1 & 0xF);
+        line.bytes[1] = value2 & 0xFF;
+    } break;
     }
 }
 
 // TODO(Kostu): move to cpp only?
-u16 Assembler40xx::parseExpression(std::string_view str)
-{
-    //size_t lastOp = 0;
+u16 Assembler40xx::parseExpression(std::string_view str) {
     size_t op = str.find_first_of("+-", 1);
     std::string_view token = (op != std::string_view::npos) ? str.substr(0, op) : str;
     str = (op != std::string_view::npos) ? str.substr(op) : "";
@@ -312,101 +349,112 @@ Assembler40xx::find_mnemonic(std::string_view key) {
 
 namespace ASM40xx {
 
-#define PRINT1 printBytes(ss, code, addr, 1, &byte)
-#define INST1(str) ss << "    " str
+#define PRINT1 printBytes(ss, code.data(), addr, 1, &byte)
 #define INSTR(str, reg) ss << "    " str " " << (reg)
 #define INST2(str) do { PRINT1; ss << " " str << std::setw(2) << to_u16(byte); } while(false)
-#define INST3(str, x) do { PRINT1; ss << " " str " " << to_u16(x) << ", " << std::setw(2) << to_u16(byte); } while(false)
 
-void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output) {
-        for (size_t addr = 0; addr < code_size; ) {
-            output.emplace_back();
-            DisassemblyLine& line = output.back();
+static inline void printNoArgInst(std::ostringstream& ss, std::string_view str) {
+    ss << "    " << str;
+}
 
-            line.address = to_u16(addr);
-            std::stringstream ss;
-            ss << std::uppercase << std::hex << std::setw(4) << std::setfill('0') << addr << ":  ";
-            u8 opcode = code[addr++];
-            ss << std::hex << std::setw(2) << to_u16(opcode) << ' ';
+static inline void print2ArgInst(std::ostringstream& ss, std::string_view str, u8 arg1) {
+    ss << std::format("    {} {:02X}", str, arg1);
+}
 
-            u8 byte;
-            switch (opcode >> 4)
+// TODO(Kostu): Make this right
+std::vector<DisassemblyLine> disassemble(std::span<const u8> code) {
+    std::vector<DisassemblyLine> output;
+    for (size_t addr = 0; addr < code.size(); ) {
+        output.emplace_back();
+        DisassemblyLine& line = output.back();
+
+        line.address = to_u16(addr);
+        std::ostringstream ss;
+        ss << std::format("{:04X}:  ", addr);
+        u8 opcode = code[addr++];
+        ss << std::format("{:02X} ", opcode);
+
+        u8 byte;
+        switch (opcode >> 4)
+        {
+        case CPU40xxInstructionHighNibbleMasks::NOP:
+            if (opcode & 0xF)
+                printNoArgInst(ss, "???");
+            else
+                printNoArgInst(ss, "NOP");
+            break;
+        case CPU40xxInstructionHighNibbleMasks::JCN: print2ArgInst(ss, "JCN", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::FIMorSRC:
+            if (opcode & 1)
+                INSTR("SRC", opcode & 0xE);
+            else
+                print2ArgInst(ss, "FIM", opcode & 0xE);
+            break;
+        case CPU40xxInstructionHighNibbleMasks::FINorJIN:
+            if (opcode & 1)
+                INSTR("JIN", opcode & 0xE);
+            else
+                INSTR("FIN", opcode & 0xE);
+            break;
+        case CPU40xxInstructionHighNibbleMasks::JUN: PRINT1; ss << std::format(" JUN {:03X}", to_u16(opcode & 0xF) << 8 | byte); break;
+        case CPU40xxInstructionHighNibbleMasks::JMS: PRINT1; ss << std::format(" JMS {:03X}", to_u16(opcode & 0xF) << 8 | byte); break;
+        case CPU40xxInstructionHighNibbleMasks::INC: INSTR("INC", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::ISZ: print2ArgInst(ss, "ISZ", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::ADD: INSTR("ADD", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::SUB: INSTR("SUB", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::LD: INSTR("LD ", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::XCH: INSTR("XCH", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::BBL: INSTR("BBL", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::LDM: INSTR("LDM", opcode & 0xF); break;
+        case CPU40xxInstructionHighNibbleMasks::MemoryGroup:
+            switch (opcode & 0xF)
             {
-            case 0x0:
-                if (opcode & 0xF)
-                    INST1("???");
-                else
-                    INST1("NOP");
-                break;
-            case 0x1: INST3("JCN", opcode & 0xF); break;
-            case 0x2:
-                if (opcode & 1)
-                    INSTR("SRC", (opcode & 0xE) / 2);
-                else
-                    INST3("FIM", (opcode & 0xE) / 2);
-                break;
-            case 0x3:
-                if (opcode & 1)
-                    INSTR("JIN", (opcode & 0xE) / 2);
-                else
-                    INSTR("FIN", (opcode & 0xE) / 2);
-                break;
-            case 0x4: PRINT1; ss << " JUN " << std::setw(3) << ((to_u16(opcode) & 0xF) << 8 | byte); break;
-            case 0x5: PRINT1; ss << " JMS " << std::setw(3) << ((to_u16(opcode) & 0xF) << 8 | byte); break;
-            case 0x6: INSTR("INC", opcode & 0xF); break;
-            case 0x7: INST3("ISZ", opcode & 0xF); break;
-            case 0x8: INSTR("ADD", opcode & 0xF); break;
-            case 0x9: INSTR("SUB", opcode & 0xF); break;
-            case 0xA: INSTR("LD ", opcode & 0xF); break;
-            case 0xB: INSTR("XCH", opcode & 0xF); break;
-            case 0xC: INSTR("BBL", opcode & 0xF); break;
-            case 0xD: INSTR("LDM", opcode & 0xF); break;
-            case 0xE:
-                switch (opcode & 0xF)
-                {
-                case 0x0: INST1("WRM"); break;
-                case 0x1: INST1("WMP"); break;
-                case 0x2: INST1("WRR"); break;
-                case 0x4: INST1("WR0"); break;
-                case 0x5: INST1("WR1"); break;
-                case 0x6: INST1("WR2"); break;
-                case 0x7: INST1("WR3"); break;
-                case 0x8: INST1("SBM"); break;
-                case 0x9: INST1("RDM"); break;
-                case 0xA: INST1("RDR"); break;
-                case 0xB: INST1("ADM"); break;
-                case 0xC: INST1("RD0"); break;
-                case 0xD: INST1("RD1"); break;
-                case 0xE: INST1("RD2"); break;
-                case 0xF: INST1("RD3"); break;
-                default: INST1("???");
-                }
-                break;
-            case 0xF:
-                switch (opcode & 0xF)
-                {
-                case 0x0: INST1("CLB"); break;
-                case 0x1: INST1("CLC"); break;
-                case 0x2: INST1("IAC"); break;
-                case 0x3: INST1("CMC"); break;
-                case 0x4: INST1("CMA"); break;
-                case 0x5: INST1("RAL"); break;
-                case 0x6: INST1("RAR"); break;
-                case 0x7: INST1("TCC"); break;
-                case 0x8: INST1("DAC"); break;
-                case 0x9: INST1("TCS"); break;
-                case 0xA: INST1("STC"); break;
-                case 0xB: INST1("DAA"); break;
-                case 0xC: INST1("KBP"); break;
-                case 0xD: INST1("DCL"); break;
-                default: INST1("???");
-                }
-                break;
-            default: INST1("???");
+            case CPU40xxInstructionLowNibbleMasks::WRM: printNoArgInst(ss, "WRM"); break;
+            case CPU40xxInstructionLowNibbleMasks::WMP: printNoArgInst(ss, "WMP"); break;
+            case CPU40xxInstructionLowNibbleMasks::WRR: printNoArgInst(ss, "WRR"); break;
+            case CPU40xxInstructionLowNibbleMasks::WPM: printNoArgInst(ss, "WPM"); break;
+            case CPU40xxInstructionLowNibbleMasks::WR0: printNoArgInst(ss, "WR0"); break;
+            case CPU40xxInstructionLowNibbleMasks::WR1: printNoArgInst(ss, "WR1"); break;
+            case CPU40xxInstructionLowNibbleMasks::WR2: printNoArgInst(ss, "WR2"); break;
+            case CPU40xxInstructionLowNibbleMasks::WR3: printNoArgInst(ss, "WR3"); break;
+            case CPU40xxInstructionLowNibbleMasks::SBM: printNoArgInst(ss, "SBM"); break;
+            case CPU40xxInstructionLowNibbleMasks::RDM: printNoArgInst(ss, "RDM"); break;
+            case CPU40xxInstructionLowNibbleMasks::RDR: printNoArgInst(ss, "RDR"); break;
+            case CPU40xxInstructionLowNibbleMasks::ADM: printNoArgInst(ss, "ADM"); break;
+            case CPU40xxInstructionLowNibbleMasks::RD0: printNoArgInst(ss, "RD0"); break;
+            case CPU40xxInstructionLowNibbleMasks::RD1: printNoArgInst(ss, "RD1"); break;
+            case CPU40xxInstructionLowNibbleMasks::RD2: printNoArgInst(ss, "RD2"); break;
+            case CPU40xxInstructionLowNibbleMasks::RD3: printNoArgInst(ss, "RD3"); break;
+            default: printNoArgInst(ss, "???");
             }
-
-            line.str = std::move(ss).str();
+            break;
+        case CPU40xxInstructionHighNibbleMasks::AccumulatorGroup:
+            switch (opcode & 0xF)
+            {
+            case CPU40xxInstructionLowNibbleMasks::CLB: printNoArgInst(ss, "CLB"); break;
+            case CPU40xxInstructionLowNibbleMasks::CLC: printNoArgInst(ss, "CLC"); break;
+            case CPU40xxInstructionLowNibbleMasks::IAC: printNoArgInst(ss, "IAC"); break;
+            case CPU40xxInstructionLowNibbleMasks::CMC: printNoArgInst(ss, "CMC"); break;
+            case CPU40xxInstructionLowNibbleMasks::CMA: printNoArgInst(ss, "CMA"); break;
+            case CPU40xxInstructionLowNibbleMasks::RAL: printNoArgInst(ss, "RAL"); break;
+            case CPU40xxInstructionLowNibbleMasks::RAR: printNoArgInst(ss, "RAR"); break;
+            case CPU40xxInstructionLowNibbleMasks::TCC: printNoArgInst(ss, "TCC"); break;
+            case CPU40xxInstructionLowNibbleMasks::DAC: printNoArgInst(ss, "DAC"); break;
+            case CPU40xxInstructionLowNibbleMasks::TCS: printNoArgInst(ss, "TCS"); break;
+            case CPU40xxInstructionLowNibbleMasks::STC: printNoArgInst(ss, "STC"); break;
+            case CPU40xxInstructionLowNibbleMasks::DAA: printNoArgInst(ss, "DAA"); break;
+            case CPU40xxInstructionLowNibbleMasks::KBP: printNoArgInst(ss, "KBP"); break;
+            case CPU40xxInstructionLowNibbleMasks::DCL: printNoArgInst(ss, "DCL"); break;
+            default: printNoArgInst(ss, "???");
+            }
+            break;
+        default: printNoArgInst(ss, "???");
         }
+
+        line.str = std::move(ss).str();
     }
+
+    return output;
+}
 
 } // namespace ASM40xx

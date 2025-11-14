@@ -3,6 +3,7 @@
 
 #include <array>
 #include <optional>
+#include <span>
 #include <sstream>
 #include <string_view>
 #include <unordered_map>
@@ -10,7 +11,8 @@
 
 struct DisassemblyLine;
 
-class Assembler40xx {
+class Assembler40xx :
+    NonCopyable {
 public:
     enum class Status { Success, Error };
 
@@ -23,10 +25,11 @@ private:
     struct Mnemonic {
         enum class Arg : u8 {
             None,
-            Immediate4,
-            Immediate12,
             Register,
             RegisterPair,
+            Immediate4,
+            Immediate12,
+            RegisterImmediate8,
             RegisterPairImmediate8,
             ConditionImmediate8
         };
@@ -44,7 +47,6 @@ private:
         u32 lineNumber = 0;
         u16 address = 0;
         u8 bytes[2]{};
-        //bool isComplete = false;
     };
 
     void parseLine1stPass(Line& line);
@@ -58,7 +60,7 @@ private:
     std::ostringstream m_logStream;
     std::string m_log;
     u16 m_address{};
-    bool hasError = false;
+    bool m_hasError = false;
 
     static constexpr std::array<Mnemonic, 46> s_mnemonics = {
         Mnemonic{ "ADD", 1, 0x80, Mnemonic::Arg::Register },
@@ -99,6 +101,7 @@ private:
         Mnemonic{ "TCC", 1, 0xF7, Mnemonic::Arg::None },
         Mnemonic{ "TCS", 1, 0xF9, Mnemonic::Arg::None },
         Mnemonic{ "WMP", 1, 0xE1, Mnemonic::Arg::None },
+        Mnemonic{ "WPM", 1, 0xE3, Mnemonic::Arg::None },
         Mnemonic{ "WR0", 1, 0xE4, Mnemonic::Arg::None },
         Mnemonic{ "WR1", 1, 0xE5, Mnemonic::Arg::None },
         Mnemonic{ "WR2", 1, 0xE6, Mnemonic::Arg::None },
@@ -113,5 +116,5 @@ private:
 
 namespace ASM40xx
 {
-void disassemble(const u8* code, size_t code_size, std::vector<DisassemblyLine>& output);
+std::vector<DisassemblyLine> disassemble(std::span<const u8> code);
 }

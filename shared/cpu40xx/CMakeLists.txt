@@ -5,6 +5,7 @@ add_device_library(TARGET_NAME ${CPU40XX_LIB_TARGET_NAME}
         CMakeLists.txt
         src/assembler40xx.cpp
         src/cpu40xx.cpp
+        src/instruction_masks.hpp
         src/include/cpu40xx/assembler40xx.hpp
         src/include/cpu40xx/cpu40xx.hpp
     INCLUDE_DIRS

@@ -55,3 +55,12 @@ template <typename T> inline constexpr f32 to_f32(T val) {
 template <typename T> inline constexpr f64 to_f64(T val) {
   return static_cast<f64>(val);
 }
+
+class NonCopyable {
+protected:
+    NonCopyable() = default;
+    ~NonCopyable() = default;
+
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable& operator=(const NonCopyable&) = delete;
+};

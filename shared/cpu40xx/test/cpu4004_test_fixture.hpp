@@ -6,8 +6,7 @@
 #include <functional>
 
 struct CPU4004Tests :
-    public ::testing::Test {
-
+    ::testing::Test {
     static constexpr u8 ROM_CHIPS_COUNT = 2;
     static constexpr u16 ROM_SIZE = ROM_CHIPS_COUNT * 0x100;
     static constexpr u8 RAM_BANKS_COUNT = 2; 

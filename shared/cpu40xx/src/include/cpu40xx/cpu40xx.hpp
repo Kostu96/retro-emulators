@@ -6,8 +6,8 @@
 #include <functional>
 #include <vector>
 
-class CPU40xx
-{
+class CPU40xx :
+    NonCopyable {
 public:
 BEGIN_ALLOW_ANON_STRUCTS
     struct State {
@@ -59,8 +59,6 @@ END_ALLOW_ANON_STRUCTS
     u16 getPC() const { return m_state.stack[m_state.SP]; }
 
     explicit CPU40xx(Mode mode);
-    CPU40xx(const CPU40xx&) = delete;
-    CPU40xx& operator=(const CPU40xx&) = delete;
 private:
     ReadROMCallback loadROM = nullptr;
     WriteU8Callback storeSRCReg = nullptr;

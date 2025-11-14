@@ -83,15 +83,15 @@ namespace ASM8008 {
         m_start = m_current;
         if (*m_current == '\0') return makeToken(Token::Type::EndOfSource);
 
-        if (isDigit(*m_current))
+        if (std::isdigit(*m_current))
         {
-            while (isDigit(*m_current) || isAlpha(*m_current)) m_current++;
+            while (std::isdigit(*m_current) || std::isalpha(*m_current)) m_current++;
             return numberToken();
         }
 
-        if (isAlpha(*m_current) || *m_current == '@' || *m_current == '?')
+        if (std::isalpha(*m_current) || *m_current == '@' || *m_current == '?')
         {
-            while (isAlpha(*m_current) || isDigit(*m_current)) m_current++;
+            while (std::isalpha(*m_current) || std::isdigit(*m_current)) m_current++;
 
             std::string_view str{ m_start, static_cast<size_t>(m_current - m_start) };
             Token::Type type;
