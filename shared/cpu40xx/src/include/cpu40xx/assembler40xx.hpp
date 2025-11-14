@@ -34,16 +34,16 @@ private:
             ConditionImmediate8
         };
 
-        std::string_view key;
-        u8 size;
-        u8 byte;
-        Arg arg;
+        std::string_view key{};
+        u8 size = 0;
+        u8 byte = 0;
+        Arg arg = Arg::None;
     };
 
     struct Line {
-        std::optional<Mnemonic> mnemonic;
-        std::string_view str;
-        std::string_view argStr;
+        std::optional<Mnemonic> mnemonic{};
+        std::string_view str{};
+        std::string_view argStr{};
         u32 lineNumber = 0;
         u16 address = 0;
         u8 bytes[2]{};
