@@ -15,6 +15,7 @@ Emulalators of microcomputers, game consoles and arcades.
  - CHIP-8 Interpreter - WIP
  - Game Boy (DMG) - WIP
  - Space Invaders Arcade - WIP
+ - [Custom Intel 4004 4-Function Calculator](emulators/calc4004/README.md)
 
 ### CPUs:
  - Intel 4004/4040
