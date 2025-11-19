@@ -4,6 +4,10 @@ project(emulators LANGUAGES CXX)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+enable_testing()
+find_package(GTest REQUIRED)
+include(GoogleTest)
+
 function(set_target_warnings TARGET_NAME)
     option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
     set(MSVC_WARNINGS
@@ -86,9 +90,12 @@ function(add_device_test)
     gtest_discover_tests(${PARSED_TARGET_NAME})
 endfunction()
 
-enable_testing()
-find_package(GTest REQUIRED)
-include(GoogleTest)
+function(add_emulator_app)
+    cmake_parse_arguments(PARSED "" "TARGET_NAME" "SOURCES;LIBRARIES" ${ARGN})
+    add_executable(${PARSED_TARGET_NAME} ${PARSED_SOURCES})
+    set_target_warnings(${PARSED_TARGET_NAME})
+    target_link_libraries(${PARSED_TARGET_NAME} PUBLIC ${PARSED_LIBRARIES})
+endfunction()
 
 add_subdirectory(shared/utils)
 
@@ -109,5 +116,12 @@ set_target_properties(
     FOLDER devices
 )
 
-#add_subdirectory(third_party)
+add_subdirectory(shared/emu)
 
+add_subdirectory(emulators/calc4004)
+
+set_target_properties(
+    calc4004
+    PROPERTIES
+    FOLDER emulators
+)
