@@ -5,7 +5,6 @@
 #include <cassert>
 #include <charconv>
 #include <format>
-//#include <iomanip>
 
 Assembler40xx::Assembler40xx(std::string_view source) :
     m_source(source) {
@@ -59,11 +58,13 @@ Assembler40xx::Status Assembler40xx::assemble() {
         if (lineLength > 0) {
             auto line = m_source.substr(start, lineLength);
             size_t firstNonBlank = line.find_first_not_of(' ');
-            size_t lastNonBlank = line.find_last_not_of(' ');
-            m_lines.emplace_back(Line{
-                .str = line.substr(firstNonBlank, lastNonBlank - firstNonBlank + 1),
-                .lineNumber = lineNumber
-            });
+            if (firstNonBlank != std::string_view::npos) {
+                size_t lastNonBlank = line.find_last_not_of(' ');
+                m_lines.emplace_back(Line{
+                    .str = line.substr(firstNonBlank, lastNonBlank - firstNonBlank + 1),
+                    .lineNumber = lineNumber
+                });
+            }
         }
 
         start = endLine + 1;
@@ -80,11 +81,10 @@ Assembler40xx::Status Assembler40xx::assemble() {
         parseLine1stPass(l);
     }
 
-    // Remove lines without instructions (origin and equate)
-    std::erase_if(m_lines, [](auto& e) { return !e.mnemonic.has_value(); });
-
     for (auto& l : m_lines) {
-        parseLine2ndPass(l);
+        if (l.type == Line::Type::Instruction) {
+            parseLine2ndPass(l);
+        }
     }
 
     std::ostringstream hexStream;
@@ -101,10 +101,10 @@ Assembler40xx::Status Assembler40xx::assemble() {
             checksum += l.address & 0xFF;
             checksum += (l.address >> 8) & 0xFF;
         }
-        size += l.mnemonic->size;
+        size += l.type == Line::Type::Instruction ? l.instruction.mnemonic->size : 1;
         hexStream << std::format("{:02X}", l.bytes[0]); // data byte 0
         checksum += l.bytes[0];
-        if (l.mnemonic->size > 1) {
+        if (l.type == Line::Type::Instruction && l.instruction.mnemonic->size > 1) {
             hexStream << std::format("{:02X}", l.bytes[1]); // data byte 1
             checksum += l.bytes[1];
         }
@@ -115,6 +115,7 @@ Assembler40xx::Status Assembler40xx::assemble() {
             checksum = ~checksum + 1;
             hexStream << std::format("{:02X}", checksum); // checksum
             hexStream << '\n';
+            checksum = 0;
         }
     }
     if (size != 0) {
@@ -124,6 +125,7 @@ Assembler40xx::Status Assembler40xx::assemble() {
         checksum = ~checksum + 1;
         hexStream << std::format("{:02X}", checksum); // checksum
         hexStream << '\n';
+        checksum = 0;
     }
     hexStream << ":00000001FF";
     m_hex = hexStream.str();
@@ -153,32 +155,38 @@ void Assembler40xx::parseLine1stPass(Line& line) {
         } break;
         case '=': {
             // parse expression and set m_address
+            assert(false);
             shouldBreak = true;
         } break;
         default: {
             auto maybeMnemonic = find_mnemonic(token);
             if (maybeMnemonic.has_value()) { // mnemonic
-                line.mnemonic = maybeMnemonic->get();
-                m_address += line.mnemonic->size;
+                line.instruction.mnemonic = maybeMnemonic->get();
+                m_address += line.instruction.mnemonic->size;
 
                 pos = str.find_first_not_of(' ', pos);
                 if (pos != std::string_view::npos) {
-                    line.argStr = str.substr(pos);
+                    line.instruction.argStr = str.substr(pos);
                 }
 
                 shouldBreak = true;
             }
-            else { // SYM label for equate
+            else { // SYM label for equate or data statement
                 size_t equal = str.find_first_of('=');
                 if (equal == std::string_view::npos) {
-                    // error!
-                    m_hasError = true;
-                    assert(false);
+                    // data statement
+                    m_address += 1;
+                    u16 value = parseExpression(str, line.address);
+                    line.type = Line::Type::Data;
+                    line.bytes[0] = value & 0xFF; // TODO(Kostu): truncation warning
+                    shouldBreak = true;
                 }
-                size_t expStart = str.find_first_not_of(' ', equal + 1);
-                std::string_view expStr = str.substr(expStart);
-                u16 value = parseExpression(expStr);
-                m_labels.emplace(token, value);
+                else {
+                    size_t expStart = str.find_first_not_of(' ', equal + 1);
+                    std::string_view expStr = str.substr(expStart);
+                    u16 value = parseExpression(expStr, line.address);
+                    m_labels.emplace(token, value);
+                }
             }
         } break;
         }
@@ -195,12 +203,14 @@ void Assembler40xx::parseLine1stPass(Line& line) {
 }
 
 void Assembler40xx::parseLine2ndPass(Line& line) {
-    size_t blank = line.argStr.find_first_of(' ');
-    bool hasTwoExpressions = blank != std::string_view::npos;
-    std::string_view str1 = (hasTwoExpressions) ? line.argStr.substr(0, blank) : line.argStr;
-    std::string_view str2 = (hasTwoExpressions) ? line.argStr.substr(blank + 1) : "";
+    assert(line.type == Line::Type::Instruction);
 
-    switch (line.mnemonic->arg) {
+    size_t blank = line.instruction.argStr.find_first_of(' ');
+    bool hasTwoExpressions = blank != std::string_view::npos;
+    std::string_view str1 = (hasTwoExpressions) ? line.instruction.argStr.substr(0, blank) : line.instruction.argStr;
+    std::string_view str2 = (hasTwoExpressions) ? line.instruction.argStr.substr(blank + 1) : "";
+
+    switch (line.instruction.mnemonic->arg) {
     case Mnemonic::Arg::None:
         if (!str1.empty() || !str2.empty()) {
             // error! unexpeted argument
@@ -241,25 +251,25 @@ void Assembler40xx::parseLine2ndPass(Line& line) {
 
     if (m_hasError) return;
 
-    switch (line.mnemonic->arg) {
+    switch (line.instruction.mnemonic->arg) {
     case Mnemonic::Arg::None:
-        line.bytes[0] = line.mnemonic->byte;
+        line.bytes[0] = line.instruction.mnemonic->byte;
         break;
     case Mnemonic::Arg::Immediate4:
     case Mnemonic::Arg::Register: {
-        u16 value = parseExpression(str1);
+        u16 value = parseExpression(str1, line.address);
         if ((value >> 4) > 0) {
             m_logStream << "Warning[" << line.lineNumber << "]: expression truncated to fit argument.\n";
         }
-        line.bytes[0] = line.mnemonic->byte | (value & 0xF);
+        line.bytes[0] = line.instruction.mnemonic->byte | (value & 0xF);
     } break;
     case Mnemonic::Arg::Immediate12: {
-        u16 value = parseExpression(str1);
-        line.bytes[0] = line.mnemonic->byte | (value >> 8);
+        u16 value = parseExpression(str1, line.address);
+        line.bytes[0] = line.instruction.mnemonic->byte | (value >> 8);
         line.bytes[1] = value & 0xFF;
     } break;
     case Mnemonic::Arg::RegisterPair: {
-        u16 value = parseExpression(str1);
+        u16 value = parseExpression(str1, line.address);
         if ((value >> 4) > 0) {
             m_logStream << "Warning[" << line.lineNumber << "]: expression truncated to fit argument.\n";
         }
@@ -267,21 +277,21 @@ void Assembler40xx::parseLine2ndPass(Line& line) {
             m_logStream << "Error[" << line.lineNumber << "]: invalid register pair index!\n";
             m_hasError = true;
         }
-        line.bytes[0] = line.mnemonic->byte | (value & 0xF);
+        line.bytes[0] = line.instruction.mnemonic->byte | (value & 0xF);
     } break;
     case Mnemonic::Arg::RegisterImmediate8:
     case Mnemonic::Arg::RegisterPairImmediate8:
     case Mnemonic::Arg::ConditionImmediate8: {
-        u16 value1 = parseExpression(str1);
-        u16 value2 = parseExpression(str2);
-        line.bytes[0] = line.mnemonic->byte | (value1 & 0xF);
+        u16 value1 = parseExpression(str1, line.address);
+        u16 value2 = parseExpression(str2, line.address);
+        line.bytes[0] = line.instruction.mnemonic->byte | (value1 & 0xF);
         line.bytes[1] = value2 & 0xFF;
     } break;
     }
 }
 
 // TODO(Kostu): move to cpp only?
-u16 Assembler40xx::parseExpression(std::string_view str) {
+u16 Assembler40xx::parseExpression(std::string_view str, u16 current_address) {
     size_t op = str.find_first_of("+-", 1);
     std::string_view token = (op != std::string_view::npos) ? str.substr(0, op) : str;
     str = (op != std::string_view::npos) ? str.substr(op) : "";
@@ -319,10 +329,17 @@ u16 Assembler40xx::parseExpression(std::string_view str) {
         else {
             auto it = m_labels.find(token);
             if (it == m_labels.end()) {
-                // error!
-                assert(false);
+                if (token == "*") {
+                    value += subtract ? -current_address : current_address;
+                }
+                else {
+                    // error!
+                    assert(false);
+                }
             }
-            value += subtract ? -it->second : it->second;
+            else {
+                value += subtract ? -it->second : it->second;
+            }
         }
 
         if (op != std::string_view::npos) {

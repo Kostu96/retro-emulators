@@ -7,7 +7,7 @@ std::string readFile(const char* filename)
 {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file)
-        throw std::runtime_error("Failed to open file");
+        throw std::runtime_error("Failed to open file!");
 
     auto size = file.tellg();
     std::string buffer(size, '\0');

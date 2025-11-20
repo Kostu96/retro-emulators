@@ -5,6 +5,13 @@ namespace calc4004 {
 
 constexpr s64 INSTRUCTION_TIME = 10800; // nanoseconds
 
+class SR4003 {
+public:
+    SR4003() = default;
+private:
+    u16 value_ : 10;
+};
+
 class Emulator {
 public:
     Emulator();
@@ -23,6 +30,7 @@ private:
     void write_RAM_data(u8 cm_ram, u8 value);
     u8 read_RAM_status(u8 cm_ram, u8 char_idx);
     void write_RAM_status(u8 cm_ram, u8 char_idx, u8 value);
+    void write_RAM_output(u8 cm_ram, u8 value);
 
     CPU40xx cpu_;
     u8 ROM_[ROM_SIZE]{};

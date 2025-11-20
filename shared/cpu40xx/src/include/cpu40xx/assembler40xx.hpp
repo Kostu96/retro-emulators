@@ -41,17 +41,24 @@ private:
     };
 
     struct Line {
-        std::optional<Mnemonic> mnemonic{};
+        enum class Type : u8 { Origin, Data, Instruction };
+
         std::string_view str{};
-        std::string_view argStr{};
+        union {
+            struct {
+                std::optional<Mnemonic> mnemonic{};
+                std::string_view argStr{};
+            } instruction;
+        };
         u32 lineNumber = 0;
         u16 address = 0;
         u8 bytes[2]{};
+        Type type = Type::Instruction;
     };
 
     void parseLine1stPass(Line& line);
     void parseLine2ndPass(Line& line);
-    u16 parseExpression(std::string_view str);
+    u16 parseExpression(std::string_view str, u16 current_address);
 
     std::string_view m_source;
     std::vector<Line> m_lines;

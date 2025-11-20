@@ -14,7 +14,7 @@ protected:
         
         while (time_accumulator_ >= calc4004::INSTRUCTION_TIME) {
             time_accumulator_ -= calc4004::INSTRUCTION_TIME;
-            //emulator_.clock();
+            emulator_.clock();
         }
     }
 private:
