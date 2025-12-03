@@ -1,8 +1,12 @@
 #define SDL_MAIN_USE_CALLBACKS
 #include "emu/application.hpp"
+#include "emu/renderer_2d.hpp"
 
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
+
+#include <iostream>
+#include <print>
 
 namespace emu {
 
@@ -11,18 +15,12 @@ constexpr u16 SUPERSAMPLE_SCALE = 2;
 
 Application::Application(const Properties& properties) :
     last_time_(clock_.now()),
-    properties_(properties) {}
+    properties_(properties) {
 
-Application::~Application() {
-    SDL_DestroyWindow(window_);
-}
-
-// TODO(Kostu):: move to contructor, exceptions
-bool Application::start() {
     SDL_SetHint(SDL_HINT_RENDER_LINE_METHOD, "3");
     SDL_Renderer* renderer;
     if (!SDL_CreateWindowAndRenderer("calc4004", properties_.window_width, properties_.window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY, &window_, &renderer)) {
-        return false;
+        throw std::runtime_error("Could not create SDL window and renderer!");
     }
 
     renderer2d_ = std::make_unique<Renderer2D>(renderer,
@@ -31,7 +29,10 @@ bool Application::start() {
             .window_height = properties_.window_height,
             .scale = SUPERSAMPLE_SCALE
         });
-    return true;
+}
+
+Application::~Application() {
+    SDL_DestroyWindow(window_);
 }
 
 void Application::update() {
@@ -47,17 +48,20 @@ void Application::update() {
 } // namespace emu
 
 extern SDL_AppResult SDL_AppInit(void** appstate, int /*argc*/, char** /*argv*/) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    try {
+        if (!SDL_Init(SDL_INIT_VIDEO)) {
+            throw std::runtime_error("Could not initialize SDL!");
+        }
+
+        emu::Application* app = create_application();
+        *appstate = app;
+        return SDL_APP_CONTINUE;
+    }
+    catch (const std::exception& e) {
+        std::println(std::cerr, "{}", e.what());
+
         return SDL_APP_FAILURE;
     }
-
-    emu::Application* app = create_application();
-    *appstate = app;
-    if (!app->start()) {
-        return SDL_APP_FAILURE;
-    }
-
-    return SDL_APP_CONTINUE;
 }
 
 extern void SDL_AppQuit(void* appstate, SDL_AppResult /*result*/) {

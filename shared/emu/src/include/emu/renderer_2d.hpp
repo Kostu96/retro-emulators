@@ -8,7 +8,6 @@ struct SDL_Texture;
 
 namespace emu {
 
-// TODO(Kostu): move this somewhere
 struct Color {
     u8 r, g, b, a;
 
@@ -26,6 +25,8 @@ struct Vec2f {
     constexpr Vec2f(float x_, float y_) : x(x_), y(y_) {}
 };
 
+class Texture;
+
 class Renderer2D :
     NonCopyable
 {
@@ -42,8 +43,11 @@ public:
     void begin_frame(Color clear_color = { 0, 0, 0, 255 }) const;
     void end_frame() const;
 
-    void fill_rect(Vec2f position, Vec2f size, Color color, bool lines_only = false) const;
-    void fill_geometry(std::span<const Vec2f> positions, std::span<const int> indices, Vec2f offset, float scale, Color color) const;
+    void draw_rect(Vec2f position, Vec2f size, Color color, bool fill = true) const;
+    void draw_texture(const Texture& texture, Vec2f offset) const;
+    void draw_geometry(std::span<const Vec2f> positions, std::span<const int> indices, Vec2f offset, float scale, Color color) const;
+
+    Texture create_texture(const char* filename) const;
 private:
     SDL_Renderer* renderer_;
     const Properties properties_;

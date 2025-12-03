@@ -1,4 +1,5 @@
 #include "emu/renderer_2d.hpp"
+#include "emu/texture.hpp"
 
 #include <SDL3/SDL.h>
 
@@ -16,6 +17,8 @@ const Color Color::White{ 255, 255, 255, 255 };
 Renderer2D::Renderer2D(SDL_Renderer* renderer, const Properties& properties) :
     renderer_(renderer),
     properties_(properties) {
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
     SDL_SetRenderLogicalPresentation(renderer_, properties_.window_width, properties_.window_height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     const u16 render_width = properties_.scale * properties_.window_width;
@@ -45,36 +48,45 @@ void Renderer2D::end_frame() const {
     SDL_RenderPresent(renderer_);
 }
 
-void Renderer2D::fill_rect(Vec2f position, Vec2f size, Color color, bool lines_only) const {
+void Renderer2D::draw_rect(Vec2f position, Vec2f size, Color color, bool fill) const {
     SDL_SetRenderDrawColor(renderer_, color.r, color.g, color.b, color.a);
     const SDL_FRect rect{
         .x = position.x, .y = position.y,
         .w = size.x, .h = size.y
     };
-    if (lines_only) {
-        SDL_RenderRect(renderer_, &rect);
+    if (fill) {
+        SDL_RenderFillRect(renderer_, &rect);
     }
     else {
-        SDL_RenderFillRect(renderer_, &rect);
+        SDL_RenderRect(renderer_, &rect);
     }
 }
 
-void Renderer2D::fill_geometry(std::span<const Vec2f> positions, std::span<const int> indices, Vec2f offset, float scale, Color color) const {
+void Renderer2D::draw_texture(const Texture& texture, Vec2f offset) const {
+    const SDL_FRect rect = { offset.x, offset.y, to_f32(texture.width_), to_f32(texture.height_) };
+    SDL_RenderTexture(renderer_, texture.handle_, nullptr, &rect);
+}
+
+void Renderer2D::draw_geometry(std::span<const Vec2f> positions, std::span<const int> indices, Vec2f offset, float scale, Color color) const {
     std::vector<SDL_Vertex> vertices(positions.size());
     std::transform(cbegin(positions), cend(positions), begin(vertices),
         [offset, scale, color](Vec2f position) {
             SDL_Vertex vertex{};
             vertex.position.x = position.x * scale + offset.x;
             vertex.position.y = position.y * scale + offset.y;
-            vertex.color.r = color.r;
-            vertex.color.g = color.g;
-            vertex.color.b = color.b;
-            vertex.color.a = color.a;
+            vertex.color.r = color.r / 255.f;
+            vertex.color.g = color.g / 255.f;
+            vertex.color.b = color.b / 255.f;
+            vertex.color.a = color.a / 255.f;
             return vertex;
         }
     );
 
     SDL_RenderGeometry(renderer_, nullptr, vertices.data(), static_cast<int>(vertices.size()), indices.data(), static_cast<int>(indices.size()));
+}
+
+Texture Renderer2D::create_texture(const char* filename) const {
+    return Texture(renderer_, filename);
 }
 
 }

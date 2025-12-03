@@ -2,6 +2,8 @@
 #include "emulator.hpp"
 
 #include <emu/application.hpp>
+#include <emu/renderer_2d.hpp>
+#include <emu/texture.hpp>
 
 #include <array>
 #include <cmath>
@@ -13,6 +15,8 @@ using emu::Color;
 
 constexpr u16 WINDOW_WIDTH = 640;
 constexpr u16 WINDOW_HEIGHT = 640;
+
+constexpr Color DimmedRed{ 255, 0, 0, 75 };
 
 struct LEDSegmentGeometry {
     static constexpr int max_num_positions = 6;
@@ -184,7 +188,33 @@ public:
         Application(Application::Properties{
             .window_width = WINDOW_WIDTH,
             .window_height = WINDOW_HEIGHT
-        }) { }
+        }) {
+        const emu::Renderer2D& renderer = getRenderer();
+        texture_[0] = renderer.create_texture("data/textures/button_mr.png");
+        texture_[1] = renderer.create_texture("data/textures/button_mc.png");
+        texture_[2] = renderer.create_texture("data/textures/button_ce.png");
+        texture_[3] = renderer.create_texture("data/textures/button_ac.png");
+        texture_[4] = renderer.create_texture("data/textures/button_m_plus.png");
+        texture_[5] = renderer.create_texture("data/textures/button_m_minus.png");
+        texture_[6] = renderer.create_texture("data/textures/button_percent.png");
+        texture_[7] = renderer.create_texture("data/textures/button_sqrt.png");
+        texture_[8] = renderer.create_texture("data/textures/button_7.png");
+        texture_[9] = renderer.create_texture("data/textures/button_8.png");
+        texture_[10] = renderer.create_texture("data/textures/button_9.png");
+        texture_[11] = renderer.create_texture("data/textures/button_divide.png");
+        texture_[12] = renderer.create_texture("data/textures/button_4.png");
+        texture_[13] = renderer.create_texture("data/textures/button_5.png");
+        texture_[14] = renderer.create_texture("data/textures/button_6.png");
+        texture_[15] = renderer.create_texture("data/textures/button_cross.png");
+        texture_[16] = renderer.create_texture("data/textures/button_1.png");
+        texture_[17] = renderer.create_texture("data/textures/button_2.png");
+        texture_[18] = renderer.create_texture("data/textures/button_3.png");
+        texture_[19] = renderer.create_texture("data/textures/button_minus.png");
+        texture_[20] = renderer.create_texture("data/textures/button_0.png");
+        texture_[21] = renderer.create_texture("data/textures/button_period.png");
+        texture_[22] = renderer.create_texture("data/textures/button_equals.png");
+        texture_[23] = renderer.create_texture("data/textures/button_plus.png");
+    }
 protected:
     void on_update(s64 delta_time) override {
         time_accumulator_ += delta_time;
@@ -204,7 +234,7 @@ protected:
         constexpr int display_padding = 8;
 
         // display background
-        renderer.fill_rect(
+        renderer.draw_rect(
             Vec2f{ display_margin - display_padding, display_margin - display_padding },
             Vec2f{ led_width * num_leds + display_spacing * (num_leds - 1) + display_padding * 2,
                    led_height + display_padding * 2
@@ -217,28 +247,43 @@ protected:
 
         for (int i = 0; i < num_leds; i++) {
 #if 0 // debug display outline
-            renderer.fill_rect(
+            renderer.draw_rect(
                 Vec2f{ to_f32(display_margin + i * (led_width + display_spacing)), display_margin },
                 Vec2f{ led_width, led_height },
                 Color{ 10, 220, 40, 255 },
-                true
+                false
             );
 #endif
-            renderer.fill_geometry(a_segment.positions, a_segment.indices, offset, scale, Color::Red);
-            renderer.fill_geometry(b_segment.positions, b_segment.indices, offset, scale, Color::Red);
-            renderer.fill_geometry(c_segment.positions, c_segment.indices, offset, scale, Color::Red);
-            renderer.fill_geometry(d_segment.positions, d_segment.indices, offset, scale, Color::Red);
-            renderer.fill_geometry(e_segment.positions, e_segment.indices, offset, scale, Color::Red);
-            renderer.fill_geometry(f_segment.positions, f_segment.indices, offset, scale, Color::Red);
-            renderer.fill_geometry(g_segment.positions, g_segment.indices, offset, scale, Color::Red);
-            renderer.fill_geometry(dot.positions, dot.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(a_segment.positions, a_segment.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(b_segment.positions, b_segment.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(c_segment.positions, c_segment.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(d_segment.positions, d_segment.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(e_segment.positions, e_segment.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(f_segment.positions, f_segment.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(g_segment.positions, g_segment.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(dot.positions, dot.indices, offset, scale, Color::Red);
 
             offset.x += led_width + display_spacing;
+        }
+
+        constexpr float keyboard_x_offset = 130.f;
+        offset = { keyboard_x_offset, 150.f };
+        for (int y = 0; y < 6; y++) {
+            for (int x = 0; x < 4; x++) {
+                renderer.draw_texture(texture_[y * 4 + x], offset);
+
+                offset.x += 100.f;
+            }
+
+            offset.x = keyboard_x_offset;
+            offset.y += 70.f;
         }
     }
 private:
     calc4004::Emulator emulator_;
     s64 time_accumulator_ = 0; // nanoseconds
+
+    std::array<emu::Texture, 24> texture_;
 };
 
 } // namespace calc4004

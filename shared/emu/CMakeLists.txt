@@ -6,8 +6,12 @@ add_library(${EMU_LIB_TARGET_NAME} STATIC
     CMakeLists.txt
     src/application.cpp
     src/renderer_2d.cpp
+    src/texture.cpp
+    src/stb/stb_image.cpp
     src/include/emu/renderer_2d.hpp
     src/include/emu/application.hpp
+    src/include/emu/texture.hpp
+    src/include/stb/stb_image.h
 )
 
 set_target_warnings(${EMU_LIB_TARGET_NAME})

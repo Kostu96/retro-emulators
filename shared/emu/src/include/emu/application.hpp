@@ -1,12 +1,12 @@
 #pragma once
-#include "emu/renderer_2d.hpp"
-
 #include <utils/types.hpp>
 #include <chrono>
 
 struct SDL_Window;
 
 namespace emu {
+
+class Renderer2D;
 
 class Application :
     NonCopyable {
