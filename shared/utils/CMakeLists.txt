@@ -14,6 +14,10 @@ add_library(${UTILS_LIB_TARGET_NAME} STATIC
     src/include/utils/warnings.hpp
 )
 
+set_target_warnings(${UTILS_LIB_TARGET_NAME})
+
+target_compile_features(${UTILS_LIB_TARGET_NAME} PUBLIC cxx_std_23)
+
 target_include_directories(${UTILS_LIB_TARGET_NAME} PUBLIC
     src/include
 )

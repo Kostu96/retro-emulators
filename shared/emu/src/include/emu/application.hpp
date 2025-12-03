@@ -1,31 +1,39 @@
 #pragma once
+#include "emu/renderer_2d.hpp"
+
 #include <utils/types.hpp>
 #include <chrono>
 
 struct SDL_Window;
-struct SDL_Renderer;
-struct SDL_Texture;
 
 namespace emu {
 
-class Application {
+class Application :
+    NonCopyable {
 public:
-    Application();
-    virtual ~Application() = default;
+    struct Properties {
+        u16 window_width;
+        u16 window_height;
+    };
+
+    explicit Application(const Properties& properties);
+    virtual ~Application();
 
     bool start();
 
     void update();
 protected:
+    const Renderer2D& getRenderer() const { return *renderer2d_.get(); }
+
     virtual void on_event() {}
     virtual void on_update(s64 /*delta_time*/) {}
 private:
     std::chrono::steady_clock clock_;
     std::chrono::steady_clock::time_point last_time_;
 
+    const Properties properties_;
+    std::unique_ptr<Renderer2D> renderer2d_;
     SDL_Window* window_ = nullptr;
-    SDL_Renderer* renderer_ = nullptr;
-    SDL_Texture* render_texture_ = nullptr;
 };
 
 } // namespace emu

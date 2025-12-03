@@ -8,8 +8,13 @@ constexpr s64 INSTRUCTION_TIME = 10800; // nanoseconds
 class SR4003 {
 public:
     SR4003() = default;
+    
+    void clock(u8 data_in);
+    void enable(bool enabled) { enabled_ = enabled; }
+    u16 get_parallel_output() const { return enabled_ ? value_ : 0; }
 private:
-    u16 value_ : 10;
+    u16 value_ : 10{};
+    bool enabled_ = false;
 };
 
 class Emulator {
@@ -26,6 +31,7 @@ private:
     static constexpr size_t RAM_STATUS_SIZE = NUM_RAM_REGISTERS * 4;
 
     u8 read_ROM(u16 address) const;
+    void write_ROM_IO(u8 value);
     u8 read_RAM_data(u8 cm_ram) const;
     void write_RAM_data(u8 cm_ram, u8 value);
     u8 read_RAM_status(u8 cm_ram, u8 char_idx);
@@ -38,6 +44,8 @@ private:
     u8 RAM_data_[RAM_DATA_SIZE]{};
     u8 RAM_status_[RAM_STATUS_SIZE]{};
     u8 RAM_SRC_reg_{};
+
+    SR4003 shift_register;
 };
 
 } // namespace calc4004

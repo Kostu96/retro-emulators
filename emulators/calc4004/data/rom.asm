@@ -1,25 +1,25 @@
-FIM P7 0x80 / address of RAM output port connected to 4003
+FIM P7 0x10 / address of ROM IO port connected to 4003
 
 LOOP, SRC P7    / fill shift register with '1's
       LDM 16-6  / for 6 outputs
       XCH R0
       LDM 0b0110
-      WMP
+      WRR
       LDM 0b0100
-      WMP
+      WRR
       ISZ R0 *-4
-
+      
       SRC P7
       LDM 0b0011 / put '0' into shift register
-      WMP
+      WRR
       LDM 0b0001
-      WMP
+      WRR
       LDM 16-6
       XCH R0     / counter for L1
       LDM 0b0111 / move '0' across shift register
-      WMP
+      WRR
       LDM 0b0101
-      WMP
+      WRR
       ISZ R0 *-4
       
       JUN LOOP

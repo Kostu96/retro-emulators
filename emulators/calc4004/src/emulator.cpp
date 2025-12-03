@@ -9,9 +9,15 @@
 
 namespace calc4004 {
 
+void SR4003::clock(u8 data_in) {
+    value_ <<= 1;
+    value_ |= (data_in & 1);
+}
+
 Emulator::Emulator() :
     cpu_(CPU40xx::Mode::Intel4004) {
     cpu_.mapReadROMCallback([this](u16 address) { return read_ROM(address); });
+    cpu_.mapWriteROMIOCallback([this](u8 value) { write_ROM_IO(value); });
     cpu_.mapReadRAMDataCallback([this](u8 cm_ram) { return read_RAM_data(cm_ram); });
     cpu_.mapWriteRAMDataCallback([this](u8 cm_ram, u8 value) { write_RAM_data(cm_ram, value); });
     cpu_.mapReadRAMStatusCallback([this](u8 cm_ram, u8 char_idx) { return read_RAM_status(cm_ram, char_idx); });
@@ -19,8 +25,8 @@ Emulator::Emulator() :
     cpu_.mapWriteRAMIOCallback([this](u8 cm_ram, u8 value) { write_RAM_output(cm_ram, value); });
     cpu_.mapWriteSRCRegisterCallback([this](u8 cm_ram, u8 value) {
         assert(cm_ram == 1);
-        ROM_SRC_reg_ = value; // TODO(Kostu): save only what ROM chips really have in hardware
-        RAM_SRC_reg_ = value; // TODO(Kostu): same here
+        ROM_SRC_reg_ = (value >> 4) & 0xF;
+        RAM_SRC_reg_ = (value >> 6) & 0b11;
     });
 
     cpu_.reset();
@@ -79,6 +85,24 @@ u8 Emulator::read_ROM(u16 address) const {
     return ROM_[address];
 }
 
+void Emulator::write_ROM_IO(u8 value) {
+    assert((value & 0xF0) == 0);
+    assert(ROM_SRC_reg_ < 2);
+
+    switch (ROM_SRC_reg_) {
+    case 0: break;
+    case 1: {// shift register
+        static bool last_clock_state = false;
+        bool clock_state = value & 0b10;
+        if (!last_clock_state && clock_state) {
+            shift_register.clock((value >> 2) & 1);
+        }
+        last_clock_state = clock_state;
+        shift_register.enable(value & 1);
+    } break;
+    }
+}
+
 u8 Emulator::read_RAM_data(u8 cm_ram) const {
     assert(cm_ram == 1);
     u8 address = RAM_SRC_reg_; // TODO(Kostu): fix this
@@ -112,9 +136,16 @@ void Emulator::write_RAM_status(u8 cm_ram, u8 char_idx, u8 value) {
 void Emulator::write_RAM_output(u8 cm_ram, u8 value) {
     assert(cm_ram == 1);
     assert((value & 0xF0) == 0);
+    assert((RAM_SRC_reg_ & 0xFC) == 0);
 
-    // handle shift register
-    assert(false);
+    switch (RAM_SRC_reg_) {
+    case 0: assert(false); break;
+    case 1: assert(false); break;
+    case 2:
+        assert(false);
+        break;
+    case 3: assert(false); break;
+    }
 }
 
 } // namespace calc4004
