@@ -1,6 +1,6 @@
 #include "emu/texture.hpp"
 
-#include <stb/stb_image.h>
+#include <third_party/stb/stb_image.h>
 #include <SDL3/SDL.h>
 
 #include <memory>

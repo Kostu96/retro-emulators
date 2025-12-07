@@ -10,13 +10,16 @@
 
 namespace calc4004 {
 
-using emu::Vec2f;
 using emu::Color;
+using emu::Vec2u16;
+using emu::Vec2f;
+using emu::FRect;
 
-constexpr u16 WINDOW_WIDTH = 640;
-constexpr u16 WINDOW_HEIGHT = 640;
+constexpr u16 window_width = 640;
+constexpr u16 window_height = 640;
 
-constexpr Color DimmedRed{ 255, 0, 0, 75 };
+constexpr Color dimmed_red{ 255, 0, 0, 65 };
+constexpr Vec2f button_glyph_size{ 79.f, 56.f };
 
 struct LEDSegmentGeometry {
     static constexpr int max_num_positions = 6;
@@ -181,39 +184,64 @@ static constexpr LEDDotGeometry make_dot(Vec2f center, float radius) {
 
 LEDDotGeometry dot = make_dot({ 24.f, 32.8f }, 2.f);
 
+class Button :
+    NonCopyable {
+public:
+    Button(const emu::Texture& font_texture, Vec2f glyph_size, Vec2u16 glyph_coord) :
+        font_texture_(font_texture),
+        font_rect_(
+            glyph_coord.x * glyph_size.x, glyph_coord.y * glyph_size.y,
+            glyph_size.x, glyph_size.y
+        ) {}
+public:
+    const emu::Texture& get_font_texture() const { return font_texture_; }
+    FRect get_font_rect() const { return font_rect_; }
+private:
+    const emu::Texture& font_texture_;
+    FRect font_rect_;
+};
+
+static void draw_button(const emu::Renderer2D& renderer, const Button& button, Vec2f offset) {
+    renderer.draw_rect({ offset, { 85.f, 56.f } }, Color::White);
+    renderer.draw_texture(button.get_font_texture(), offset, button.get_font_rect());
+}
+
 class App :
     public emu::Application {
 public:
     App() :
         Application(Application::Properties{
-            .window_width = WINDOW_WIDTH,
-            .window_height = WINDOW_HEIGHT
-        }) {
+            .window_width = window_width,
+            .window_height = window_height
+        }),
+        buttons_{
+            Button(font_texture_, button_glyph_size, { 4u, 3u }),
+            Button(font_texture_, button_glyph_size, { 2u, 3u }),
+            Button(font_texture_, button_glyph_size, { 1u, 2u }),
+            Button(font_texture_, button_glyph_size, { 0u, 2u }),
+            Button(font_texture_, button_glyph_size, { 1u, 3u }),
+            Button(font_texture_, button_glyph_size, { 0u, 3u }),
+            Button(font_texture_, button_glyph_size, { 0u, 4u }),
+            Button(font_texture_, button_glyph_size, { 3u, 4u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u }),
+            Button(font_texture_, button_glyph_size, { 0u, 0u })
+        } {
         const emu::Renderer2D& renderer = getRenderer();
-        texture_[0] = renderer.create_texture("data/textures/button_mr.png");
-        texture_[1] = renderer.create_texture("data/textures/button_mc.png");
-        texture_[2] = renderer.create_texture("data/textures/button_ce.png");
-        texture_[3] = renderer.create_texture("data/textures/button_ac.png");
-        texture_[4] = renderer.create_texture("data/textures/button_m_plus.png");
-        texture_[5] = renderer.create_texture("data/textures/button_m_minus.png");
-        texture_[6] = renderer.create_texture("data/textures/button_percent.png");
-        texture_[7] = renderer.create_texture("data/textures/button_sqrt.png");
-        texture_[8] = renderer.create_texture("data/textures/button_7.png");
-        texture_[9] = renderer.create_texture("data/textures/button_8.png");
-        texture_[10] = renderer.create_texture("data/textures/button_9.png");
-        texture_[11] = renderer.create_texture("data/textures/button_divide.png");
-        texture_[12] = renderer.create_texture("data/textures/button_4.png");
-        texture_[13] = renderer.create_texture("data/textures/button_5.png");
-        texture_[14] = renderer.create_texture("data/textures/button_6.png");
-        texture_[15] = renderer.create_texture("data/textures/button_cross.png");
-        texture_[16] = renderer.create_texture("data/textures/button_1.png");
-        texture_[17] = renderer.create_texture("data/textures/button_2.png");
-        texture_[18] = renderer.create_texture("data/textures/button_3.png");
-        texture_[19] = renderer.create_texture("data/textures/button_minus.png");
-        texture_[20] = renderer.create_texture("data/textures/button_0.png");
-        texture_[21] = renderer.create_texture("data/textures/button_period.png");
-        texture_[22] = renderer.create_texture("data/textures/button_equals.png");
-        texture_[23] = renderer.create_texture("data/textures/button_plus.png");
+        font_texture_ = renderer.create_texture("data/buttons_font.png");
     }
 protected:
     void on_update(s64 delta_time) override {
@@ -234,12 +262,12 @@ protected:
         constexpr int display_padding = 8;
 
         // display background
-        renderer.draw_rect(
-            Vec2f{ display_margin - display_padding, display_margin - display_padding },
-            Vec2f{ led_width * num_leds + display_spacing * (num_leds - 1) + display_padding * 2,
-                   led_height + display_padding * 2
-            },
-            Color{ 10, 40, 50, 255 }
+        renderer.draw_rect({
+            display_margin - display_padding,
+            display_margin - display_padding,
+            led_width * num_leds + display_spacing * (num_leds - 1) + display_padding * 2,
+            led_height + display_padding * 2 },
+            Color{ 5, 30, 40, 255 }
         );
 
         Vec2f offset = { 23.f, 23.f };
@@ -260,8 +288,8 @@ protected:
             renderer.draw_geometry(d_segment.positions, d_segment.indices, offset, scale, Color::Red);
             renderer.draw_geometry(e_segment.positions, e_segment.indices, offset, scale, Color::Red);
             renderer.draw_geometry(f_segment.positions, f_segment.indices, offset, scale, Color::Red);
-            renderer.draw_geometry(g_segment.positions, g_segment.indices, offset, scale, Color::Red);
-            renderer.draw_geometry(dot.positions, dot.indices, offset, scale, Color::Red);
+            renderer.draw_geometry(g_segment.positions, g_segment.indices, offset, scale, dimmed_red);
+            renderer.draw_geometry(dot.positions, dot.indices, offset, scale, dimmed_red);
 
             offset.x += led_width + display_spacing;
         }
@@ -270,7 +298,7 @@ protected:
         offset = { keyboard_x_offset, 150.f };
         for (int y = 0; y < 6; y++) {
             for (int x = 0; x < 4; x++) {
-                renderer.draw_texture(texture_[y * 4 + x], offset);
+                draw_button(renderer, buttons_[y * 4 + x], offset);
 
                 offset.x += 100.f;
             }
@@ -283,7 +311,8 @@ private:
     calc4004::Emulator emulator_;
     s64 time_accumulator_ = 0; // nanoseconds
 
-    std::array<emu::Texture, 24> texture_;
+    std::array<Button, 24> buttons_;
+    emu::Texture font_texture_;
 };
 
 } // namespace calc4004

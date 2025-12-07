@@ -18,11 +18,25 @@ struct Color {
     static const Color White;
 };
 
+struct Vec2u16 {
+    u16 x, y;
+};
+
 struct Vec2f {
-    float x, y;
+    float x{}, y{};
 
     constexpr Vec2f() = default;
     constexpr Vec2f(float x_, float y_) : x(x_), y(y_) {}
+};
+
+struct FRect {
+    float x{}, y{}, w{}, h{};
+
+    constexpr FRect() = default;
+    constexpr FRect(float x_, float y_, float w_, float h_) :
+        x(x_), y(y_), w(w_), h(h_) {}
+    constexpr FRect(Vec2f position, Vec2f size) :
+        x(position.x), y(position.y), w(size.x), h(size.y) {}
 };
 
 class Texture;
@@ -43,8 +57,8 @@ public:
     void begin_frame(Color clear_color = { 0, 0, 0, 255 }) const;
     void end_frame() const;
 
-    void draw_rect(Vec2f position, Vec2f size, Color color, bool fill = true) const;
-    void draw_texture(const Texture& texture, Vec2f offset) const;
+    void draw_rect(FRect rect, Color color, bool fill = true) const;
+    void draw_texture(const Texture& texture, Vec2f offset, FRect texture_rect = {}) const;
     void draw_geometry(std::span<const Vec2f> positions, std::span<const int> indices, Vec2f offset, float scale, Color color) const;
 
     Texture create_texture(const char* filename) const;

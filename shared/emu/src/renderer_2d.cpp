@@ -48,23 +48,28 @@ void Renderer2D::end_frame() const {
     SDL_RenderPresent(renderer_);
 }
 
-void Renderer2D::draw_rect(Vec2f position, Vec2f size, Color color, bool fill) const {
+void Renderer2D::draw_rect(FRect rect, Color color, bool fill) const {
     SDL_SetRenderDrawColor(renderer_, color.r, color.g, color.b, color.a);
-    const SDL_FRect rect{
-        .x = position.x, .y = position.y,
-        .w = size.x, .h = size.y
+    const SDL_FRect sdl_rect{
+        .x = rect.x, .y = rect.y,
+        .w = rect.w, .h = rect.h
     };
     if (fill) {
-        SDL_RenderFillRect(renderer_, &rect);
+        SDL_RenderFillRect(renderer_, &sdl_rect);
     }
     else {
-        SDL_RenderRect(renderer_, &rect);
+        SDL_RenderRect(renderer_, &sdl_rect);
     }
 }
 
-void Renderer2D::draw_texture(const Texture& texture, Vec2f offset) const {
-    const SDL_FRect rect = { offset.x, offset.y, to_f32(texture.width_), to_f32(texture.height_) };
-    SDL_RenderTexture(renderer_, texture.handle_, nullptr, &rect);
+void Renderer2D::draw_texture(const Texture& texture, Vec2f offset, FRect texture_rect) const {
+    const SDL_FRect src_rect = { texture_rect.x, texture_rect.y, texture_rect.w, texture_rect.h };
+    const SDL_FRect dst_rect = {
+        offset.x, offset.y,
+        texture_rect.w == 0 ? to_f32(texture.width_) : texture_rect.w,
+        texture_rect.h == 0 ? to_f32(texture.height_) : texture_rect.h
+    };
+    SDL_RenderTexture(renderer_, texture.handle_, &src_rect, &dst_rect);
 }
 
 void Renderer2D::draw_geometry(std::span<const Vec2f> positions, std::span<const int> indices, Vec2f offset, float scale, Color color) const {
