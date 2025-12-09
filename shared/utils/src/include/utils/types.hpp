@@ -1,12 +1,5 @@
-/*
- * Copyright (C) 2023 Konstanty Misiak
- *
- * SPDX-License-Identifier: MIT
- */
-
 #pragma once
 #include <cstdint>
-#include <cstddef>
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -56,6 +49,8 @@ template <typename T> inline constexpr f64 to_f64(T val) {
   return static_cast<f64>(val);
 }
 
+namespace utils {
+
 class NonCopyable {
 protected:
     NonCopyable() = default;
@@ -64,3 +59,5 @@ protected:
     NonCopyable(const NonCopyable&) = delete;
     NonCopyable& operator=(const NonCopyable&) = delete;
 };
+
+} // namespace utils

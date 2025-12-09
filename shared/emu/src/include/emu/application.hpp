@@ -1,5 +1,5 @@
 #pragma once
-#include <utils/types.hpp>
+#include <utils/common.hpp>
 #include <chrono>
 
 struct SDL_Window;
@@ -9,7 +9,7 @@ namespace emu {
 class Renderer2D;
 
 class Application :
-    NonCopyable {
+    utils::NonCopyable {
 public:
     struct Properties {
         u16 window_width;
@@ -18,8 +18,6 @@ public:
 
     explicit Application(const Properties& properties);
     virtual ~Application();
-
-    bool start();
 
     void update();
 protected:

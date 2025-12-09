@@ -1,10 +1,11 @@
 #pragma once
-#include "utils/asm_common.hpp"
+#include <utils/types.hpp>
 
 #include <array>
 #include <optional>
 #include <span>
 #include <sstream>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
@@ -12,7 +13,7 @@
 struct DisassemblyLine;
 
 class Assembler40xx :
-    NonCopyable {
+    utils::NonCopyable {
 public:
     enum class Status { Success, Error };
 

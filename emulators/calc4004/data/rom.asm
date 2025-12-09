@@ -1,4 +1,19 @@
-FIM P7 0x10 / address of ROM IO port connected to 4003
+JUN START
+
+LEDTBL, 0xFC / 0 / this needs to be on the same 256 byte page as the main loop
+        0x60 / 1
+        0xDA / 2
+        0xF2 / 3
+        0x66 / 4
+        0xB6 / 5
+        0xBE / 6
+        0xE0 / 7
+        0xFE / 8
+        0xF6 / 9
+LEDMIN, 0x02 / -
+
+START, FIM P7 0x10 / address of ROM IO port connected to 4003
+       FIM P6 LEDTBL
 
 LOOP, SRC P7    / fill shift register with '1's
       LDM 16-6  / for 6 outputs
@@ -15,23 +30,12 @@ LOOP, SRC P7    / fill shift register with '1's
       LDM 0b0001
       WRR
       LDM 16-6
-      XCH R0     / counter for L1
+      XCH R0     / counter for DISP
+DISP, NOP
       LDM 0b0111 / move '0' across shift register
       WRR
       LDM 0b0101
       WRR
-      ISZ R0 *-4
+      ISZ R0 DISP
       
       JUN LOOP
-
-LEDTBL, 0xFC / 0
-        0x60 / 1
-        0xDA / 2
-        0xF2 / 3
-        0x66 / 4
-        0xB6 / 5
-        0xBE / 6
-        0xE0 / 7
-        0xFE / 8
-        0xF6 / 9
-LEDMIN, 0x02 / -

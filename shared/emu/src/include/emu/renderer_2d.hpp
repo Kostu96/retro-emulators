@@ -42,7 +42,7 @@ struct FRect {
 class Texture;
 
 class Renderer2D :
-    NonCopyable
+    utils::NonCopyable
 {
 public:
     struct Properties {

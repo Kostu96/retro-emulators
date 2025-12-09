@@ -20,7 +20,7 @@ Application::Application(const Properties& properties) :
     SDL_SetHint(SDL_HINT_RENDER_LINE_METHOD, "3");
     SDL_Renderer* renderer;
     if (!SDL_CreateWindowAndRenderer("calc4004", properties_.window_width, properties_.window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY, &window_, &renderer)) {
-        throw std::runtime_error("Could not create SDL window and renderer!");
+        throw utils::Exception("Could not create SDL window and renderer!");
     }
 
     renderer2d_ = std::make_unique<Renderer2D>(renderer,
@@ -50,16 +50,23 @@ void Application::update() {
 extern SDL_AppResult SDL_AppInit(void** appstate, int /*argc*/, char** /*argv*/) {
     try {
         if (!SDL_Init(SDL_INIT_VIDEO)) {
-            throw std::runtime_error("Could not initialize SDL!");
+            throw utils::Exception("Could not initialize SDL!");
         }
 
         emu::Application* app = create_application();
         *appstate = app;
         return SDL_APP_CONTINUE;
     }
+    catch (const utils::Exception& e) {
+        std::println(std::cerr, "{}", e);
+        return SDL_APP_FAILURE;
+    }
     catch (const std::exception& e) {
         std::println(std::cerr, "{}", e.what());
-
+        return SDL_APP_FAILURE;
+    }
+    catch (...) {
+        std::println(std::cerr, "unknown exception");
         return SDL_APP_FAILURE;
     }
 }
@@ -70,15 +77,43 @@ extern void SDL_AppQuit(void* appstate, SDL_AppResult /*result*/) {
 }
 
 extern SDL_AppResult SDL_AppEvent(void* /*appstate*/, SDL_Event* event) {
-    switch (event->type) {
-    case SDL_EVENT_QUIT: return SDL_APP_SUCCESS;
-    }
+    try {
+        switch (event->type) {
+        case SDL_EVENT_QUIT: return SDL_APP_SUCCESS;
+        }
 
-    return SDL_APP_CONTINUE;
+        return SDL_APP_CONTINUE;
+    }
+    catch (const utils::Exception& e) {
+        std::println(std::cerr, "{}", e);
+        return SDL_APP_FAILURE;
+    }
+    catch (const std::exception& e) {
+        std::println(std::cerr, "{}", e.what());
+        return SDL_APP_FAILURE;
+    }
+    catch (...) {
+        std::println(std::cerr, "unknown exception");
+        return SDL_APP_FAILURE;
+    }
 }
 
 extern SDL_AppResult SDL_AppIterate(void* appstate) {
-    auto* app = static_cast<emu::Application*>(appstate);
-    app->update();
-    return SDL_APP_CONTINUE;
+    try {
+        auto* app = static_cast<emu::Application*>(appstate);
+        app->update();
+        return SDL_APP_CONTINUE;
+    }
+    catch (const utils::Exception& e) {
+        std::println(std::cerr, "{}", e);
+        return SDL_APP_FAILURE;
+    }
+    catch (const std::exception& e) {
+        std::println(std::cerr, "{}", e.what());
+        return SDL_APP_FAILURE;
+    }
+    catch (...) {
+        std::println(std::cerr, "unknown exception");
+        return SDL_APP_FAILURE;
+    }
 }

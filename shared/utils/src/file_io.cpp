@@ -1,13 +1,16 @@
 #include "utils/file_io.hpp"
+#include "utils/exception.hpp"
 
 #include <fstream>
 #include <limits>
+
+namespace utils {
 
 std::string readFile(const char* filename)
 {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file)
-        throw std::runtime_error("Failed to open file!");
+        throw Exception("Failed to open file!");
 
     auto size = file.tellg();
     std::string buffer(size, '\0');
@@ -38,13 +41,15 @@ bool readFileInto(const char* filename, char* data, size_t& size)
 }
 
 bool writeFile(const char* filename, const char* data, size_t size, bool binary)
-{
-    std::ofstream fout(filename, binary ? std::ios::binary : std::ios::out);
-    if (!fout.is_open())
-        return false;
+    {
+        std::ofstream fout(filename, binary ? std::ios::binary : std::ios::out);
+        if (!fout.is_open())
+            return false;
 
-    bool retVal = (bool)fout.write(data, size);
+        bool retVal = (bool)fout.write(data, size);
 
-    fout.close();
-    return retVal;
-}
+        fout.close();
+        return retVal;
+    }
+
+} // namespace utils

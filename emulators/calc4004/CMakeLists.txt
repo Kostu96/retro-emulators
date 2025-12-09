@@ -4,6 +4,10 @@ add_emulator_app(TARGET_NAME ${CALC4004_APP_TARGET_NAME}
     SOURCES
         CMakeLists.txt
         src/app.cpp
+        src/button.cpp
+        src/button.hpp
+        src/display.cpp
+        src/display.hpp
         src/emulator.cpp
         src/emulator.hpp
     LIBRARIES

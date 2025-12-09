@@ -9,6 +9,7 @@ class SR4003 {
 public:
     SR4003() = default;
     
+    void reset();
     void clock(u8 data_in);
     void enable(bool enabled) { enabled_ = enabled; }
     u16 get_parallel_output() const { return enabled_ ? value_ : 0; }
@@ -22,6 +23,8 @@ public:
     Emulator();
 
     void clock() { cpu_.clock(); }
+
+    u16 get_display_enable_output() const { return shift_register_.get_parallel_output(); }
 private:
     static constexpr size_t NUM_ROM_CHIPS = 2;
     static constexpr size_t ROM_SIZE = NUM_ROM_CHIPS * 0x100;
@@ -45,7 +48,7 @@ private:
     u8 RAM_status_[RAM_STATUS_SIZE]{};
     u8 RAM_SRC_reg_{};
 
-    SR4003 shift_register;
+    SR4003 shift_register_;
 };
 
 } // namespace calc4004

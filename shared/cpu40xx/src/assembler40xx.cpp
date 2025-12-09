@@ -1,6 +1,8 @@
 #include "cpu40xx/assembler40xx.hpp"
 #include "instruction_masks.hpp"
-#include "utils/disassembly_line.hpp"
+
+#include <utils/disassembly_line.hpp>
+#include <utils/asm_common.hpp>
 
 #include <cassert>
 #include <charconv>
@@ -320,7 +322,7 @@ u16 Assembler40xx::parseExpression(std::string_view str, u16 current_address) {
             u16 parsedValue;
             auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), parsedValue, base);
             if (ec != std::errc{}) {
-                // error!
+                // TODO(Kostu): error!
                 assert(false);
                 return 0;
             }
@@ -333,7 +335,7 @@ u16 Assembler40xx::parseExpression(std::string_view str, u16 current_address) {
                     value += subtract ? -current_address : current_address;
                 }
                 else {
-                    // error!
+                    // TODO(Kostu): error!
                     assert(false);
                 }
             }

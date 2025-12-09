@@ -9,7 +9,7 @@ namespace emu {
 class Renderer2D;
 
 class Texture :
-    NonCopyable {
+    utils::NonCopyable {
 public:
     Texture() = default;
 

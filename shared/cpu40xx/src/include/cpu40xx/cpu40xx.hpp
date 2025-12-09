@@ -1,13 +1,12 @@
 #pragma once
-#include "utils/types.hpp"
 #include "utils/warnings.hpp"
 
-#include <array>
 #include <functional>
+#include <utils/types.hpp>
 #include <vector>
 
 class CPU40xx :
-    NonCopyable {
+    utils::NonCopyable {
 public:
 BEGIN_ALLOW_ANON_STRUCTS
     struct State {
